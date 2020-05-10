@@ -12,7 +12,7 @@ InputDecoration textFieldInputDecoration(String hintText)
   return InputDecoration(
       hintText: hintText,
       hintStyle: TextStyle(
-        color: Colors.white54,
+        color: Colors.black,
       ),
       focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
@@ -29,7 +29,7 @@ InputDecoration textFieldInputDecoration(String hintText)
 
 TextStyle simpleTextStyle()  {
   return TextStyle(
-    color: Colors.white,
+    color: Colors.black,
     fontSize: 16,
   );
 }
