@@ -1,10 +1,16 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/services/auth.dart';
+import 'package:schatty/services/database.dart';
 import 'package:schatty/views/chatsroom.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SignUp extends StatefulWidget {
+
+  final Function toggle;
+
+  SignUp(this.toggle);
+
   @override
   _SignUpState createState() => _SignUpState();
 }
@@ -14,6 +20,8 @@ class _SignUpState extends State<SignUp> {
   bool isLoading = false;
 
   AuthMethods authMethods = new AuthMethods();
+  DatabaseMethods databaseMethods = new DatabaseMethods();
+
   final formKey = GlobalKey<FormState>();
 
   TextEditingController userNameTEC = new TextEditingController();
@@ -23,20 +31,26 @@ class _SignUpState extends State<SignUp> {
   signUP()
   {
     if(formKey.currentState.validate()){
+      Map<String, String> userInfoMap = {
+        "username": userNameTEC.text,
+        "email": emailTEC.text
+      };
+
       setState(() {
         isLoading = true;
       });
 
-        authMethods.signUpWithEmailAndPassword(emailTEC.text, passwordTEC.text).then((val)
-        {
-          print("$val");
+      authMethods.signUpWithEmailAndPassword(emailTEC.text, passwordTEC.text)
+          .then((val) {
+        print("$val");
 
-          Navigator.pushReplacement(context, MaterialPageRoute(
+        databaseMethods.uploadUserInfo(userInfoMap);
+        Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (context) => ChatRoom(
 
             )
-          ));
-        });
+        ));
+      });
     }
   }
 
@@ -130,11 +144,19 @@ class _SignUpState extends State<SignUp> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("Already an user? ", style: mediumTextStyle(),),
-                  Text("Login here", style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      decoration: TextDecoration.underline
-                  ), ),
+                  GestureDetector(
+                    onTap: () {
+                      widget.toggle();
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Text("Login here", style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          decoration: TextDecoration.underline
+                      ),),
+                    ),
+                  ),
                   Text("!", style: mediumTextStyle(),)
                 ],
               )
