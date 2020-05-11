@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
 import 'package:schatty/views/chatsroom.dart';
@@ -36,15 +37,19 @@ class _SignUpState extends State<SignUp> {
         "email": emailTEC.text
       };
 
+      HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
+      HelperFunctions.saveUserNameSharedPreference(userNameTEC.text);
+
       setState(() {
         isLoading = true;
       });
 
       authMethods.signUpWithEmailAndPassword(emailTEC.text, passwordTEC.text)
           .then((val) {
-        print("$val");
+        // print("$val");
 
         databaseMethods.uploadUserInfo(userInfoMap);
+        HelperFunctions.saveUserLoggedInSharedPreference(true);
         Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (context) => ChatRoom(
 
