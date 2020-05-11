@@ -39,10 +39,10 @@ class _ChatRoomState extends State<ChatRoom> {
       },
     );
   }
-
   @override
   void initState() {
     getUserInfo();
+    //print("blah");
     super.initState();
   }
 
