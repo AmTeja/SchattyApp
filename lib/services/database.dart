@@ -41,14 +41,14 @@ class DatabaseMethods {
   }
 
   getMessage(String chatRoomID) async {
-    return await Firestore.instance.collection("ChatRoom")
+    return Firestore.instance.collection("ChatRoom")
         .document(chatRoomID).collection("chats").orderBy(
         "time", descending: false).snapshots();
   }
 
   getChatRooms(String userName) async
   {
-    return await Firestore.instance.collection("ChatRoom")
+    return Firestore.instance.collection("ChatRoom")
         .where("users", arrayContains: userName).snapshots();
   }
 }

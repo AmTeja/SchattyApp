@@ -59,6 +59,7 @@ class _ChatRoomState extends State<ChatRoom> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xfff0f2f2),
       appBar: AppBar(
         title: Image.asset("assets/images/logo999.png", height: 50,),
         actions: [
@@ -66,6 +67,8 @@ class _ChatRoomState extends State<ChatRoom> {
             onTap: () {
               authMethods.signOut();
               HelperFunctions.saveUserLoggedInSharedPreference(false);
+              print(
+                  HelperFunctions.getUserLoggedInSharedPreference().toString());
               Navigator.pushReplacement(context, MaterialPageRoute(
                   builder: (context) => Authenticate()
               ));
@@ -101,7 +104,7 @@ class ChatRoomTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(
-            builder: (context) => ChatInstance(chatRoomId)
+            builder: (context) => ChatInstance(chatRoomId, userName)
         ));
       },
       child: Container(

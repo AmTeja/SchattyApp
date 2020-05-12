@@ -39,7 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
       DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);
       Navigator.push(context, MaterialPageRoute(
-          builder: (context) => ChatInstance(chatRoomID)
+          builder: (context) => ChatInstance(chatRoomID, userName)
       ));
     }
   }
@@ -56,15 +56,16 @@ class _SearchScreenState extends State<SearchScreen> {
                 userName,
                 style: mediumTextStyle(),
               ),
-              Text(
+              /*Text(
                 userEmail,
                 style: mediumTextStyle(),
-              )
+              )*/
             ],
           ),
           Spacer(),
           GestureDetector(
             onTap: () {
+              print("clicked");
               createChatInstance(
                 userName: userName,
               );
@@ -111,7 +112,7 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           children: [
             Container(
-              color: Color(0x54FFFFFF),
+              color: Colors.teal,
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
                 children: [
@@ -119,12 +120,12 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: TextField(
                     controller: searchTEC,
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Colors.black,
                     ),
                     decoration: InputDecoration(
                         hintText: "Search for users...",
                         hintStyle: TextStyle(
-                          color: Colors.white54,
+                          color: Colors.black26,
                         ),
                         border: InputBorder.none),
                   )),
@@ -137,8 +138,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         width: 40,
                         decoration: BoxDecoration(
                             gradient: LinearGradient(colors: [
-                              const Color(0x36FFFFFF),
-                              const Color(0x0fffffff)
+                              Colors.black,
+                              Colors.black
                             ]),
                             borderRadius: BorderRadius.circular(40)),
                         padding: EdgeInsets.all(12),

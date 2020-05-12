@@ -1,0 +1,7 @@
+Changelog:
+-12/05/2020
+    -Removed Email when searched.
+    -Added Splashscreen.
+    -Added images to signIn and SignUp (Temporary).
+    -Working Shared Preference.
+    -Changed Colour Swatches.
