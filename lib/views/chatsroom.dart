@@ -42,11 +42,12 @@ class _ChatRoomState extends State<ChatRoom> {
   @override
   void initState() {
     getUserInfo();
-    //print("blah");
+    print("blah");
     super.initState();
   }
 
   getUserInfo() async {
+    print("getting user infO");
     Constants.ownerName = await HelperFunctions.getUserNameSharedPreference();
     databaseMethods.getChatRooms(Constants.ownerName).then((val) {
       setState(() {
@@ -59,7 +60,7 @@ class _ChatRoomState extends State<ChatRoom> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Image.asset("assets/images/logo.png", height: 50,),
+        title: Image.asset("assets/images/logo999.png", height: 50,),
         actions: [
           GestureDetector(
             onTap: () {
@@ -91,21 +92,22 @@ class _ChatRoomState extends State<ChatRoom> {
 class ChatRoomTile extends StatelessWidget {
 
   final String userName;
-  final String chatRoomID;
+  final String chatRoomId;
 
-  ChatRoomTile(this.userName, this.chatRoomID);
+  ChatRoomTile(this.userName, this.chatRoomId);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(
-            builder: (context) => ChatInstance(chatRoomID)
+            builder: (context) => ChatInstance(chatRoomId)
         ));
       },
       child: Container(
         color: Colors.black12,
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        margin: EdgeInsets.symmetric(vertical: 1),
         child: Row(
           children: [
             Container(
@@ -117,7 +119,9 @@ class ChatRoomTile extends StatelessWidget {
                   borderRadius: BorderRadius.circular(40)
               ),
               child: Text("${userName.substring(0, 1).toUpperCase()}",
-                style: mediumTextStyle(),),
+                style: TextStyle(
+                  color: Colors.white,
+                ),),
             ),
             SizedBox(width: 7,),
             Text(userName, style: mediumTextStyle(),)

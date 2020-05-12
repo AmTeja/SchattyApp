@@ -27,29 +27,30 @@ class _SignInState extends State<SignIn> {
   TextEditingController emailTEC = new TextEditingController();
   TextEditingController passwordTEC = new TextEditingController();
 
-  QuerySnapshot snapshotUerInfo;
+  QuerySnapshot snapshotUserInfo;
 
   bool isLoading = false;
 
-
   signIn() {
     if (formKey.currentState.validate()) {
+      print("Validated");
       HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
       setState(() {
         isLoading = true;
       });
 
       databaseMethods.getUserByUserEmail(emailTEC.text).then((value) {
-        snapshotUerInfo = value;
+        snapshotUserInfo = value;
         HelperFunctions
-            .saveUserEmailSharedPreference(
-            snapshotUerInfo.documents[0].data["name"]);
+            .saveUserNameSharedPreference(
+            snapshotUserInfo.documents[0].data["username"]);
       });
 
       authMethods.signInWithEmailAndPassword(emailTEC.text, passwordTEC.text)
           .then((value) {
         if (value != null) {
           HelperFunctions.saveUserLoggedInSharedPreference(true);
+          print("Logged In true");
           Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (context) => ChatRoom(),
           ));
@@ -62,9 +63,15 @@ class _SignInState extends State<SignIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBarMain(context),
+      //appBar: appBarMain(context),
       body: Container(
-        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: ExactAssetImage("assets/images/loginbg.png"),
+            fit: BoxFit.cover,
+          ),
+        ),
+        alignment: Alignment.bottomCenter,
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 24),
           child: Column(

@@ -38,12 +38,15 @@ class _MyAppState extends State<MyApp> {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Color(0xff45b4e7),
-        scaffoldBackgroundColor: Color(0xff000000),
+        primaryColor: Color(0xffffffff),
+        scaffoldBackgroundColor: Color(0xffffffff),
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-        home: isUserLoggedIn ? ChatRoom() : Authenticate()
+        home:
+        isUserLoggedIn != null
+            ? (isUserLoggedIn ? ChatRoom() : Authenticate())
+            : Authenticate()
     );
   }
 }
