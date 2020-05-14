@@ -5,6 +5,7 @@ import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
 import 'package:schatty/views/chatsroom.dart';
+import 'package:schatty/views/forgetpassword.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SignIn extends StatefulWidget {
@@ -108,11 +109,18 @@ class _SignInState extends State<SignIn> {
                 ),
               ),
               SizedBox(height: 8,),
-              Container(
-                alignment: Alignment.centerRight,
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(
+                      builder: (context) => ForgotPassword()
+                  ));
+                },
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Text("Forgot Password?", style: simpleTextStyle(),),
+                  alignment: Alignment.centerRight,
+                  child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: Text("Forgot Password?", style: simpleTextStyle(),),
+                  ),
                 ),
               ),
               SizedBox(height: 8,),

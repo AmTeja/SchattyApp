@@ -3,6 +3,8 @@ import 'package:schatty/helper/authenticate.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/views/chatsroom.dart';
 
+import 'services/encryption.dart';
+
 void main() {
   runApp(MyApp());
 }
@@ -20,6 +22,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     getLoggedInState();
+    futureKeyPair = Encryption().getKeyPair();
     super.initState();
   }
 
@@ -43,8 +46,7 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-        home:
-        isUserLoggedIn != null
+        home: isUserLoggedIn != null
             ? (isUserLoggedIn ? ChatRoom() : Authenticate())
             : Authenticate()
     );

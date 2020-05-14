@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/authenticate.dart';
 import 'package:schatty/helper/constants.dart';
@@ -39,6 +40,7 @@ class _ChatRoomState extends State<ChatRoom> {
       },
     );
   }
+
   @override
   void initState() {
     getUserInfo();
@@ -88,6 +90,7 @@ class _ChatRoomState extends State<ChatRoom> {
           ));
         },
       ),
+
     );
   }
 }
@@ -107,8 +110,7 @@ class ChatRoomTile extends StatelessWidget {
             builder: (context) => ChatInstance(chatRoomId, userName)
         ));
       },
-      child: Container(
-        color: Colors.black12,
+      child: Container(color: Colors.black12,
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         margin: EdgeInsets.symmetric(vertical: 1),
         child: Row(

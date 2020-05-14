@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/database.dart';
+import 'package:schatty/services/encryption.dart';
+import 'package:schatty/services/rsa.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ChatInstance extends StatefulWidget {
@@ -22,6 +24,10 @@ class _ChatInstanceState extends State<ChatInstance> {
 
   Stream chatMessageStream;
 
+  RsaKeyHelper rsaKeyHelper = RsaKeyHelper();
+
+
+
   //Chat Stream Widget
   Widget chatMessageList() {
     return StreamBuilder(
@@ -32,7 +38,7 @@ class _ChatInstanceState extends State<ChatInstance> {
                 itemCount: snapshot.data.documents.length,
                 itemBuilder: (context, index) {
                   return MessageTile(
-                      snapshot.data.documents[index].data["message"],
+                      snapshot.data.documents[index].data["encryptedMessage"],
                       snapshot.data.documents[index].data["sendBy"] ==
                           Constants.ownerName);
                 },
@@ -42,12 +48,15 @@ class _ChatInstanceState extends State<ChatInstance> {
     );
   }
 
+
   //Send Message and Upload to Firebase
-  sendMessage() {
+  sendMessage() async {
     print("function called");
     if (messageTEC.text.isNotEmpty) {
+      keyPair = await futureKeyPair;
+      String message = encrypt(messageTEC.text, keyPair.publicKey);
       Map<String, dynamic> messageMap = {
-        "message": messageTEC.text,
+        "encryptedMessage": message,
         "sendBy": Constants.ownerName,
         "time": DateTime.now().millisecondsSinceEpoch
       };
@@ -68,6 +77,7 @@ class _ChatInstanceState extends State<ChatInstance> {
     });
     super.initState();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -133,6 +143,10 @@ class _ChatInstanceState extends State<ChatInstance> {
   }
 }
 
+Future<String> getDecryptText(String decryptText) async {
+  keyPair = await futureKeyPair;
+  return decrypt(decryptText, keyPair.privateKey);
+}
 class MessageTile extends StatelessWidget {
   final String message;
   final bool isSentByOwner;
@@ -141,6 +155,7 @@ class MessageTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String decryptedMessage;
     return Container(
       padding: EdgeInsets.only(
           left: isSentByOwner ? 0 : 18, right: isSentByOwner ? 18 : 0),
@@ -156,15 +171,15 @@ class MessageTile extends StatelessWidget {
                     : [Color(0xff93a5cf), const Color(0xff93a5cf)]),
             borderRadius: isSentByOwner
                 ? BorderRadius.only(
-                    topLeft: Radius.circular(23),
-                    topRight: Radius.circular(23),
-                    bottomLeft: Radius.circular(23))
+                topLeft: Radius.circular(23),
+                topRight: Radius.circular(23),
+                bottomLeft: Radius.circular(23))
                 : BorderRadius.only(
-                    topLeft: Radius.circular(23),
-                    topRight: Radius.circular(23),
-                    bottomRight: Radius.circular(23))),
+                topLeft: Radius.circular(23),
+                topRight: Radius.circular(23),
+                bottomRight: Radius.circular(23))),
         child: Text(
-          message,
+          decryptedMessage,
           style: TextStyle(color: Colors.white, fontSize: 17),
         ),
       ),
