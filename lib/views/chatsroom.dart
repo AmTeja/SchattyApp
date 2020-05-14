@@ -5,7 +5,7 @@ import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
-import 'package:schatty/views/chatinstance.dart';
+import 'package:schatty/views/chatinstancewithfuture.dart';
 import 'package:schatty/views/search.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -44,7 +44,6 @@ class _ChatRoomState extends State<ChatRoom> {
   @override
   void initState() {
     getUserInfo();
-    print("blah");
     super.initState();
   }
 
@@ -107,7 +106,7 @@ class ChatRoomTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(
-            builder: (context) => ChatInstance(chatRoomId, userName)
+            builder: (context) => ChatScreen(chatRoomId, userName)
         ));
       },
       child: Container(color: Colors.black12,

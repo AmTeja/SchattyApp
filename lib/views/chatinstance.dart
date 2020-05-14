@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:rsa_encrypt/rsa_encrypt.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
+import 'package:schatty/services/RSAEncryption.dart';
 import 'package:schatty/services/database.dart';
-import 'package:schatty/services/encryption.dart';
-import 'package:schatty/services/rsa.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ChatInstance extends StatefulWidget {
@@ -18,15 +18,12 @@ class ChatInstance extends StatefulWidget {
 }
 
 class _ChatInstanceState extends State<ChatInstance> {
-  DatabaseMethods databaseMethods = new DatabaseMethods();
 
+  DatabaseMethods databaseMethods = new DatabaseMethods();
   TextEditingController messageTEC = TextEditingController();
 
   Stream chatMessageStream;
-
   RsaKeyHelper rsaKeyHelper = RsaKeyHelper();
-
-
 
   //Chat Stream Widget
   Widget chatMessageList() {
@@ -37,8 +34,10 @@ class _ChatInstanceState extends State<ChatInstance> {
             ? ListView.builder(
                 itemCount: snapshot.data.documents.length,
                 itemBuilder: (context, index) {
+                  print(snapshot.data.documents[index].data["message"]
+                      .toString());
                   return MessageTile(
-                      snapshot.data.documents[index].data["encryptedMessage"],
+                      snapshot.data.documents[index].data["message"],
                       snapshot.data.documents[index].data["sendBy"] ==
                           Constants.ownerName);
                 },
@@ -56,7 +55,7 @@ class _ChatInstanceState extends State<ChatInstance> {
       keyPair = await futureKeyPair;
       String message = encrypt(messageTEC.text, keyPair.publicKey);
       Map<String, dynamic> messageMap = {
-        "encryptedMessage": message,
+        "message": message,
         "sendBy": Constants.ownerName,
         "time": DateTime.now().millisecondsSinceEpoch
       };
@@ -145,10 +144,12 @@ class _ChatInstanceState extends State<ChatInstance> {
 
 Future<String> getDecryptText(String decryptText) async {
   keyPair = await futureKeyPair;
-  return decrypt(decryptText, keyPair.privateKey);
+  final text = await decrypt(decryptText, keyPair.privateKey);
+  return text;
 }
 class MessageTile extends StatelessWidget {
-  final String message;
+  final String
+  message;
   final bool isSentByOwner;
 
   MessageTile(this.message, this.isSentByOwner);
@@ -162,26 +163,33 @@ class MessageTile extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 8),
       width: MediaQuery.of(context).size.width,
       alignment: isSentByOwner ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: isSentByOwner
-                    ? [const Color(0xffff758c), const Color(0xffff7eb3)]
-                    : [Color(0xff93a5cf), const Color(0xff93a5cf)]),
-            borderRadius: isSentByOwner
-                ? BorderRadius.only(
-                topLeft: Radius.circular(23),
-                topRight: Radius.circular(23),
-                bottomLeft: Radius.circular(23))
-                : BorderRadius.only(
-                topLeft: Radius.circular(23),
-                topRight: Radius.circular(23),
-                bottomRight: Radius.circular(23))),
-        child: Text(
-          decryptedMessage,
-          style: TextStyle(color: Colors.white, fontSize: 17),
-        ),
+      child: FutureBuilder(
+          future: getDecryptText(message).then((value) =>
+          decryptedMessage = value),
+          builder: (context, snapshot) {
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: isSentByOwner
+                          ? [const Color(0xffff758c), const Color(0xffff7eb3)]
+                          : [Color(0xff93a5cf), const Color(0xff93a5cf)]),
+                  borderRadius: isSentByOwner
+                      ? BorderRadius.only(
+                      topLeft: Radius.circular(23),
+                      topRight: Radius.circular(23),
+                      bottomLeft: Radius.circular(23))
+                      : BorderRadius.only(
+                      topLeft: Radius.circular(23),
+                      topRight: Radius.circular(23),
+                      bottomRight: Radius.circular(23))),
+              child: Text(
+                decryptedMessage != null ? decryptedMessage : "null",
+                style: TextStyle(color: Colors.white, fontSize: 17),
+              ),
+            );
+            return Text(decryptedMessage);
+          }
       ),
     );
   }
