@@ -27,7 +27,8 @@ class _ChatRoomState extends State<ChatRoom> {
       stream: chatRoomsStream,
       builder: (context, snapshot) {
         return snapshot.hasData ? ListView.builder(
-            itemCount: snapshot.data.documents.length,
+                reverse: false,
+                itemCount: snapshot.data.documents.length,
             itemBuilder: (context, index) {
               return ChatRoomTile(
                   snapshot.data.documents[index].data["chatRoomId"]
@@ -60,36 +61,79 @@ class _ChatRoomState extends State<ChatRoom> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xfff0f2f2),
-      appBar: AppBar(
-        title: Image.asset("assets/images/logo999.png", height: 50,),
-        actions: [
-          GestureDetector(
-            onTap: () {
-              authMethods.signOut();
-              HelperFunctions.saveUserLoggedInSharedPreference(false);
-              print(
-                  HelperFunctions.getUserLoggedInSharedPreference().toString());
-              Navigator.pushReplacement(context, MaterialPageRoute(
-                  builder: (context) => Authenticate()
-              ));
-            },
+      drawer: Drawer(
+        child: ListView(
+          // Important: Remove any padding from the ListView.
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text('Drawer Header'),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+            ),
+            ListTile(
+              title: Text('Item 1'),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+            ListTile(
+              title: Text('Item 2'),
+              onTap: () {
+                // Update the state of the app.
+                // ...
+              },
+            ),
+          ],
+        ),
+      ),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverAppBar(
+            backgroundColor: Colors.blue,
+            expandedHeight: 200.0,
+            floating: false,
+            pinned: true,
+            actions: [
+              GestureDetector(
+                onTap: () {
+                  authMethods.signOut();
+                  HelperFunctions.saveUserLoggedInSharedPreference(false);
+                  print(HelperFunctions.getUserLoggedInSharedPreference()
+                      .toString());
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => Authenticate()));
+                },
+                child: Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Icon(Icons.exit_to_app)),
+              )
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              title: Text("Schatty"),
+              centerTitle: true,
+            ),
+          ),
+          SliverFillRemaining(
             child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Icon(Icons.exit_to_app)),
+              child: Scaffold(
+                backgroundColor: Color(0xfff0f2f2),
+                body: chatRoomList(),
+                floatingActionButton: FloatingActionButton(
+                  child: Icon(Icons.search),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(
+                            builder: (context) => SearchScreen()));
+                  },
+                ),
+              ),
+            ),
           )
         ],
       ),
-      body: chatRoomList(),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.search),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(
-              builder: (context) => SearchScreen()
-          ));
-        },
-      ),
-
     );
   }
 }
@@ -111,7 +155,7 @@ class ChatRoomTile extends StatelessWidget {
       },
       child: Container(color: Colors.black12,
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        margin: EdgeInsets.symmetric(vertical: 1),
+        margin: EdgeInsets.symmetric(vertical: 0),
         child: Row(
           children: [
             Container(

@@ -34,6 +34,8 @@ dependencies:
   firebase_messaging: ^6.0.15
   fluttertoast: ^4.0.1
   rsa_encrypt: ^1.0.4
+  encrypt: ^4.0.1
+  google_sign_in: ^4.4.6
 
 
 dev_dependencies:

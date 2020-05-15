@@ -67,8 +67,7 @@ class _ChatInstanceState extends State<ChatInstance> {
   //Initstate to get message from Firebase
   @override
   void initState() {
-    var userName = (HelperFunctions.getUserNameSharedPreference().then((
-        value) => print(value)));
+    HelperFunctions.getUserNameSharedPreference().then((value) => print(value));
     databaseMethods.getMessage(widget.chatRoomID).then((value) {
       setState(() {
         chatMessageStream = value;
@@ -144,7 +143,7 @@ class _ChatInstanceState extends State<ChatInstance> {
 
 Future<String> getDecryptText(String decryptText) async {
   keyPair = await futureKeyPair;
-  final text = await decrypt(decryptText, keyPair.privateKey);
+  final text = decrypt(decryptText, keyPair.privateKey);
   return text;
 }
 class MessageTile extends StatelessWidget {
@@ -163,11 +162,7 @@ class MessageTile extends StatelessWidget {
       margin: EdgeInsets.symmetric(vertical: 8),
       width: MediaQuery.of(context).size.width,
       alignment: isSentByOwner ? Alignment.centerRight : Alignment.centerLeft,
-      child: FutureBuilder(
-          future: getDecryptText(message).then((value) =>
-          decryptedMessage = value),
-          builder: (context, snapshot) {
-            Container(
+      child: Container(
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -187,9 +182,6 @@ class MessageTile extends StatelessWidget {
                 decryptedMessage != null ? decryptedMessage : "null",
                 style: TextStyle(color: Colors.white, fontSize: 17),
               ),
-            );
-            return Text(decryptedMessage);
-          }
       ),
     );
   }

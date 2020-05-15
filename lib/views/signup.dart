@@ -136,45 +136,42 @@ class _SignUpState extends State<SignUp> {
                   ),
                   SizedBox(height: 8,),
                   SizedBox(height: 8,),
-                  GestureDetector(
-                    onTap: () {
-                      signUP();
+                        MaterialButton(
+                          onPressed: () {
+                            signUP();
                     },
-                    child: Container(
-                      alignment: Alignment.center,
-                      width: MediaQuery
-                          .of(context)
-                          .size
-                          .width,
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                              colors: [
-                                const Color(0xff007EF4),
-                                const Color(0xff45b4e7)
-                              ]
-                          ),
-                          borderRadius: BorderRadius.circular(30)
-                      ),
-                      child: Text("Sign Up", style: mediumTextStyle()),
-                    ),
-                  ),
-                  SizedBox(height: 16,),
-                  Container(
-                    alignment: Alignment.center,
-                    width: MediaQuery
+                    color: Colors.blue,
+                    minWidth: MediaQuery
                         .of(context)
                         .size
                         .width,
                     padding: EdgeInsets.symmetric(vertical: 20),
-                    decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30)
+                    textColor: Colors.white,
+                    splashColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(40)),
+                    elevation: 4,
+                    child: Text(
+                        "Sign Up"
                     ),
-                    child: Text('Sign Up With Google', style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 18,
-                    ),),
+                  ),
+                  SizedBox(height: 16,),
+                  MaterialButton(
+                    onPressed: () {
+                      signInWithGoogle();
+                    },
+                    color: Colors.white,
+                    minWidth: MediaQuery
+                        .of(context)
+                        .size
+                        .width,
+                    textColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(40)),
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    splashColor: Colors.blue,
+                    elevation: 4,
+                    child: Text("Sign in with Google"),
                   ),
                   SizedBox(height: 16,),
                   Row(
@@ -204,5 +201,16 @@ class _SignUpState extends State<SignUp> {
         ),
       ),
     );
+  }
+
+  void signInWithGoogle() {
+    authMethods.signInWithGoogle().whenComplete(() {
+      String username = authMethods.googleSignIn.currentUser.displayName;
+      HelperFunctions.saveUserNameSharedPreference(username);
+      HelperFunctions.saveUserLoggedInSharedPreference(true);
+      Navigator.push(context, MaterialPageRoute(
+          builder: (context) => ChatRoom()
+      ));
+    });
   }
 }

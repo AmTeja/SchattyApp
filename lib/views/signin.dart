@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
@@ -27,6 +28,8 @@ class _SignInState extends State<SignIn> {
 
   TextEditingController emailTEC = new TextEditingController();
   TextEditingController passwordTEC = new TextEditingController();
+
+  GoogleSignIn _googleSignIn = new GoogleSignIn(scopes: ['email']);
 
   QuerySnapshot snapshotUserInfo;
 
@@ -123,42 +126,41 @@ class _SignInState extends State<SignIn> {
                 ),
               ),
               SizedBox(height: 8,),
-              GestureDetector(
-                onTap: () {
+              MaterialButton(
+                onPressed: () {
                   signIn();
                 },
-                child: Container(
-                  alignment: Alignment.center,
-                  width: MediaQuery
-                      .of(context)
-                      .size
-                      .width,
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          colors: [
-                            const Color(0xff007EF4),
-                            const Color(0xff2A75BC)
-                          ]
-                      ),
-                      borderRadius: BorderRadius.circular(30)
-                  ),
-                  child: Text("Sign In", style: mediumTextStyle()),
-                ),
-              ),
-              SizedBox(height: 16,),
-              Container(
-                alignment: Alignment.center,
-                width: MediaQuery.of(context).size.width,
+                color: Colors.blue,
+                minWidth: MediaQuery.of(context).size.width,
                 padding: EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30)
+                textColor: Colors.white,
+                splashColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
+                elevation: 4,
+                child: Text(
+                    "Sign in"
+                  ),
                 ),
-                child: Text('Sign In With Google',style: TextStyle(
-                  color: Colors.blue,
-                  fontSize: 18,
-                ),),
+//
+              SizedBox(height: 16,),
+              MaterialButton(
+                onPressed: () {
+                  signInWithGoogle();
+                },
+                color: Colors.white,
+                minWidth: MediaQuery
+                    .of(context)
+                    .size
+                    .width,
+                textColor: Colors.blue,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
+                padding: EdgeInsets.symmetric(vertical: 20),
+                splashColor: Colors.blue,
+                elevation: 4,
+                child: Text("Sign in with Google"),
+
               ),
               SizedBox(height: 16,),
               Row(
@@ -172,7 +174,7 @@ class _SignInState extends State<SignIn> {
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8),
                       child: Text("Join us now!", style: TextStyle(
-                          color: Colors.white,
+                          color: Colors.black,
                           fontSize: 18,
                           decoration: TextDecoration.underline
                       ),),
@@ -185,5 +187,16 @@ class _SignInState extends State<SignIn> {
         ),
       ),
     );
+  }
+
+  void signInWithGoogle() {
+    authMethods.signInWithGoogle().whenComplete(() {
+      String username = authMethods.googleSignIn.currentUser.displayName;
+      HelperFunctions.saveUserNameSharedPreference(username);
+      HelperFunctions.saveUserLoggedInSharedPreference(true);
+      Navigator.push(context, MaterialPageRoute(
+          builder: (context) => ChatRoom()
+      ));
+    });
   }
 }

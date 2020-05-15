@@ -7,4 +7,10 @@ Changelog:
     -Changed Colour Swatches.
 -13/05/2020
     -Added Forgot Password Feature
-    -
+-15/05/2020
+    -Revamped Chat Screen.
+    -Failed at implementing encryption.
+    -Add Sign in with google.
+    -Revamped Chat room.
+    -Added Drawer with nothing.
+    -Made buttons look good.

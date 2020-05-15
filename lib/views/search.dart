@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/services/database.dart';
-import 'package:schatty/views/chatinstance.dart';
+import 'package:schatty/views/chatinstancewithfuture.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -39,8 +39,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
       DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);
       Navigator.push(context, MaterialPageRoute(
-          builder: (context) => ChatInstance(chatRoomID, userName)
-      ));
+              builder: (context) => ChatScreen(chatRoomID, userName)));
     }
   }
 

@@ -25,8 +25,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
-    var userName = (HelperFunctions.getUserNameSharedPreference());
+    HelperFunctions.getUserNameSharedPreference();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
         chatMessageStream = val;
@@ -35,18 +34,25 @@ class _ChatScreenState extends State<ChatScreen> {
     super.initState();
   }
 
-  Future<String> getDataFromFuture(String message) async {
-    return await getDecryptedText(message);
-  }
+//  Future<String> getDataFromFuture(String message) async {
+//    print("Data Future");
+//    keyPair = await futureKeyPair;
+//    String decrypted;
+//    decrypted = decrypt(message, keyPair.privateKey);
+//    print(decrypted);
+//    return decrypted;
+//  }
 
   @override
   Widget build(BuildContext context) {
+    String chatWith = widget.userName;
+
     return Container(
       color: Colors.white,
       child: SafeArea(
         top: false,
         child: Scaffold(
-            appBar: AppBar(title: Text("Chats")),
+            appBar: AppBar(title: Text(chatWith)),
             body: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: Column(
@@ -58,19 +64,20 @@ class _ChatScreenState extends State<ChatScreen> {
                           builder: (context, snapshot) {
                             return snapshot.hasData
                                 ? ListView.builder(
-                                    reverse: true,
-                                    padding: EdgeInsets.only(top: 15),
-                                    itemCount: snapshot.data.documents.length,
-                                    itemBuilder: (context, index) {
-                                      return buildMessage(
-                                          snapshot.data.documents[index]
-                                              .data["message"],
-                                          snapshot.data.documents[index]
-                                                  .data["sendBy"] ==
-                                              Constants.ownerName);
-                                    },
-                                  )
-                                : Container();
+                                reverse: true,
+                                padding: EdgeInsets.only(top: 15),
+                                itemCount: snapshot.data.documents.length,
+                                itemBuilder: (context, index) {
+                                  return
+                                    buildMessage(
+                                        snapshot.data.documents[index]
+                                            .data["message"],
+                                        snapshot.data.documents[index]
+                                            .data["sendBy"] ==
+                                            Constants.ownerName,
+                                        snapshot.data.documents[index]
+                                            .data["time"]);
+                                }) : Container();
                           }),
                     ),
                   ),
@@ -131,11 +138,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   sendMessage() async {
     if (messageTEC.text.isNotEmpty) {
-      keyPair = await futureKeyPair;
-      String encryptedText = encrypt(messageTEC.text, keyPair.publicKey);
-      Map<String, String> messageMap = {
-        "message": encryptedText,
+//      keyPair = await futureKeyPair;
+//      String encryptedText = encrypt(messageTEC.text, keyPair.publicKey);
+      Map<String, dynamic> messageMap = {
+        "message": messageTEC.text,
         "sendBy": Constants.ownerName,
+        "time": DateTime
+            .now()
+            .millisecondsSinceEpoch,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
       messageTEC.text = "";
@@ -150,55 +160,48 @@ class _ChatScreenState extends State<ChatScreen> {
     return decrypted;
   }
 
-  buildMessage(String message, bool isMe) {
-    String decryptedText;
-    getDecryptedText(message).then((val) {
-      decryptedText = val;
-    });
-    final Widget msg = Padding(
-      padding: EdgeInsets.all(8),
-      child: Container(
-        margin: isMe
-            ? EdgeInsets.only(top: 8, bottom: 8, left: 80)
-            : EdgeInsets.only(top: 8, bottom: 8, right: 80),
-        padding: EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-        width: MediaQuery.of(context).size.width * 0.75,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: isMe
-                    ? [const Color(0xffff758c), const Color(0xffff7eb3)]
-                    : [const Color(0xff93a5cf), const Color(0xff93a5cf)]),
-            borderRadius: isMe
-                ? BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    topRight: Radius.circular(15),
-                    bottomLeft: Radius.circular(15))
-                : BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    topRight: Radius.circular(15),
-                    bottomRight: Radius.circular(15))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            FutureBuilder(
-                future: getDataFromFuture(message),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
+  buildMessage(String message, bool isMe, int time) {
+    final Widget msg = SafeArea(
+        child: Container(
+          padding: EdgeInsets.only(
+              left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+          margin: EdgeInsets.symmetric(vertical: 8),
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
+          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+          child:
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: isMe
+                        ? [const Color(0xffff758c), const Color(0xffff7eb3)]
+                        : [Color(0xff93a5cf), const Color(0xff93a5cf)]),
+                borderRadius: isMe
+                    ? BorderRadius.only(
+                    topLeft: Radius.circular(23),
+                    topRight: Radius.circular(23),
+                    bottomLeft: Radius.circular(23))
+                    : BorderRadius.only(
+                    topLeft: Radius.circular(23),
+                    topRight: Radius.circular(23),
+                    bottomRight: Radius.circular(23))),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
                     Text(
-                      decryptedText,
-                      style: TextStyle(
-                        color: isMe ? Colors.white60 : Colors.blueGrey,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    );
-                  }
-                  return CircularProgressIndicator();
-                })
+                        message,
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        )),
           ],
         ),
       ),
-    );
+        ));
     return msg;
   }
 }
