@@ -67,23 +67,70 @@ class _ChatRoomState extends State<ChatRoom> {
           padding: EdgeInsets.zero,
           children: <Widget>[
             DrawerHeader(
-              child: Text('Drawer Header'),
+        child: Row(
+          children: <Widget>[
+          Container(
+          height: 80,
+          width: 80,
+          decoration: BoxDecoration(
+              image: DecorationImage(
+                  image: ExactAssetImage("assets/images/username.png"),
+                  fit: BoxFit.cover
+              )
+          ),
+        ),
+        SizedBox(
+          width: 50,
+        ),
+        Container(
+          alignment: Alignment.center,
+          child: Text(Constants.ownerName,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 22,
+              color: Colors.white,
+
+            ),),
+        ),
+        ],
+      ),
               decoration: BoxDecoration(
                 color: Colors.blue,
               ),
             ),
-            ListTile(
-              title: Text('Item 1'),
+    ListTile(
+    title: Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: <Widget>[
+    Text('Logout',
+    style: TextStyle(
+    fontSize: 16,
+    ),),
+    Container(
+    alignment: Alignment.centerRight,
+    padding: EdgeInsets.symmetric(horizontal: 10),
+    child: Icon(Icons.exit_to_app)),
+    ListTile(
+    title: Row(
+    crossAxisAlignment: CrossAxisAlignment.center,
+    children: <Widget>[
+    Text('Logout',
+    style: TextStyle(
+    fontSize: 16,
+    ),),
+    Container(
+    alignment: Alignment.centerRight,
+    padding: EdgeInsets.symmetric(horizontal: 10),
+    child: Icon(Icons.exit_to_app)),
+    ],
+    ),
               onTap: () {
-                // Update the state of the app.
-                // ...
-              },
-            ),
-            ListTile(
-              title: Text('Item 2'),
-              onTap: () {
-                // Update the state of the app.
-                // ...
+    authMethods.signOut();
+    HelperFunctions.saveUserLoggedInSharedPreference(false);
+    print(HelperFunctions.getUserLoggedInSharedPreference()
+        .toString());
+    Navigator.pushReplacement(context,
+    MaterialPageRoute(builder: (context) => Authenticate()));
               },
             ),
           ],
@@ -96,21 +143,6 @@ class _ChatRoomState extends State<ChatRoom> {
             expandedHeight: 200.0,
             floating: false,
             pinned: true,
-            actions: [
-              GestureDetector(
-                onTap: () {
-                  authMethods.signOut();
-                  HelperFunctions.saveUserLoggedInSharedPreference(false);
-                  print(HelperFunctions.getUserLoggedInSharedPreference()
-                      .toString());
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => Authenticate()));
-                },
-                child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Icon(Icons.exit_to_app)),
-              )
-            ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text("Schatty"),
               centerTitle: true,

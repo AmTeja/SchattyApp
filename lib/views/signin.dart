@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
@@ -34,8 +35,10 @@ class _SignInState extends State<SignIn> {
   QuerySnapshot snapshotUserInfo;
 
   bool isLoading = false;
+  bool correctPass = false;
 
   signIn() {
+    correctPass = true;
     if (formKey.currentState.validate()) {
       print("Validated");
       HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
@@ -53,16 +56,29 @@ class _SignInState extends State<SignIn> {
       authMethods.signInWithEmailAndPassword(emailTEC.text, passwordTEC.text)
           .then((value) {
         if (value != null) {
+          correctPass = true;
           HelperFunctions.saveUserLoggedInSharedPreference(true);
           print("Logged In true");
           Navigator.pushReplacement(context, MaterialPageRoute(
             builder: (context) => ChatRoom(),
           ));
+        } else {
+          Fluttertoast.showToast(
+            msg: "Incorrect Password, Try again!",
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+          );
         }
       });
     }
   }
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    correctPass = false;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,9 +115,8 @@ class _SignInState extends State<SignIn> {
                     TextFormField(
                         obscureText: true,
                         validator: (val) {
-                          return val.length > 6
-                              ? null
-                              : "Please use a password with more than 6 characters.";
+                          return passwordTEC.text.length >= 8 ? null
+                              : "Incorrect Password";
                         },
                         controller: passwordTEC,
                         style: simpleTextStyle(),

@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:rsa_encrypt/rsa_encrypt.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/services/RSAEncryption.dart';
 import 'package:schatty/services/database.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -152,13 +150,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  getDecryptedText(String encryptedText) async {
-    keyPair = await futureKeyPair;
-    String decrypted;
-    decrypted = decrypt(encryptedText, keyPair.privateKey);
-    print(decrypted);
-    return decrypted;
-  }
 
   buildMessage(String message, bool isMe, int time) {
     final Widget msg = SafeArea(

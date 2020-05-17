@@ -3,7 +3,6 @@ import 'package:schatty/helper/authenticate.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/views/chatsroom.dart';
 
-import 'services/RSAEncryption.dart';
 
 void main() {
   runApp(MyApp());
@@ -17,12 +16,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
 
   bool isUserLoggedIn = false;
-  RSAEncryption encryption = new RSAEncryption();
 
   @override
   void initState() {
     getLoggedInState();
-    futureKeyPair = encryption.getKeyPair();
     super.initState();
   }
 

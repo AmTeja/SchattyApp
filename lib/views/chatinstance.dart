@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:rsa_encrypt/rsa_encrypt.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/services/RSAEncryption.dart';
 import 'package:schatty/services/database.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -23,7 +21,6 @@ class _ChatInstanceState extends State<ChatInstance> {
   TextEditingController messageTEC = TextEditingController();
 
   Stream chatMessageStream;
-  RsaKeyHelper rsaKeyHelper = RsaKeyHelper();
 
   //Chat Stream Widget
   Widget chatMessageList() {
@@ -52,10 +49,8 @@ class _ChatInstanceState extends State<ChatInstance> {
   sendMessage() async {
     print("function called");
     if (messageTEC.text.isNotEmpty) {
-      keyPair = await futureKeyPair;
-      String message = encrypt(messageTEC.text, keyPair.publicKey);
       Map<String, dynamic> messageMap = {
-        "message": message,
+        "message": messageTEC.text,
         "sendBy": Constants.ownerName,
         "time": DateTime.now().millisecondsSinceEpoch
       };
@@ -141,11 +136,6 @@ class _ChatInstanceState extends State<ChatInstance> {
   }
 }
 
-Future<String> getDecryptText(String decryptText) async {
-  keyPair = await futureKeyPair;
-  final text = decrypt(decryptText, keyPair.privateKey);
-  return text;
-}
 class MessageTile extends StatelessWidget {
   final String
   message;

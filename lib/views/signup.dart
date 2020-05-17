@@ -21,6 +21,11 @@ class _SignUpState extends State<SignUp> {
 
   bool isLoading = false;
 
+  bool eightChars = false;
+  bool specialChar = false;
+  bool upperCaseChar = false;
+  bool number = false;
+
   AuthMethods authMethods = new AuthMethods();
   DatabaseMethods databaseMethods = new DatabaseMethods();
   Constants constants = new Constants();
@@ -64,6 +69,26 @@ class _SignUpState extends State<SignUp> {
         ));
       });
     }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    passwordTEC.addListener(() {
+      setState(() {
+        eightChars = passwordTEC.text.length >= 8;
+        number = passwordTEC.text.contains(RegExp(r'\d'), 0);
+        upperCaseChar = passwordTEC.text.contains((new RegExp(r'[A-Z')), 0);
+        specialChar = passwordTEC.text.isNotEmpty &&
+            !passwordTEC.text.contains(RegExp(r'^[\w&.-]+$'), 0);
+      });
+    });
+  }
+
+  bool ifAllValid() {
+    return eightChars && number && specialChar && upperCaseChar;
   }
 
   @override
@@ -123,9 +148,9 @@ class _SignUpState extends State<SignUp> {
                         TextFormField(
                             obscureText: true,
                             validator: (val) {
-                              return val.length > 6
-                                  ? null
-                                  : "Please use a password with more than 6 characters.";
+                                    return ifAllValid()
+                                        ? null
+                                  : "Please use a password with more than 8 characters and with alteast one Upperchar and number and special char";
                             },
                             controller: passwordTEC,
                             style: simpleTextStyle(),
