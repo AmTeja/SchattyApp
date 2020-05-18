@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:schatty/views/signin.dart';
-import 'package:schatty/views/signup.dart';
+import 'package:schatty/helper/helperfunctions.dart';
+import 'package:schatty/services/auth.dart';
+
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Authenticate/signin.dart';
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Authenticate/signup.dart';
+
+import '../MainChatsRoom.dart';
 
 class AuthHome extends StatefulWidget {
   @override
@@ -40,7 +45,7 @@ class _AuthHomeState extends State<AuthHome> {
     return OutlineButton(
       splashColor: Colors.grey,
       onPressed: () {
-        Navigator.pushReplacement(
+        Navigator.push(
             context, MaterialPageRoute(builder: (context) => SignIn()));
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
@@ -76,7 +81,7 @@ class _AuthHomeState extends State<AuthHome> {
     return OutlineButton(
       splashColor: Colors.grey,
       onPressed: () {
-        Navigator.pushReplacement(
+        Navigator.push(
             context, MaterialPageRoute(builder: (context) => SignUp()));
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
@@ -111,7 +116,9 @@ class _AuthHomeState extends State<AuthHome> {
   Widget googleButton() {
     return OutlineButton(
       splashColor: Colors.grey,
-      onPressed: () {},
+      onPressed: () {
+        signInWithGoogle();
+      },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
       highlightElevation: 1,
       borderSide: BorderSide(color: Colors.grey),
@@ -139,6 +146,21 @@ class _AuthHomeState extends State<AuthHome> {
         ),
       ),
     );
+  }
+
+  AuthMethods authMethods = new AuthMethods();
+  HelperFunctions helperFunctions = new HelperFunctions();
+
+  void signInWithGoogle() {
+    authMethods.signInWithGoogle().then((val) {
+      if (val != null) {
+        String username = authMethods.googleSignIn.currentUser.displayName;
+        HelperFunctions.saveUserNameSharedPreference(username);
+        HelperFunctions.saveUserLoggedInSharedPreference(true);
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => ChatRoom()));
+      } else {}
+    });
   }
 
   @override

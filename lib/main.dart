@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/views/StartScreen.dart';
+import 'package:schatty/views/editProfile.dart';
 
 void main() {
   runApp(MyApp());
+
+//  SystemChrome.setEnabledSystemUIOverlays([]);
 }
 
 class MyApp extends StatefulWidget {
@@ -12,21 +14,18 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
   bool isUserLoggedIn = false;
-
+  var counter = HelperFunctions.getUserFirstTime();
   @override
   void initState() {
-    getLoggedInState();
+    getState();
     super.initState();
   }
 
-
-  getLoggedInState() async {
+  getState() async {
     await HelperFunctions.getUserLoggedInSharedPreference().then((value) {
       setState(() {
         isUserLoggedIn = value;
-        print(isUserLoggedIn);
       });
     });
   }
@@ -37,28 +36,14 @@ class _MyAppState extends State<MyApp> {
       title: 'Schatty',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Color(0xffff758c),
+        primaryColor: Colors.blue,
         scaffoldBackgroundColor: Color(0xffffffff),
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: WelcomeScreen(),
-//        home: isUserLoggedIn != null
-//            ? (isUserLoggedIn ? ChatRoom() : Authenticate())
-//            : Authenticate()
+      home: EditProfile(),
+//      home: isUserLoggedIn!= null ? (isUserLoggedIn ? ChatRoom() : AuthHome()) : StartScreen(),
     );
-  }
-}
-
-class NullWidget extends StatefulWidget {
-  @override
-  _NullWidgetState createState() => _NullWidgetState();
-}
-
-class _NullWidgetState extends State<NullWidget> {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
   }
 }
 

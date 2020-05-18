@@ -30,13 +30,13 @@ InputDecoration textFieldInputDecoration(String hintText)
 TextStyle simpleTextStyle()  {
   return TextStyle(
     color: Colors.black,
-    fontSize: 16,
+    fontSize: 18,
   );
 }
 
 TextStyle mediumTextStyle() {
   return TextStyle(
-    color: Colors.white,
+    color: Colors.black,
     fontSize: 18,
   );
 }

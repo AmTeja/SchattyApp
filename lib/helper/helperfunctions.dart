@@ -9,9 +9,9 @@ class HelperFunctions {
 
   //Saving data to SharedPreference
 
-  static Future<void> saveUserFirstTime(bool isFirstTime) async {
+  static Future<void> saveUserFirstTime(int isFirstTime) async {
     final SharedPreferences prefers = await SharedPreferences.getInstance();
-    return await prefers.setBool(sharedPreferenceFirstTime, isFirstTime);
+    return await prefers.setInt(sharedPreferenceFirstTime, isFirstTime);
   }
 
   static Future<void> saveUserLoggedInSharedPreference(
@@ -33,9 +33,9 @@ class HelperFunctions {
 
   //Getting data from Shared Preference
 
-  static Future<bool> getUserFirstTime() async {
+  static Future<int> getUserFirstTime() async {
     final SharedPreferences prefers = await SharedPreferences.getInstance();
-    return prefers.getBool(sharedPreferenceFirstTime);
+    return prefers.getInt(sharedPreferenceFirstTime);
   }
 
   static Future<bool> getUserLoggedInSharedPreference() async {

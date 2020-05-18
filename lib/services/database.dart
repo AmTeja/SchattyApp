@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:schatty/model/user.dart';
 
 class DatabaseMethods {
   getUserByUserName(String username) async {
@@ -69,6 +69,11 @@ class DatabaseMethods {
     else {
       return null;
     }
+  }
+
+  updateProfilePicture(picUrl) async {
+    var userInfo = User();
+    userInfo.profileImageUrl = picUrl;
   }
 
   getMessage(String chatRoomID) async {

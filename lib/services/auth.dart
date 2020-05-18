@@ -75,7 +75,7 @@ class AuthMethods {
 
       return 'signInWithGoogle succeeded: $user';
     } catch (e) {
-      print(e.toString());
+      //print(e.toString());
     }
   }
 

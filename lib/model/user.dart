@@ -1,7 +1,8 @@
 class User{
 
   final String userId;
-  final String name, profileImageUrl, email, bio;
+  final String name, email, bio;
+  String profileImageUrl;
 
   User({
     this.userId,

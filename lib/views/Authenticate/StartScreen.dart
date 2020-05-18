@@ -1,14 +1,14 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 
-import 'NewSignIn.dart';
+import 'AuthHome.dart';
 
-class WelcomeScreen extends StatefulWidget {
+class StartScreen extends StatefulWidget {
   @override
-  _WelcomeScreenState createState() => _WelcomeScreenState();
+  _StartScreenState createState() => _StartScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> {
+class _StartScreenState extends State<StartScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,15 +20,24 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           child: Center(
             child: FadeAnimatedTextKit(
               duration: Duration(milliseconds: 2000),
-              text: ["Hello.", "Tap to continue."],
+              text: [
+                "Hello.",
+                "Welcome To Schatty",
+                "Tap!",
+              ],
               textStyle: TextStyle(
                 color: Colors.white,
                 fontSize: 50,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.normal,
               ),
               textAlign: TextAlign.center,
+              displayFullTextOnTap: false,
               isRepeatingAnimation: false,
-              onFinished: pushPage(context),
+              onTap: () {
+                setState(() {
+                  pushPage(context);
+                });
+              },
             ),
           ),
         )),

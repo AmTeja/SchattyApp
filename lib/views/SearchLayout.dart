@@ -38,7 +38,9 @@ class _SearchScreenState extends State<SearchScreen> {
       };
 
       DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);
-      Navigator.push(context, MaterialPageRoute(
+      Navigator.push(
+          context,
+          MaterialPageRoute(
               builder: (context) => ChatScreen(chatRoomID, userName)));
     }
   }
@@ -64,18 +66,19 @@ class _SearchScreenState extends State<SearchScreen> {
           Spacer(),
           GestureDetector(
             onTap: () {
-              print("clicked");
               createChatInstance(
                 userName: userName,
               );
             },
             child: Container(
               decoration: BoxDecoration(
-                  color: Colors.blue, borderRadius: BorderRadius.circular(30)),
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(30),
+              ),
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 "Message",
-                style: mediumTextStyle(),
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
           )
@@ -87,14 +90,14 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget searchList() {
     return searchSnapshot != null
         ? ListView.builder(
-        itemCount: searchSnapshot.documents.length,
-        shrinkWrap: true,
-        itemBuilder: (context, index) {
-          return searchTile(
-            userName: searchSnapshot.documents[index].data["username"],
-            userEmail: searchSnapshot.documents[index].data["email"],
-          );
-        })
+            itemCount: searchSnapshot.documents.length,
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              return searchTile(
+                userName: searchSnapshot.documents[index].data["username"],
+                userEmail: searchSnapshot.documents[index].data["email"],
+              );
+            })
         : Container();
   }
 
@@ -136,10 +139,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         height: 40,
                         width: 40,
                         decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [
-                              Colors.black,
-                              Colors.black
-                            ]),
+                            gradient: LinearGradient(
+                                colors: [Colors.black, Colors.black]),
                             borderRadius: BorderRadius.circular(40)),
                         padding: EdgeInsets.all(12),
                         child: Image.asset("assets/images/search_white.png")),
@@ -158,8 +159,7 @@ class _SearchScreenState extends State<SearchScreen> {
 getChatRoomID(String a, String b) {
   if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
     return "$b\_$a";
-  }
-  else {
+  } else {
     return "$a\_$b";
   }
 }

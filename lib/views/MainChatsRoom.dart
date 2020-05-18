@@ -12,10 +12,10 @@ import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
-import 'package:schatty/views/NewSignIn.dart';
-import 'package:schatty/views/SearchLayout.dart';
+import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/widget.dart';
 
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Authenticate/AuthHome.dart';
 
 class ChatRoom extends StatefulWidget {
   @override
@@ -212,8 +212,7 @@ class _ChatRoomState extends State<ChatRoom> {
             child: Icon(Icons.search),
             onPressed: () {
               Navigator.push(context,
-                  MaterialPageRoute(
-                      builder: (context) => SearchScreen()));
+                  MaterialPageRoute(builder: (context) => NewSearch()));
             },
           ),
         ),
