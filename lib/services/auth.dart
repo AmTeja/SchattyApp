@@ -52,6 +52,7 @@ class AuthMethods {
     }
   }
 
+  // ignore: missing_return
   Future<String> signInWithGoogle() async {
     try {
       final GoogleSignInAccount googleSignInAccount =

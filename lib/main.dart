@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/authenticate.dart';
 import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/views/chatsroom.dart';
-
+import 'package:schatty/views/MainChatsRoom.dart';
 
 void main() {
   runApp(MyApp());

@@ -4,7 +4,7 @@ import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
-import 'package:schatty/views/chatsroom.dart';
+import 'package:schatty/views/MainChatsRoom.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SignUp extends StatefulWidget {

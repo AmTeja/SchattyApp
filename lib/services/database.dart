@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 
 class DatabaseMethods {
   getUserByUserName(String username) async {
@@ -40,6 +42,35 @@ class DatabaseMethods {
     });
   }
 
+
+  Future addImagePathToDatabase(String url) async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final FirebaseUser user = await auth.currentUser();
+    final uid = user.uid;
+    Map<String, dynamic> pathMap = {
+      "imagePath": url
+    };
+    await Firestore.instance.collection("imageURLs")
+        .document(uid).setData(pathMap).catchError((e) {
+      print(e.toString());
+    });
+  }
+
+  Future getImageURLSnapShot() async {
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final FirebaseUser user = await auth.currentUser();
+    final uid = user.uid;
+    final snap = await Firestore.instance.collection("imageURLs")
+        .document(uid)
+        .get();
+    if (snap.exists) {
+      return snap.data["imagePath"];
+    }
+    else {
+      return null;
+    }
+  }
+
   getMessage(String chatRoomID) async {
     return Firestore.instance.collection("ChatRoom")
         .document(chatRoomID)
@@ -53,4 +84,6 @@ class DatabaseMethods {
     return Firestore.instance.collection("ChatRoom")
         .where("users", arrayContains: userName).snapshots();
   }
+
+
 }

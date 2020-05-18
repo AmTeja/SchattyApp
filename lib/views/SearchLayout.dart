@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/services/database.dart';
-import 'package:schatty/views/chatinstancewithfuture.dart';
+import 'package:schatty/views/MainChatScreenInstance.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SearchScreen extends StatefulWidget {

@@ -2,11 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
-import 'package:schatty/views/chatsroom.dart';
+import 'package:schatty/views/MainChatsRoom.dart';
 import 'package:schatty/views/forgetpassword.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -29,8 +28,6 @@ class _SignInState extends State<SignIn> {
 
   TextEditingController emailTEC = new TextEditingController();
   TextEditingController passwordTEC = new TextEditingController();
-
-  GoogleSignIn _googleSignIn = new GoogleSignIn(scopes: ['email']);
 
   QuerySnapshot snapshotUserInfo;
 

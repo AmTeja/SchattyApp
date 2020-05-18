@@ -21,8 +21,11 @@ class _ChatScreenState extends State<ChatScreen> {
   DatabaseMethods databaseMethods = new DatabaseMethods();
   Stream chatMessageStream;
 
+  DateTime lastAccessedTime;
+
   @override
   void initState() {
+    lastAccessedTime = DateTime.now();
     HelperFunctions.getUserNameSharedPreference();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
@@ -44,7 +47,6 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     String chatWith = widget.userName;
-
     return Container(
       color: Colors.white,
       child: SafeArea(
