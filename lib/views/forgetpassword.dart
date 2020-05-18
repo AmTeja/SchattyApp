@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:schatty/helper/authenticate.dart';
 import 'package:schatty/services/database.dart';
+import 'package:schatty/views/NewSignIn.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -30,7 +30,7 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           toastLength: Toast.LENGTH_LONG,
           gravity: ToastGravity.CENTER);
       Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => Authenticate()));
+          context, MaterialPageRoute(builder: (context) => AuthHome()));
     }
   }
 

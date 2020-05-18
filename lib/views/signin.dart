@@ -10,11 +10,7 @@ import 'package:schatty/views/forgetpassword.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SignIn extends StatefulWidget {
-
-  final Function toggle;
-
-  SignIn(this.toggle);
-
+  SignIn();
   @override
   _SignInState createState() => _SignInState();
 }
@@ -32,10 +28,8 @@ class _SignInState extends State<SignIn> {
   QuerySnapshot snapshotUserInfo;
 
   bool isLoading = false;
-  bool correctPass = false;
 
   signIn() {
-    correctPass = true;
     if (formKey.currentState.validate()) {
       print("Validated");
       HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
@@ -53,7 +47,6 @@ class _SignInState extends State<SignIn> {
       authMethods.signInWithEmailAndPassword(emailTEC.text, passwordTEC.text)
           .then((value) {
         if (value != null) {
-          correctPass = true;
           HelperFunctions.saveUserLoggedInSharedPreference(true);
           print("Logged In true");
           Navigator.pushReplacement(context, MaterialPageRoute(
@@ -74,19 +67,12 @@ class _SignInState extends State<SignIn> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    correctPass = false;
   }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       //appBar: appBarMain(context),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: ExactAssetImage("assets/images/loginbg.png"),
-            fit: BoxFit.cover,
-          ),
-        ),
         alignment: Alignment.bottomCenter,
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 24),
@@ -181,7 +167,6 @@ class _SignInState extends State<SignIn> {
                   Text("Not an user? ", style: mediumTextStyle(),),
                   GestureDetector(
                     onTap: () {
-                      widget.toggle();
                     },
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8),

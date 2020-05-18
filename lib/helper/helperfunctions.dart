@@ -5,8 +5,14 @@ class HelperFunctions {
   static String sharedPreferenceUserLoggedInKey = "LOGGEDIN";
   static String sharedPreferenceUserNameKey = "KEYUSERNAME";
   static String sharedPreferenceUserEmailKey = "KEYUSEREMAIL";
+  static String sharedPreferenceFirstTime = "FIRSTTIME";
 
   //Saving data to SharedPreference
+
+  static Future<void> saveUserFirstTime(bool isFirstTime) async {
+    final SharedPreferences prefers = await SharedPreferences.getInstance();
+    return await prefers.setBool(sharedPreferenceFirstTime, isFirstTime);
+  }
 
   static Future<void> saveUserLoggedInSharedPreference(
       bool isUserLoggedIn) async {
@@ -26,6 +32,11 @@ class HelperFunctions {
   }
 
   //Getting data from Shared Preference
+
+  static Future<bool> getUserFirstTime() async {
+    final SharedPreferences prefers = await SharedPreferences.getInstance();
+    return prefers.getBool(sharedPreferenceFirstTime);
+  }
 
   static Future<bool> getUserLoggedInSharedPreference() async {
     final SharedPreferences prefers = await SharedPreferences.getInstance();

@@ -9,10 +9,6 @@ import 'package:schatty/widgets/widget.dart';
 
 class SignUp extends StatefulWidget {
 
-  final Function toggle;
-
-  SignUp(this.toggle);
-
   @override
   _SignUpState createState() => _SignUpState();
 }
@@ -205,7 +201,6 @@ class _SignUpState extends State<SignUp> {
                       Text("Already an user? ", style: mediumTextStyle(),),
                       GestureDetector(
                         onTap: () {
-                          widget.toggle();
                         },
                         child: Container(
                           padding: EdgeInsets.symmetric(vertical: 8),

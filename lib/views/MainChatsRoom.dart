@@ -7,12 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
-import 'package:schatty/helper/authenticate.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
+import 'package:schatty/views/NewSignIn.dart';
 import 'package:schatty/views/SearchLayout.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -42,7 +42,7 @@ class _ChatRoomState extends State<ChatRoom> {
     HelperFunctions.saveUserLoggedInSharedPreference(false);
     print(HelperFunctions.getUserLoggedInSharedPreference().toString());
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => Authenticate()));
+        context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
 
   Future getImage() async {

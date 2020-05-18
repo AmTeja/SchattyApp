@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:schatty/helper/authenticate.dart';
 import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/views/MainChatsRoom.dart';
+import 'package:schatty/views/StartScreen.dart';
 
 void main() {
   runApp(MyApp());
@@ -22,6 +21,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
   }
 
+
   getLoggedInState() async {
     await HelperFunctions.getUserLoggedInSharedPreference().then((value) {
       setState(() {
@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Schatty',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primaryColor: Color(0xffff758c),
@@ -42,9 +42,10 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-        home: isUserLoggedIn != null
-            ? (isUserLoggedIn ? ChatRoom() : Authenticate())
-            : Authenticate()
+      home: WelcomeScreen(),
+//        home: isUserLoggedIn != null
+//            ? (isUserLoggedIn ? ChatRoom() : Authenticate())
+//            : Authenticate()
     );
   }
 }
