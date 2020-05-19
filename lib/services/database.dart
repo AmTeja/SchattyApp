@@ -42,38 +42,27 @@ class DatabaseMethods {
     });
   }
 
-
-  Future addImagePathToDatabase(String url) async {
-    final FirebaseAuth auth = FirebaseAuth.instance;
-    final FirebaseUser user = await auth.currentUser();
-    final uid = user.uid;
-    Map<String, dynamic> pathMap = {
-      "imagePath": url
-    };
-    await Firestore.instance.collection("imageURLs")
-        .document(uid).setData(pathMap).catchError((e) {
-      print(e.toString());
-    });
-  }
-
-  Future getImageURLSnapShot() async {
-    final FirebaseAuth auth = FirebaseAuth.instance;
-    final FirebaseUser user = await auth.currentUser();
-    final uid = user.uid;
-    final snap = await Firestore.instance.collection("imageURLs")
-        .document(uid)
-        .get();
-    if (snap.exists) {
-      return snap.data["imagePath"];
-    }
-    else {
-      return null;
-    }
-  }
-
   updateProfilePicture(picUrl) async {
     var userInfo = User();
     userInfo.profileImageUrl = picUrl;
+
+    await FirebaseAuth.instance.currentUser().then((user) {
+      Firestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: user.uid)
+          .getDocuments()
+          .then((docs) {
+        Firestore.instance
+            .document("users/${docs.documents[0].documentID}")
+            .updateData({'photoURL': picUrl}).then((val) {
+          print('Updated');
+        }).catchError((onError) {
+          print(onError);
+        }).catchError((onError) {
+          print(onError);
+        });
+      });
+    });
   }
 
   getMessage(String chatRoomID) async {

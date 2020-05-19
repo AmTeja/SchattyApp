@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/editProfile.dart';
 
 void main() {
@@ -42,7 +41,7 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: AuthHome(),
+      home: EditProfile(),
 //      home: isUserLoggedIn!= null ? (isUserLoggedIn ? ChatRoom() : AuthHome()) : StartScreen(),
     );
   }

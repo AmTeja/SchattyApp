@@ -1,9 +1,11 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:schatty/services/database.dart';
 
 class EditProfile extends StatefulWidget {
   @override
@@ -12,6 +14,22 @@ class EditProfile extends StatefulWidget {
 
 class _EditProfileState extends State<EditProfile> {
   File newProfilePic;
+  String profilePicURL;
+
+  DatabaseMethods databaseMethods = new DatabaseMethods();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    FirebaseAuth.instance.currentUser().then((user) {
+      setState(() {
+        profilePicURL = user.photoUrl;
+      });
+    }).catchError((onError) {
+      print(onError);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +55,10 @@ class _EditProfileState extends State<EditProfile> {
                     width: 250,
                     height: 250,
                     child: Image(
-                      image: AssetImage(
-                        "assets/images/username.png",
+                      image: profilePicURL != null
+                          ? NetworkImage(profilePicURL)
+                          : AssetImage(
+                              "assets/images/username.png",
                       ),
                       fit: BoxFit.cover,
                     ),
@@ -90,6 +110,7 @@ class _EditProfileState extends State<EditProfile> {
     var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
       newProfilePic = tempPic;
+      uploadImage();
     });
   }
 
@@ -103,5 +124,6 @@ class _EditProfileState extends State<EditProfile> {
     StorageTaskSnapshot snapshotTask = await task.onComplete;
     var downloadUrl = snapshotTask.ref.getDownloadURL();
     String url = downloadUrl.toString();
+    databaseMethods.updateProfilePicture(url);
   }
 }

@@ -3,6 +3,7 @@ import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/views/Authenticate/signin.dart';
 import 'package:schatty/views/Authenticate/signup.dart';
+
 import '../MainChatsRoom.dart';
 
 
@@ -20,12 +21,12 @@ class _AuthHomeState extends State<AuthHome> {
         decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [
-                Color(0xFF000000),
-                Color(0xFF272626)
-              ],
+            Color.fromARGB(255, 0, 0, 0),
+            Color.fromARGB(100, 39, 38, 38)
+          ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              tileMode: TileMode.mirror,
+//              tileMode: TileMode.mirror,
             )
         ),
         child: Center(
@@ -38,7 +39,7 @@ class _AuthHomeState extends State<AuthHome> {
                 boxShadow: [
                   new BoxShadow(
 //                      color: Colors.red,
-                    color: Color.fromARGB(85, 0, 0, 0),
+                    color: Color.fromARGB(217, 0, 0, 0),
                     offset: new Offset(2, 3),
                     blurRadius: 5,
                     spreadRadius: 6,
@@ -46,7 +47,10 @@ class _AuthHomeState extends State<AuthHome> {
                 ],
                 borderRadius: BorderRadius.circular(46),
                 gradient: LinearGradient(
-                  colors: [Color(0xFF0E0E0E), Color(0xFF2E2D2D)],
+                  colors: [
+                    Color.fromARGB(255, 14, 14, 14),
+                    Color.fromARGB(100, 46, 45, 45)
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -56,7 +60,7 @@ class _AuthHomeState extends State<AuthHome> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Container(
-                    padding: EdgeInsets.only(bottom: 60),
+                    padding: EdgeInsets.only(bottom: 100, right: 0),
                     alignment: Alignment.topCenter,
                     child: Text("Schatty",
                       textAlign: TextAlign.left,
@@ -66,7 +70,6 @@ class _AuthHomeState extends State<AuthHome> {
                         fontFamily: 'North Regular',
                       ),),
                   ),
-                  SizedBox(height: 20),
                   signInButton(),
                   SizedBox(
                     height: 20,
@@ -76,6 +79,7 @@ class _AuthHomeState extends State<AuthHome> {
                     height: 20,
                   ),
                   googleButton(),
+                  SizedBox(height: 100,)
                 ],
               ),
             ),
@@ -124,31 +128,33 @@ class _AuthHomeState extends State<AuthHome> {
   }
 
   Widget signUpButton() {
-    return OutlineButton(
-      splashColor: Colors.grey,
+    return MaterialButton(
+      splashColor: Colors.black26,
       onPressed: () {
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => SignUp()));
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-      highlightElevation: 1,
-      borderSide: BorderSide(color: Colors.grey),
+      color: Colors.white,
+      highlightElevation: 3,
+
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(17, 10, 17, 10),
+        padding: const EdgeInsets.fromLTRB(18, 18, 80, 18),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
               Icons.account_circle,
-              color: Colors.white,
+              color: Colors.black,
             ),
+            SizedBox(width: 40,),
             Padding(
-              padding: const EdgeInsets.only(left: 10),
+              padding: const EdgeInsets.only(left: 0),
               child: Text(
-                "Signup with Email",
+                "Sign Up",
                 style: TextStyle(
-                  color: Colors.grey,
+                  color: Colors.black54,
                   fontSize: 20,
                 ),
               ),

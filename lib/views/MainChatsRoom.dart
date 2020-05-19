@@ -1,10 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:schatty/helper/constants.dart';
@@ -52,25 +50,11 @@ class _ChatRoomState extends State<ChatRoom> {
         _image = image;
         print('Image path: $_image');
       });
-      uploadImage();
     } else {
       return null;
     }
   }
 
-  Future uploadImage() async {
-    String fileName = Constants.ownerName + basename(_image.path);
-    StorageReference storageReference = FirebaseStorage.instance.ref().child(
-        fileName);
-    StorageUploadTask storageUploadTask = storageReference.putFile(_image);
-    imageUrl = await (await storageUploadTask.onComplete).ref.getDownloadURL();
-    url = imageUrl.toString();
-    await databaseMethods.addImagePathToDatabase(url).whenComplete(() {
-      setState(() {
-        Fluttertoast.showToast(msg: "Image updated");
-      });
-    });
-  }
 
 
   Widget mainDrawer(BuildContext context) {
@@ -107,13 +91,13 @@ class _ChatRoomState extends State<ChatRoom> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22,
-                      color: Colors.black,
+                      color: Colors.white,
                     ),),
                 )
               ],
             ),
             decoration: BoxDecoration(
-              color: Colors.blue,
+              color: Colors.black,
             ),
           ),
           ListTile(
@@ -201,15 +185,30 @@ class _ChatRoomState extends State<ChatRoom> {
     return Scaffold(
       drawer: mainDrawer(context),
       appBar: AppBar(
+        backgroundColor: Colors.black,
         title: Text("Schatty"),
         elevation: 3,
       ),
       body: Container(
         child: Scaffold(
-          backgroundColor: Color(0xfff0f2f2),
-          body: chatRoomList(),
+          backgroundColor: Colors.black,
+          body: Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: [
+                    Color.fromARGB(255, 0, 0, 0),
+                    Color.fromARGB(100, 39, 38, 38)
+                  ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                  image: DecorationImage(
+                      image: ExactAssetImage(
+                        "assets/images/chatroombg.png",
+                      ),
+                      fit: BoxFit.cover)),
+              child: chatRoomList()),
           floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.search),
+            backgroundColor: Color.fromARGB(255, 141, 133, 133),
+            child: Icon(Icons.search,
+              color: Colors.black,
+              size: 30,),
             onPressed: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => NewSearch()));
@@ -247,7 +246,7 @@ class ChatRoomTile extends StatelessWidget {
               width: 40,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                  color: Colors.blue,
+                  color: Colors.black,
                   borderRadius: BorderRadius.circular(40)
               ),
               child: Text("${userName.substring(0, 1).toUpperCase()}",

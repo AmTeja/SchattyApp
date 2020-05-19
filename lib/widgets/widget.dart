@@ -29,14 +29,14 @@ InputDecoration textFieldInputDecoration(String hintText)
 
 TextStyle simpleTextStyle()  {
   return TextStyle(
-    color: Colors.black,
+    color: Colors.white,
     fontSize: 18,
   );
 }
 
 TextStyle mediumTextStyle() {
   return TextStyle(
-    color: Colors.black,
+    color: Colors.white,
     fontSize: 18,
   );
 }

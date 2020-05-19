@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
@@ -14,12 +16,12 @@ class SignUp extends StatefulWidget {
 
 class _SignUpState extends State<SignUp> {
   bool isLoading = false;
-
   bool eightChars = false;
   bool specialChar = false;
   bool upperCaseChar = false;
   bool number = false;
 
+  String profilePicURL;
   AuthMethods authMethods = new AuthMethods();
   DatabaseMethods databaseMethods = new DatabaseMethods();
   Constants constants = new Constants();
@@ -29,13 +31,24 @@ class _SignUpState extends State<SignUp> {
   TextEditingController userNameTEC = new TextEditingController();
   TextEditingController emailTEC = new TextEditingController();
   TextEditingController passwordTEC = new TextEditingController();
+  TextEditingController rePasswordTEC = new TextEditingController();
 
-  signUP() {
-    if (formKey.currentState.validate()) {
+  signUP() async {
+    await FirebaseAuth.instance.currentUser().then((user) {
+      setState(() {
+        profilePicURL = user.photoUrl;
+      });
+    }).catchError((onError) {
+      print(onError);
+    });
+    if (formKey.currentState.validate() &&
+        (passwordTEC.text == rePasswordTEC.text)) {
       Map<String, String> userInfoMap = {
         "username": userNameTEC.text,
         "email": emailTEC.text,
         "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
+        "uid": authMethods.getUserUID(),
+        "photoUrl": profilePicURL
       };
 
       HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
@@ -57,6 +70,8 @@ class _SignUpState extends State<SignUp> {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => ChatRoom()));
       });
+    } else {
+      Fluttertoast.showToast(msg: "Password do not match!");
     }
   }
 
@@ -64,139 +79,225 @@ class _SignUpState extends State<SignUp> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
-//    passwordTEC.addListener(() {
-//      setState(() {
-//        eightChars = passwordTEC.text.length >= 8;
-//        number = passwordTEC.text.contains(RegExp(r'\d'), 0);
-//        upperCaseChar = passwordTEC.text.contains((new RegExp(r'[A-Z]')), 0);
-//        specialChar = passwordTEC.text.isNotEmpty &&
-//            !passwordTEC.text.contains(RegExp(r'^[\w&.-]+$'), 0);
-//      });
-//    });
-  }
-
-  bool ifAllValid() {
-    return eightChars && number && specialChar && upperCaseChar;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: isLoading
           ? Container(
               child: Center(
                 child: CircularProgressIndicator(),
               ),
             )
-          : GestureDetector(
-              onTap: () {
-                FocusScope.of(context).unfocus();
-              },
-              child: SafeArea(
-                bottom: true,
-                left: true,
-                child: Center(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Form(
-                          key: formKey,
-                          child: Column(
-                            children: [
-                              TextFormField(
-                                validator: (val) {
-                                  return val.isEmpty ||
-                                          (val.length < 5 || val.length > 17)
-                                      ? "Please enter a valid user name (Length between 5 and 18)"
-                                      : null;
-                                },
-                                controller: userNameTEC,
-                                style: simpleTextStyle(),
-                                decoration: new InputDecoration(
-                                    labelText: "Username",
-                                    labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.black54,
-                                    ),
-                                    border: new OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(40),
-                                      borderSide: BorderSide(),
-                                    )),
+          : Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 0, 0, 0),
+                  Color.fromARGB(100, 39, 38, 38)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+//              tileMode: TileMode.mirror,
+              )),
+              child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+                child: SafeArea(
+                  bottom: true,
+                  left: true,
+                  child: Center(
+                    child: Container(
+                      width: 370,
+                      height: 700,
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          new BoxShadow(
+                              color: Color.fromARGB(217, 0, 0, 0),
+                              offset: new Offset(2, 3),
+                              blurRadius: 5,
+                              spreadRadius: 6)
+                        ],
+                        borderRadius: BorderRadius.circular(46),
+                        gradient: LinearGradient(
+                          colors: [
+                            Color.fromARGB(255, 14, 14, 14),
+                            Color.fromARGB(100, 46, 45, 45)
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.only(
+                                right: 140, bottom: 40, top: 20),
+                            alignment: Alignment.topCenter,
+                            child: Text(
+                              "Join Us",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 50,
                               ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              TextFormField(
-                                validator: (val) {
-                                  return RegExp(
-                                              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                          .hasMatch(val)
-                                      ? null
-                                      : "Please enter a valid e-mail ID.";
-                                },
-                                controller: emailTEC,
-                                style: simpleTextStyle(),
-                                decoration: new InputDecoration(
-                                    labelText: "Email",
-                                    labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.black54,
-                                    ),
-                                    border: new OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(40),
-                                      borderSide: BorderSide(),
-                                    )),
-                              ),
-                              SizedBox(
-                                height: 20,
-                              ),
-                              TextFormField(
-                                obscureText: true,
-                                validator: (val) {
-                                  return passwordTEC.text.length > 8
-                                      ? null
-                                      : "Please use a password with more than 8 characters";
-                                },
-                                controller: passwordTEC,
-                                style: simpleTextStyle(),
-                                decoration: new InputDecoration(
-                                    labelText: "Password",
-                                    labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.black54,
-                                    ),
-                                    border: new OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(40),
-                                      borderSide: BorderSide(),
-                                    )),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                        MaterialButton(
-                          onPressed: () {
-                            signUP();
-                          },
-                          color: Colors.blue,
-                          minWidth: MediaQuery.of(context).size.width,
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          textColor: Colors.white,
-                          splashColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(40)),
-                          elevation: 4,
-                          child: Text("Sign Up"),
-                        ),
-                        SizedBox(
-                          height: 16,
-                        ),
-                      ],
+                          Form(
+                            key: formKey,
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                    validator: (val) {
+                                      return val.isEmpty ||
+                                              (val.length < 5 ||
+                                                  val.length > 17)
+                                          ? "Please enter a valid user name (Length between 5 and 18)"
+                                          : null;
+                                    },
+                                    controller: userNameTEC,
+                                    style: simpleTextStyle(),
+                                    decoration: new InputDecoration(
+                                        contentPadding:
+                                            EdgeInsets.only(left: 15),
+                                        labelText: "Username",
+                                        labelStyle: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.white70,
+                                        ),
+                                        border: new OutlineInputBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(40),
+                                          borderSide:
+                                              BorderSide(color: Colors.white),
+                                        ))),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                TextFormField(
+                                  validator: (val) {
+                                    return RegExp(
+                                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                            .hasMatch(val)
+                                        ? null
+                                        : "Please enter a valid e-mail ID.";
+                                  },
+                                  controller: emailTEC,
+                                  style: simpleTextStyle(),
+                                  decoration: new InputDecoration(
+                                      contentPadding: EdgeInsets.only(left: 15),
+                                      labelText: "Email",
+                                      labelStyle: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white70,
+                                      ),
+                                      border: new OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                        borderSide: BorderSide(),
+                                      )),
+                                ),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                TextFormField(
+                                  obscureText: true,
+                                  validator: (val) {
+                                    return passwordTEC.text.length > 8
+                                        ? null
+                                        : "Please use a password with more than 8 characters";
+                                  },
+                                  controller: passwordTEC,
+                                  style: simpleTextStyle(),
+                                  decoration: new InputDecoration(
+                                      contentPadding: EdgeInsets.only(left: 15),
+                                      labelText: "Password",
+                                      labelStyle: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white70,
+                                      ),
+                                      border: new OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                        borderSide: BorderSide(),
+                                      )),
+                                ),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                TextFormField(
+                                  obscureText: true,
+                                  validator: (val) {
+                                    return passwordTEC.text.length > 8
+                                        ? null
+                                        : "Please use a password with more than 8 characters";
+                                  },
+                                  controller: rePasswordTEC,
+                                  style: simpleTextStyle(),
+                                  decoration: new InputDecoration(
+                                      contentPadding: EdgeInsets.only(left: 15),
+                                      labelText: "Re-Enter Password",
+                                      labelStyle: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white70,
+                                      ),
+                                      border: new OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                        borderSide: BorderSide(),
+                                      )),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(
+                            height: 30,
+                          ),
+                          MaterialButton(
+                            onPressed: () {
+                              signUP();
+                            },
+                            color: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 20, horizontal: 90),
+                            textColor: Colors.black,
+                            splashColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(40)),
+                            elevation: 4,
+                            child: Text("Sign Up"),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          Text(
+                            "OR",
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                          SizedBox(
+                            height: 20,
+                          ),
+                          MaterialButton(
+                            onPressed: () {
+                              signInWithGoogle();
+                            },
+                            color: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 20, horizontal: 60),
+                            textColor: Colors.black,
+                            splashColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(40)),
+                            elevation: 4,
+                            child: Text("Signup With Google"),
+                          ),
+                          SizedBox(
+                            height: 40,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

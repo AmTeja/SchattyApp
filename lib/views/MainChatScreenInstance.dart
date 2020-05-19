@@ -52,7 +52,11 @@ class _ChatScreenState extends State<ChatScreen> {
       child: SafeArea(
         top: false,
         child: Scaffold(
-            appBar: AppBar(title: Text(chatWith)),
+            backgroundColor: Color.fromARGB(255, 14, 14, 14),
+            appBar: AppBar(
+              title: Text(chatWith),
+              backgroundColor: Colors.black,
+            ),
             body: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: Column(
@@ -93,10 +97,11 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8),
       height: 70,
-      color: Colors.white,
+      color: Colors.black,
       child: Row(
         children: <Widget>[
           RawMaterialButton(
+
             onPressed: () {},
             child: Icon(
               Icons.camera_alt,
@@ -105,8 +110,8 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             shape: CircleBorder(),
             elevation: 2,
-            fillColor: Theme.of(context).primaryColor,
-            padding: EdgeInsets.all(5),
+            fillColor: Colors.black54,
+            padding: EdgeInsets.only(right: 10),
           ),
           Expanded(
             child: TextField(
@@ -114,10 +119,12 @@ class _ChatScreenState extends State<ChatScreen> {
               textCapitalization: TextCapitalization.sentences,
               onChanged: (value) {},
               decoration: InputDecoration(
+                contentPadding: EdgeInsets.only(left: 15, top: 20, bottom: 20),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  borderRadius: BorderRadius.all(Radius.circular(30)),
                 ),
                 hintText: 'Say something...',
+                fillColor: Colors.white,
                 filled: true,
                 hintStyle: TextStyle(color: Colors.grey[400]),
               ),

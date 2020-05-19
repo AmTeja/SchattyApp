@@ -50,7 +50,9 @@ class _NewSearchState extends State<NewSearch> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
+        backgroundColor: Colors.black,
         title: Text(
           "Schatty",
           style: TextStyle(
@@ -65,20 +67,27 @@ class _NewSearchState extends State<NewSearch> {
         child: ListView(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.all(10.0),
+              padding: const EdgeInsets.only(
+                  top: 20, bottom: 20, left: 30, right: 30),
               child: TextField(
+                style: TextStyle(color: Colors.white),
                 onChanged: (val) {
                   initiateSearch(val);
                 },
                 decoration: new InputDecoration(
+                  fillColor: Colors.white,
                   hintText: "Search for users",
-                  prefixIcon: IconButton(
+                  hintStyle: TextStyle(
+                    color: Colors.white54,
+                  ),
+                  suffixIcon: IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.search),
+                    iconSize: 30,
                     color: Colors.black,
-                    icon: Icon(Icons.arrow_back),
-                    iconSize: 20.0,
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
+                  ),
+                  border: new OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30)
                   ),
                 ),
               ),
@@ -136,17 +145,29 @@ class _NewSearchState extends State<NewSearch> {
           createChatInstance(data['username']);
         },
         child: Card(
-          color: Color(0xffeef1f5),
+          color: Colors.black,
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
-          elevation: 2,
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(40.0)),
+          elevation: 3,
+          shadowColor: Color.fromARGB(217, 0, 0, 0),
           child: Container(
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(40),
+                gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 14, 14, 14),
+                      Color.fromARGB(100, 46, 45, 45)
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight
+                )
+            ),
             child: Center(
               child: Text(
                 data['username'],
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Colors.white,
                   fontSize: 20,
                 ),
               ),

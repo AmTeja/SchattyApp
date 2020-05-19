@@ -79,6 +79,13 @@ class AuthMethods {
     }
   }
 
+  getUserUID() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    final FirebaseUser user = await auth.currentUser();
+    final uid = user.uid;
+    return uid;
+  }
+
   void signOutGoogle() async {
     await googleSignIn.signOut();
 

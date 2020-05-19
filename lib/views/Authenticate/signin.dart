@@ -74,6 +74,7 @@ class _SignInState extends State<SignIn> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       //appBar: appBarMain(context),
       body: GestureDetector(
         onTap: () {
@@ -82,18 +83,50 @@ class _SignInState extends State<SignIn> {
         child: Container(
           decoration: BoxDecoration(
               gradient: LinearGradient(
-                  colors: [Color(0xffe6e9f0), Color(0xffeef1f5)])),
+            colors: [
+              Color.fromARGB(255, 0, 0, 0),
+              Color.fromARGB(100, 39, 38, 38)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+//              tileMode: TileMode.mirror,
+          )),
           child: Center(
             child: Container(
+              width: 370,
+              height: 620,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  new BoxShadow(
+                      color: Color.fromARGB(217, 0, 0, 0),
+                      offset: new Offset(2, 3),
+                      blurRadius: 5,
+                      spreadRadius: 6)
+                ],
+                borderRadius: BorderRadius.circular(46),
+                gradient: LinearGradient(
+                  colors: [
+                    Color.fromARGB(255, 14, 14, 14),
+                    Color.fromARGB(100, 46, 45, 45)
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
               padding: EdgeInsets.symmetric(horizontal: 24),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  FlutterLogo(
-                    size: 150,
-                  ),
-                  SizedBox(
-                    height: 30,
+                  Container(
+                    padding: EdgeInsets.only(bottom: 90, top: 20),
+                    child: Text(
+                      "Welcome back.",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 50
+                      ),
+                    ),
                   ),
                   Form(
                     key: formKey,
@@ -102,18 +135,20 @@ class _SignInState extends State<SignIn> {
                         TextFormField(
                           validator: (val) {
                             return RegExp(
-                                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                    .hasMatch(val)
+                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                .hasMatch(val)
                                 ? null
                                 : "Please enter a valid e-mail ID.";
                           },
                           controller: emailTEC,
                           style: simpleTextStyle(),
                           decoration: new InputDecoration(
+                              contentPadding: EdgeInsets.only(
+                                  left: 15, top: 20, bottom: 20),
                               labelText: "Email",
                               labelStyle: TextStyle(
                                 fontSize: 18,
-                                color: Colors.black54,
+                                color: Colors.white60,
                               ),
                               border: new OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(40),
@@ -133,20 +168,21 @@ class _SignInState extends State<SignIn> {
                             controller: passwordTEC,
                             style: simpleTextStyle(),
                             decoration: new InputDecoration(
+                                contentPadding: EdgeInsets.only(
+                                    left: 15, top: 20, bottom: 20),
                                 labelText: "Password",
                                 labelStyle: TextStyle(
-                                    color: Colors.black54, fontSize: 18),
-                                fillColor: Colors.white,
+                                    color: Colors.white60, fontSize: 18),
                                 border: new OutlineInputBorder(
                                   borderSide:
-                                      BorderSide(color: CupertinoColors.black),
+                                  BorderSide(color: CupertinoColors.black),
                                   borderRadius: BorderRadius.circular(40),
                                 ))),
                       ],
                     ),
                   ),
                   SizedBox(
-                    height: 8,
+                    height: 20,
                   ),
                   GestureDetector(
                     onTap: () {
@@ -159,7 +195,7 @@ class _SignInState extends State<SignIn> {
                       alignment: Alignment.centerRight,
                       child: Container(
                         padding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
                           "Forgot Password?",
                           style: simpleTextStyle(),
@@ -168,22 +204,22 @@ class _SignInState extends State<SignIn> {
                     ),
                   ),
                   SizedBox(
-                    height: 8,
+                    height: 20,
                   ),
                   MaterialButton(
                     onPressed: () {
                       signIn();
                     },
-                    color: Colors.blue,
-                    minWidth: MediaQuery.of(context).size.width,
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    textColor: Colors.white,
-                    splashColor: Colors.white,
+                    color: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 90),
+                    textColor: Colors.black,
+                    splashColor: Colors.black,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(40)),
                     elevation: 4,
                     child: Text("Sign in"),
                   ),
+                  SizedBox(height: 40,)
                 ],
               ),
             ),
