@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
-
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Authenticate/signin.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Authenticate/signup.dart';
-
+import 'package:schatty/views/Authenticate/signin.dart';
+import 'package:schatty/views/Authenticate/signup.dart';
 import '../MainChatsRoom.dart';
+
 
 class AuthHome extends StatefulWidget {
   @override
@@ -18,23 +17,68 @@ class _AuthHomeState extends State<AuthHome> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF000000),
+                Color(0xFF272626)
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              tileMode: TileMode.mirror,
+            )
+        ),
         child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              FlutterLogo(size: 150),
-              SizedBox(height: 50),
-              signInButton(),
-              SizedBox(
-                height: 20,
+          child: Container(
+            color: Colors.transparent,
+            child: Container(
+              width: 370,
+              height: 650,
+              decoration: BoxDecoration(
+                boxShadow: [
+                  new BoxShadow(
+//                      color: Colors.red,
+                    color: Color.fromARGB(85, 0, 0, 0),
+                    offset: new Offset(2, 3),
+                    blurRadius: 5,
+                    spreadRadius: 6,
+                  )
+                ],
+                borderRadius: BorderRadius.circular(46),
+                gradient: LinearGradient(
+                  colors: [Color(0xFF0E0E0E), Color(0xFF2E2D2D)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
-              signUpButton(),
-              SizedBox(
-                height: 20,
+              child: Column(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.only(bottom: 60),
+                    alignment: Alignment.topCenter,
+                    child: Text("Schatty",
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 70,
+                        fontFamily: 'North Regular',
+                      ),),
+                  ),
+                  SizedBox(height: 20),
+                  signInButton(),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  signUpButton(),
+                  SizedBox(
+                    height: 20,
+                  ),
+                  googleButton(),
+                ],
               ),
-              googleButton(),
-            ],
+            ),
           ),
         ),
       ),
@@ -42,32 +86,34 @@ class _AuthHomeState extends State<AuthHome> {
   }
 
   Widget signInButton() {
-    return OutlineButton(
+    return MaterialButton(
       splashColor: Colors.grey,
       onPressed: () {
         Navigator.push(
             context, MaterialPageRoute(builder: (context) => SignIn()));
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-      highlightElevation: 1,
-      borderSide: BorderSide(color: Colors.grey),
+      highlightElevation: 3,
+      color: Colors.white,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(17, 10, 17, 10),
+        padding: const EdgeInsets.fromLTRB(18, 18, 80, 18),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
               Icons.email,
-              color: Colors.white,
+              color: Colors.black,
             ),
+            SizedBox(width: 40,),
             Padding(
-              padding: const EdgeInsets.only(left: 10),
+              padding: const EdgeInsets.only(left: 0),
               child: Text(
-                "Signin with Email",
+                "Sign In",
                 style: TextStyle(
-                  color: Colors.grey,
+                  color: Colors.black54,
                   fontSize: 20,
+                  fontFamily: 'North Regular',
                 ),
               ),
             )

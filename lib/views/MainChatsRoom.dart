@@ -11,11 +11,10 @@ import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/helperfunctions.dart';
 import 'package:schatty/services/auth.dart';
 import 'package:schatty/services/database.dart';
+import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/widget.dart';
-
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Authenticate/AuthHome.dart';
 
 class ChatRoom extends StatefulWidget {
   @override
@@ -42,7 +41,8 @@ class _ChatRoomState extends State<ChatRoom> {
     HelperFunctions.saveUserLoggedInSharedPreference(false);
     print(HelperFunctions.getUserLoggedInSharedPreference().toString());
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => AuthHome()));
+        context, MaterialPageRoute(builder: (context) =>
+        AuthHome()));
   }
 
   Future getImage() async {

@@ -3,9 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/services/database.dart';
+import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/widgets/widget.dart';
-
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Authenticate/AuthHome.dart';
 
 class ForgotPassword extends StatefulWidget {
   @override
