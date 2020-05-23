@@ -1,17 +1,17 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/services/auth.dart';
-import 'package:schatty/services/database.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/services/AuthenticationManagement.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
 import 'package:schatty/views/NewSearch.dart';
+import 'package:schatty/views/TargetUserInfo.dart';
+import 'package:schatty/views/editProfile.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -30,32 +30,23 @@ class _ChatRoomState extends State<ChatRoom> {
       Constants.ownerName + Random().nextInt(10000).toString() + '.$extension';
   Stream chatRoomsStream;
   bool newMessageReceived = false;
-  File _image;
   var imageUrl;
   String url;
 
   logOut(BuildContext context) {
     authMethods.signOut();
     HelperFunctions.saveUserLoggedInSharedPreference(false);
-    print(HelperFunctions.getUserLoggedInSharedPreference().toString());
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) =>
         AuthHome()));
   }
 
-  Future getImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
-    if (image.path != null) {
-      setState(() {
-        _image = image;
-        print('Image path: $_image');
-      });
-    } else {
-      return null;
-    }
+  signOut(BuildContext context) {
+    authMethods.signOutGoogle();
+    HelperFunctions.saveUserLoggedInSharedPreference(false);
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
-
-
 
   Widget mainDrawer(BuildContext context) {
     return Drawer(
@@ -73,10 +64,8 @@ class _ChatRoomState extends State<ChatRoom> {
                     child: SizedBox(
                       width: 100,
                       height: 100,
-                      child: (_image != null) ? Image.file(
-                        _image, fit: BoxFit.fill,)
-                          : url != null ? (Image.network(url,
-                        fit: BoxFit.fitHeight,)) : Image.asset(
+                      child: url != null ? (Image.network(url,
+                        fit: BoxFit.cover,)) : Image.asset(
                         "assets/images/username.png",
                         fit: BoxFit.fill,),
                     ),
@@ -102,7 +91,9 @@ class _ChatRoomState extends State<ChatRoom> {
           ),
           ListTile(
             onTap: () {
-              getImage();
+              Navigator.push(context, MaterialPageRoute(
+                  builder: (context) => EditProfile(Constants.ownerName)
+              ));
             },
             title: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -137,6 +128,45 @@ class _ChatRoomState extends State<ChatRoom> {
                         child: Icon(Icons.exit_to_app)
                     ),
                   ])),
+          ListTile(
+              onTap: () {
+                signOut(context);
+              },
+              title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text('Sign out',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),),
+                    Container(
+                        alignment: Alignment.centerRight,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Icon(Icons.exit_to_app)
+                    ),
+                  ])
+          ),
+          ListTile(
+              onTap: () {
+                setState(() {
+
+                });
+              },
+              title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    Text('Refresh',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),),
+                    Container(
+                        alignment: Alignment.centerRight,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        child: Icon(Icons.refresh)
+                    ),
+                  ])
+
+          )
         ],
       ),
 
@@ -166,13 +196,26 @@ class _ChatRoomState extends State<ChatRoom> {
 
   @override
   void initState() {
-    getUserInfo();
     super.initState();
+    getUserInfo();
+    assignURL();
+    setState(() {
+
+    });
+  }
+
+  assignURL() async
+  {
+    url = await databaseMethods.getProfileUrl();
+    setState(() {
+
+    });
   }
 
   getUserInfo() async {
     print("getting user infO");
     Constants.ownerName = await HelperFunctions.getUserNameSharedPreference();
+    print(Constants.ownerName);
     databaseMethods.getChatRooms(Constants.ownerName).then((val) {
       setState(() {
         chatRoomsStream = val;
@@ -233,6 +276,11 @@ class ChatRoomTile extends StatelessWidget {
       onTap: () {
         Navigator.push(context, MaterialPageRoute(
             builder: (context) => ChatScreen(chatRoomId, userName)
+        ));
+      },
+      onLongPress: () {
+        Navigator.push(context, MaterialPageRoute(
+            builder: (context) => UserInfo(userName)
         ));
       },
       child: Container(

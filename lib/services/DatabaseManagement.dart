@@ -42,19 +42,23 @@ class DatabaseMethods {
     });
   }
 
-  updateProfilePicture(picUrl) async {
+  updateProfilePicture(String picUrl) async {
     var userInfo = User();
     userInfo.profileImageUrl = picUrl;
+//    print(userInfo.profileImageUrl);
+    Map<String, String> imageMap = {
+      'photoURL': userInfo.profileImageUrl
+    };
 
-    await FirebaseAuth.instance.currentUser().then((user) {
-      Firestore.instance
-          .collection('users')
+    await FirebaseAuth.instance.currentUser().then((user) async {
+      await Firestore.instance
+          .collection('/users')
           .where('uid', isEqualTo: user.uid)
           .getDocuments()
           .then((docs) {
         Firestore.instance
-            .document("users/${docs.documents[0].documentID}")
-            .updateData({'photoURL': picUrl}).then((val) {
+            .document('/users/${docs.documents[0].documentID}')
+            .updateData(imageMap).whenComplete(() {
           print('Updated');
         }).catchError((onError) {
           print(onError);
@@ -64,6 +68,29 @@ class DatabaseMethods {
       });
     });
   }
+
+  getProfileUrl() async {
+    String url;
+    int length;
+    String uid;
+    await FirebaseAuth.instance.currentUser().then((user) {
+      uid = user.uid;
+      print(uid);
+    });
+
+    await Firestore.instance.collection('users')
+        .where('uid', isEqualTo: uid)
+        .getDocuments()
+        .then((value) async {
+      url = await value.documents[0].data["photoURL"];
+//        length = await value.documents.length;
+      print(length);
+    }).catchError((e) {
+      print(e);
+    });
+    return url;
+  }
+
 
   getMessage(String chatRoomID) async {
     return Firestore.instance.collection("ChatRoom")

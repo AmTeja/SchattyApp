@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/views/editProfile.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/views/Authenticate/AuthHome.dart';
+import 'package:schatty/views/Authenticate/StartScreen.dart';
+import 'package:schatty/views/MainChatsRoom.dart';
 
 void main() {
   runApp(MyApp());
-
-//  SystemChrome.setEnabledSystemUIOverlays([]);
+  //  SystemChrome.setEnabledSystemUIOverlays([]);
 }
 
 class MyApp extends StatefulWidget {
@@ -15,7 +16,6 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool isUserLoggedIn = false;
-  var counter = HelperFunctions.getUserFirstTime();
   @override
   void initState() {
     getState();
@@ -41,8 +41,10 @@ class _MyAppState extends State<MyApp> {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: EditProfile(),
-//      home: isUserLoggedIn!= null ? (isUserLoggedIn ? ChatRoom() : AuthHome()) : StartScreen(),
+//      home: EditProfile(),
+      home: isUserLoggedIn != null
+          ? (isUserLoggedIn ? ChatRoom() : AuthHome())
+          : StartScreen(),
     );
   }
 }

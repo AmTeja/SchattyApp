@@ -1,5 +1,4 @@
 import 'package:shared_preferences/shared_preferences.dart';
-
 class HelperFunctions {
 
   static String sharedPreferenceUserLoggedInKey = "LOGGEDIN";
@@ -9,10 +8,11 @@ class HelperFunctions {
 
   //Saving data to SharedPreference
 
-  static Future<void> saveUserFirstTime(int isFirstTime) async {
-    final SharedPreferences prefers = await SharedPreferences.getInstance();
-    return await prefers.setInt(sharedPreferenceFirstTime, isFirstTime);
-  }
+//  static Future<void> saveKeyPair(Future<crypto.AsymmetricKeyPair> keyPair ) async{
+//  final SharedPreferences preferences = await SharedPreferences.getInstance();
+//  String publickey = encodePrivateKeyToPemPKCS1(keyPair.privateKey);
+//  return await preferences.
+//  }
 
   static Future<void> saveUserLoggedInSharedPreference(
       bool isUserLoggedIn) async {
@@ -32,11 +32,6 @@ class HelperFunctions {
   }
 
   //Getting data from Shared Preference
-
-  static Future<int> getUserFirstTime() async {
-    final SharedPreferences prefers = await SharedPreferences.getInstance();
-    return prefers.getInt(sharedPreferenceFirstTime);
-  }
 
   static Future<bool> getUserLoggedInSharedPreference() async {
     final SharedPreferences prefers = await SharedPreferences.getInstance();

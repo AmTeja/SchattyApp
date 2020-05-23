@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/services/database.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
+import 'package:schatty/views/TargetUserInfo.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomID;
@@ -25,7 +26,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
-    lastAccessedTime = DateTime.now();
+//    lastAccessedTime = DateTime.now();
     HelperFunctions.getUserNameSharedPreference();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
@@ -56,6 +57,17 @@ class _ChatScreenState extends State<ChatScreen> {
             appBar: AppBar(
               title: Text(chatWith),
               backgroundColor: Colors.black,
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.info),
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => UserInfo(chatWith)));
+                  },
+                )
+              ],
             ),
             body: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),

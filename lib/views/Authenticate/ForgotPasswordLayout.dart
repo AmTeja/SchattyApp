@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:schatty/services/database.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/widgets/widget.dart';
 

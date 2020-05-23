@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/services/database.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
 import 'package:schatty/widgets/widget.dart';
 

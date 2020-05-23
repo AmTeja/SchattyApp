@@ -1,13 +1,17 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:schatty/services/database.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 
 class EditProfile extends StatefulWidget {
+  final String username;
+
+  EditProfile(this.username);
+
   @override
   _EditProfileState createState() => _EditProfileState();
 }
@@ -17,17 +21,18 @@ class _EditProfileState extends State<EditProfile> {
   String profilePicURL;
 
   DatabaseMethods databaseMethods = new DatabaseMethods();
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    FirebaseAuth.instance.currentUser().then((user) {
-      setState(() {
-        profilePicURL = user.photoUrl;
-      });
-    }).catchError((onError) {
-      print(onError);
+    assignURL();
+  }
+
+  assignURL() async
+  {
+    profilePicURL = await databaseMethods.getProfileUrl();
+    setState(() {
+
     });
   }
 
@@ -58,7 +63,7 @@ class _EditProfileState extends State<EditProfile> {
                       image: profilePicURL != null
                           ? NetworkImage(profilePicURL)
                           : AssetImage(
-                              "assets/images/username.png",
+                        "assets/images/username.png",
                       ),
                       fit: BoxFit.cover,
                     ),
@@ -108,22 +113,51 @@ class _EditProfileState extends State<EditProfile> {
 
   Future getImage() async {
     var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
+    File cropped;
+    if (tempPic != null) {
+      cropped = await ImageCropper.cropImage(sourcePath: tempPic.path,
+//            aspectRatio: CropAspectRatio(
+//                ratioX: 1, ratioY: 1),
+          compressQuality: 100,
+          maxWidth: 700,
+          maxHeight: 700,
+          cropStyle: CropStyle.circle,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+            toolbarColor: Colors.blue,
+            toolbarTitle: "Schatty",
+            statusBarColor: Colors.black,
+            backgroundColor: Colors.white,
+
+          )
+      );
+    }
     setState(() {
-      newProfilePic = tempPic;
-      uploadImage();
+      if (cropped != null) {
+        newProfilePic = cropped;
+        uploadImage();
+      }
     });
   }
 
   uploadImage() async {
     var randomNum = Random(25);
     final String fileName =
-        'profilepic/${randomNum.nextInt(5000).toString()}.jpg';
+        'profilepic/' + widget.username + '/${randomNum.nextInt(5000)
+            .toString()}.jpg'; //filename to be stored
     final StorageReference storageReference =
-        FirebaseStorage.instance.ref().child(fileName);
-    StorageUploadTask task = storageReference.putFile(newProfilePic);
+    FirebaseStorage.instance.ref().child(fileName); //ref to storage
+    StorageUploadTask task = storageReference.putFile(
+        newProfilePic); //task to upload file
     StorageTaskSnapshot snapshotTask = await task.onComplete;
-    var downloadUrl = snapshotTask.ref.getDownloadURL();
+    var downloadUrl = await snapshotTask.ref
+        .getDownloadURL(); //download url of the image uploaded
     String url = downloadUrl.toString();
-    databaseMethods.updateProfilePicture(url);
+    print(url);
+    databaseMethods.updateProfilePicture(downloadUrl.toString());
+    setState(() {
+      profilePicURL = url;
+    });
   }
+
 }

@@ -3,9 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/services/auth.dart';
-import 'package:schatty/services/database.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/services/AuthenticationManagement.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/MainChatsRoom.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -21,7 +21,8 @@ class _SignUpState extends State<SignUp> {
   bool upperCaseChar = false;
   bool number = false;
 
-  String profilePicURL;
+  String profilePicURL =
+      "https://www.searchpng.com/wp-content/uploads/2019/02/Deafult-Profile-Pitcher.png";
   AuthMethods authMethods = new AuthMethods();
   DatabaseMethods databaseMethods = new DatabaseMethods();
   Constants constants = new Constants();
@@ -43,33 +44,34 @@ class _SignUpState extends State<SignUp> {
     });
     if (formKey.currentState.validate() &&
         (passwordTEC.text == rePasswordTEC.text)) {
-      Map<String, String> userInfoMap = {
-        "username": userNameTEC.text,
-        "email": emailTEC.text,
-        "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
-        "uid": authMethods.getUserUID(),
-        "photoUrl": profilePicURL
-      };
+      authMethods
+          .signUpWithEmailAndPassword(emailTEC.text, passwordTEC.text)
+          .then((val) {
+        print("$val");
+        Map<String, String> userInfoMap = { //Making MAP for firebase
+          "username": userNameTEC.text,
+          "email": emailTEC.text,
+          "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
+//          "uid":  authMethods.getUserUID(),
+          "photoUrl": profilePicURL
+        };
 
-      HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
+        databaseMethods.uploadUserInfo(userInfoMap);
+        HelperFunctions.saveUserLoggedInSharedPreference(true);
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => ChatRoom()));
+      });
+
+      //Check for password match
+
+
+      HelperFunctions.saveUserEmailSharedPreference(
+          emailTEC.text); //Saving username and email cache on device
       HelperFunctions.saveUserNameSharedPreference(userNameTEC.text);
       setState(() {
         isLoading = true;
       });
 
-      authMethods
-          .signUpWithEmailAndPassword(emailTEC.text, passwordTEC.text)
-          .then((val) {
-        // print("$val");
-
-        databaseMethods.uploadUserInfo(userInfoMap);
-        HelperFunctions.saveUserLoggedInSharedPreference(true);
-        print("Saved");
-        constants.setFirstTime(false);
-        print(constants.getFirstTime());
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => ChatRoom()));
-      });
     } else {
       Fluttertoast.showToast(msg: "Password do not match!");
     }
@@ -138,13 +140,13 @@ class _SignUpState extends State<SignUp> {
                         children: [
                           Container(
                             padding: EdgeInsets.only(
-                                right: 140, bottom: 40, top: 20),
+                              right: 140, bottom: 39,),
                             alignment: Alignment.topCenter,
                             child: Text(
                               "Join Us",
                               style: TextStyle(
                                 color: Colors.white,
-                                fontSize: 50,
+                                fontSize: 40,
                               ),
                             ),
                           ),
@@ -294,7 +296,7 @@ class _SignUpState extends State<SignUp> {
                             child: Text("Signup With Google"),
                           ),
                           SizedBox(
-                            height: 40,
+                            height: 10,
                           ),
                         ],
                       ),

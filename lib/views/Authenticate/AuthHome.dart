@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/services/auth.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/views/Authenticate/signin.dart';
 import 'package:schatty/views/Authenticate/signup.dart';
 

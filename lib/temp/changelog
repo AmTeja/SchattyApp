@@ -17,3 +17,8 @@ Changelog:
 -19/05/2020
     -Revamped total UI.
     -Adding Image URL
+-23/05/2020
+    -Added profile picture.
+    -Cropping feature.
+    -User info in chat.
+    -Hold user to open info.

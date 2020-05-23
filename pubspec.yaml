@@ -37,6 +37,8 @@ dependencies:
   firebase_storage: ^3.1.5
   image_picker: ^0.6.6+1
   animated_text_kit: ^2.0.1
+  rsa_encrypt:
+  image_cropper: ^1.2.2
 
 
 

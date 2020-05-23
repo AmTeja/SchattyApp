@@ -2,9 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:schatty/helper/helperfunctions.dart';
-import 'package:schatty/services/auth.dart';
-import 'package:schatty/services/database.dart';
+import 'package:schatty/helper/constants.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/services/AuthenticationManagement.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ForgotPasswordLayout.dart';
 import 'package:schatty/views/MainChatsRoom.dart';
 import 'package:schatty/widgets/widget.dart';
@@ -31,16 +32,8 @@ class _SignInState extends State<SignIn> {
 
   signIn() {
     if (formKey.currentState.validate()) {
-      print("Validated");
-      HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
       setState(() {
         isLoading = true;
-      });
-
-      databaseMethods.getUserByUserEmail(emailTEC.text).then((value) {
-        snapshotUserInfo = value;
-        HelperFunctions.saveUserNameSharedPreference(
-            snapshotUserInfo.documents[0].data["username"]);
       });
 
       authMethods
@@ -48,20 +41,40 @@ class _SignInState extends State<SignIn> {
           .then((value) {
         if (value != null) {
           HelperFunctions.saveUserLoggedInSharedPreference(true);
+          HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
+          Constants.ownerEmail = emailTEC.text;
           print("Logged In true");
+          databaseMethods.getUserByUserEmail(emailTEC.text).then((value) {
+            snapshotUserInfo = value;
+            HelperFunctions.saveUserNameSharedPreference(
+                snapshotUserInfo.documents[0].data["username"]);
+          });
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => ChatRoom(),
               ));
         } else {
-          Fluttertoast.showToast(
-            msg: "Incorrect Password, Try again!",
-            toastLength: Toast.LENGTH_LONG,
-            gravity: ToastGravity.BOTTOM,
+          AlertDialog(
+            title: Text("Verify Email"),
+            content: Text("Please verify your email to continue."),
+            actions: <Widget>[
+              FlatButton(
+                child: Text("Close"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
           );
         }
       });
+    } else {
+      Fluttertoast.showToast(
+        msg: "Incorrect Email/Password!",
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+      );
     }
   }
 
@@ -122,10 +135,7 @@ class _SignInState extends State<SignIn> {
                     padding: EdgeInsets.only(bottom: 90, top: 20),
                     child: Text(
                       "Welcome back.",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 50
-                      ),
+                      style: TextStyle(color: Colors.white, fontSize: 50),
                     ),
                   ),
                   Form(
@@ -219,7 +229,9 @@ class _SignInState extends State<SignIn> {
                     elevation: 4,
                     child: Text("Sign in"),
                   ),
-                  SizedBox(height: 40,)
+                  SizedBox(
+                    height: 40,
+                  )
                 ],
               ),
             ),
