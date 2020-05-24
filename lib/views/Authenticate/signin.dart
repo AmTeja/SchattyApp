@@ -48,6 +48,8 @@ class _SignInState extends State<SignIn> {
             snapshotUserInfo = value;
             HelperFunctions.saveUserNameSharedPreference(
                 snapshotUserInfo.documents[0].data["username"]);
+            Constants.ownerName =
+                snapshotUserInfo.documents[0].data["username"];
           });
           Navigator.pushReplacement(
               context,

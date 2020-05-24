@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -23,6 +24,8 @@ class _ChatRoomState extends State<ChatRoom> {
 
   AuthMethods authMethods = new AuthMethods();
   DatabaseMethods databaseMethods = new DatabaseMethods();
+
+  FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
 
 //  final StorageReference storageRef = FirebaseStorage.instance.ref().child(fileName);
 
@@ -76,12 +79,14 @@ class _ChatRoomState extends State<ChatRoom> {
                 ),
                 Container(
                   alignment: Alignment.center,
-                  child: Text(Constants.ownerName,
-                    textAlign: TextAlign.center,
+                  child: Constants.ownerName != null
+                      ? Text(
+                          Constants.ownerName,
+                          textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 22,
                       color: Colors.white,
-                    ),),
+                    ),) : Text("Error"),
                 )
               ],
             ),
@@ -148,9 +153,10 @@ class _ChatRoomState extends State<ChatRoom> {
           ),
           ListTile(
               onTap: () {
-                setState(() {
-
-                });
+                Navigator.pop(context);
+                Navigator.pushReplacement(context, MaterialPageRoute(
+                    builder: (context) => ChatRoom()
+                ));
               },
               title: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -200,7 +206,9 @@ class _ChatRoomState extends State<ChatRoom> {
     getUserInfo();
     assignURL();
     setState(() {
-
+      firebaseMessaging.getToken().then((value) {
+        print(value);
+      });
     });
   }
 

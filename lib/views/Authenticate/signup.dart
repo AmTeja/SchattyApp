@@ -52,10 +52,8 @@ class _SignUpState extends State<SignUp> {
           "username": userNameTEC.text,
           "email": emailTEC.text,
           "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
-//          "uid":  authMethods.getUserUID(),
           "photoUrl": profilePicURL
         };
-
         databaseMethods.uploadUserInfo(userInfoMap);
         HelperFunctions.saveUserLoggedInSharedPreference(true);
         Navigator.pushReplacement(

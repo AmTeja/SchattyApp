@@ -157,8 +157,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   sendMessage() async {
     if (messageTEC.text.isNotEmpty) {
-//      keyPair = await futureKeyPair;
-//      String encryptedText = encrypt(messageTEC.text, keyPair.publicKey);
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
@@ -168,6 +166,10 @@ class _ChatScreenState extends State<ChatScreen> {
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
       messageTEC.text = "";
+      Map<String, dynamic> timeMap = {
+        "time": DateTime.now().millisecondsSinceEpoch,
+      };
+      databaseMethods.updateChatRoomTime(widget.chatRoomID, timeMap);
     }
   }
 
