@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
@@ -28,55 +28,93 @@ class _SignInState extends State<SignIn> {
 
   QuerySnapshot snapshotUserInfo;
 
-  bool isLoading = false;
+  String error;
 
-  signIn() {
+  bool isLoading = false;
+  bool incorrectPass = false;
+
+  signIn() async {
     if (formKey.currentState.validate()) {
       setState(() {
         isLoading = true;
       });
 
-      authMethods
-          .signInWithEmailAndPassword(emailTEC.text, passwordTEC.text)
-          .then((value) {
-        if (value != null) {
+      try {
+        FirebaseAuth _auth = FirebaseAuth.instance;
+        AuthResult result = await _auth.signInWithEmailAndPassword(
+            email: emailTEC.text, password: passwordTEC.text);
+        FirebaseUser firebaseUser = result.user;
+
+        if (firebaseUser != null) {
           HelperFunctions.saveUserLoggedInSharedPreference(true);
           HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
           Constants.ownerEmail = emailTEC.text;
           print("Logged In true");
-          databaseMethods.getUserByUserEmail(emailTEC.text).then((value) {
+          await databaseMethods
+              .getUserByUserEmail(emailTEC.text)
+              .then((value) async {
             snapshotUserInfo = value;
             HelperFunctions.saveUserNameSharedPreference(
-                snapshotUserInfo.documents[0].data["username"]);
+                await snapshotUserInfo.documents[0].data["username"]);
             Constants.ownerName =
-                snapshotUserInfo.documents[0].data["username"];
+                await snapshotUserInfo.documents[0].data["username"];
           });
           Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                 builder: (context) => ChatRoom(),
               ));
-        } else {
-          AlertDialog(
-            title: Text("Verify Email"),
-            content: Text("Please verify your email to continue."),
-            actions: <Widget>[
-              FlatButton(
-                child: Text("Close"),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          );
         }
-      });
-    } else {
-      Fluttertoast.showToast(
-        msg: "Incorrect Email/Password!",
-        toastLength: Toast.LENGTH_LONG,
-        gravity: ToastGravity.BOTTOM,
-      );
+      } catch (e) {
+        print(e);
+        setState(() {
+          error = e.message;
+        });
+      }
+
+//      authMethods
+//          .signInWithEmailAndPassword(emailTEC.text, passwordTEC.text)
+//          .then((value) {
+//        if (value != null) {
+//          HelperFunctions.saveUserLoggedInSharedPreference(true);
+//          HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
+//          Constants.ownerEmail = emailTEC.text;
+//          print("Logged In true");
+//          databaseMethods.getUserByUserEmail(emailTEC.text).then((value) {
+//            snapshotUserInfo = value;
+//            HelperFunctions.saveUserNameSharedPreference(
+//                snapshotUserInfo.documents[0].data["username"]);
+//            Constants.ownerName =
+//            snapshotUserInfo.documents[0].data["username"];
+//          });
+//          Navigator.pushReplacement(
+//              context,
+//              MaterialPageRoute(
+//                builder: (context) => ChatRoom(),
+//              ));
+//        } else {
+//          AlertDialog(
+//            title: Text("Verify Email"),
+//            content: Text("Please verify your email to continue."),
+//            actions: <Widget>[
+//              FlatButton(
+//                child: Text("Close"),
+//                onPressed: () {
+//                  Navigator.of(context).pop();
+//                },
+//              )
+//            ],
+//          );
+//        }
+//      });
+//    }
+//    } else {
+//      Fluttertoast.showToast(
+//        msg: "Incorrect Email/Password!",
+//        toastLength: Toast.LENGTH_LONG,
+//        gravity: ToastGravity.BOTTOM,
+//      );
+//    }
     }
   }
 
@@ -85,6 +123,42 @@ class _SignInState extends State<SignIn> {
     // TODO: implement initState
     super.initState();
   }
+
+  Widget showAlert() {
+    if (error != null) {
+      return Container(
+        color: Colors.amberAccent,
+        width: double.infinity,
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Icon(Icons.error_outline),
+            ),
+            Expanded(
+              child: Text(error,
+                maxLines: 3,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    error = null;
+                  });
+                },
+              ),
+            )
+          ],
+        ),
+      );
+    }
+    return SizedBox(height: 0,);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -98,14 +172,14 @@ class _SignInState extends State<SignIn> {
         child: Container(
           decoration: BoxDecoration(
               gradient: LinearGradient(
-            colors: [
-              Color.fromARGB(255, 0, 0, 0),
-              Color.fromARGB(100, 39, 38, 38)
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+                colors: [
+                  Color.fromARGB(255, 0, 0, 0),
+                  Color.fromARGB(100, 39, 38, 38)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
 //              tileMode: TileMode.mirror,
-          )),
+              )),
           child: Center(
             child: Container(
               width: 370,
@@ -134,24 +208,20 @@ class _SignInState extends State<SignIn> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: EdgeInsets.only(bottom: 90, top: 20),
+                    padding: EdgeInsets.only(bottom: 40, top: 20),
                     child: Text(
                       "Welcome back.",
-                      style: TextStyle(color: Colors.white, fontSize: 50),
+                      style: TextStyle(color: Colors.white, fontSize: 40),
                     ),
                   ),
+                  showAlert(),
+                  SizedBox(height: 20,),
                   Form(
                     key: formKey,
                     child: Column(
                       children: [
                         TextFormField(
-                          validator: (val) {
-                            return RegExp(
-                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                .hasMatch(val)
-                                ? null
-                                : "Please enter a valid e-mail ID.";
-                          },
+                          validator: EmailValidator.validate,
                           controller: emailTEC,
                           style: simpleTextStyle(),
                           decoration: new InputDecoration(
@@ -172,11 +242,7 @@ class _SignInState extends State<SignIn> {
                         ),
                         TextFormField(
                             obscureText: true,
-                            validator: (val) {
-                              return passwordTEC.text.length >= 8
-                                  ? null
-                                  : "Incorrect Password";
-                            },
+                            validator: PasswordValidator.validate,
                             controller: passwordTEC,
                             style: simpleTextStyle(),
                             decoration: new InputDecoration(

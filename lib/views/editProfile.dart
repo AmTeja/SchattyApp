@@ -39,6 +39,7 @@ class _EditProfileState extends State<EditProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color.fromARGB(100, 39, 38, 38),
       appBar: AppBar(
         title: Text(
           "Schatty",
@@ -46,6 +47,7 @@ class _EditProfileState extends State<EditProfile> {
             color: Colors.white,
           ),
         ),
+        backgroundColor: Colors.black,
       ),
       body: Center(
         child: Column(
@@ -83,15 +85,15 @@ class _EditProfileState extends State<EditProfile> {
                 },
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(40)),
-                color: Colors.blue,
+                color: Colors.white,
                 elevation: 3,
-                splashColor: Colors.white,
+                splashColor: Colors.black,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Text(
                       "Edit Picture",
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextStyle(color: Colors.black, fontSize: 18),
                     ),
                     SizedBox(
                       width: 20,
@@ -99,7 +101,7 @@ class _EditProfileState extends State<EditProfile> {
                     Icon(
                       Icons.camera_enhance,
                       size: 40,
-                      color: Colors.white,
+                      color: Colors.black,
                     )
                   ],
                 ),

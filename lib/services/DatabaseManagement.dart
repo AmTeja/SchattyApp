@@ -91,11 +91,12 @@ class DatabaseMethods {
     return url;
   }
 
-  updateChatRoomTime(chatRoomID, TimeMap) async {
+  updateChatRoomTime(chatRoomID, timeMap) async {
+    print('Called');
     await Firestore.instance
         .collection("ChatRoom")
         .document(chatRoomID)
-        .updateData(TimeMap)
+        .updateData(timeMap)
         .catchError((onError) {
       print(onError);
     });
@@ -111,9 +112,15 @@ class DatabaseMethods {
 
   getChatRooms(String userName) async
   {
-    return Firestore.instance.collection("ChatRoom")
-        .where("users", arrayContains: userName)
-        .orderBy('time', descending: true).snapshots();
+    try {
+      return Firestore.instance
+          .collection("ChatRoom")
+          .where("users", arrayContains: userName)
+          .orderBy("time", descending: true)
+          .snapshots();
+    } catch (e) {
+      print(e);
+    }
   }
 
 

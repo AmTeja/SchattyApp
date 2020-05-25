@@ -15,7 +15,6 @@ class _UserInfoState extends State<UserInfo> {
   String profileURL;
 
   getData() async {
-    int length;
     print(widget.userName);
     await Firestore.instance
         .collection('users')
@@ -24,7 +23,6 @@ class _UserInfoState extends State<UserInfo> {
         .then((value) async {
       uid = await value.documents[0].data["uid"];
       profileURL = await value.documents[0].data["photoURL"];
-      length = value.documents.length;
       setState(() {});
     }).catchError((e) {
       print(e);

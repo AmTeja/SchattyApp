@@ -39,6 +39,8 @@ class _ChatRoomState extends State<ChatRoom> {
   logOut(BuildContext context) {
     authMethods.signOut();
     HelperFunctions.saveUserLoggedInSharedPreference(false);
+    HelperFunctions.saveUserNameSharedPreference(null);
+    HelperFunctions.saveUserEmailSharedPreference(null);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) =>
         AuthHome()));
@@ -47,6 +49,8 @@ class _ChatRoomState extends State<ChatRoom> {
   signOut(BuildContext context) {
     authMethods.signOutGoogle();
     HelperFunctions.saveUserLoggedInSharedPreference(false);
+    HelperFunctions.saveUserNameSharedPreference(null);
+    HelperFunctions.saveUserEmailSharedPreference(null);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
@@ -58,7 +62,7 @@ class _ChatRoomState extends State<ChatRoom> {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            child: Row(
+            child: Column(
               children: <Widget>[
                 CircleAvatar(
                   radius: 50,
@@ -75,18 +79,22 @@ class _ChatRoomState extends State<ChatRoom> {
                   ),
                 ),
                 SizedBox(
-                  width: 50,
+                  width: 40,
                 ),
-                Container(
-                  alignment: Alignment.center,
-                  child: Constants.ownerName != null
-                      ? Text(
-                          Constants.ownerName,
-                          textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: Colors.white,
-                    ),) : Text("Error"),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Constants.ownerName != null
+                        ? Text(
+                            Constants.ownerName,
+                            textAlign: TextAlign.left,
+                            style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text("Error"),
+                  ),
                 )
               ],
             ),
@@ -221,14 +229,19 @@ class _ChatRoomState extends State<ChatRoom> {
   }
 
   getUserInfo() async {
-    print("getting user infO");
     Constants.ownerName = await HelperFunctions.getUserNameSharedPreference();
+    print("getting user infO");
+    print('Saved Username: $Constants.ownerName');
     print(Constants.ownerName);
-    databaseMethods.getChatRooms(Constants.ownerName).then((val) {
-      setState(() {
-        chatRoomsStream = val;
+    try {
+      databaseMethods.getChatRooms(Constants.ownerName).then((val) {
+        setState(() {
+          chatRoomsStream = val;
+        });
       });
-    });
+    } catch (e) {
+      print(e);
+    }
   }
 
   @override

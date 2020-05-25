@@ -1,48 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:schatty/model/user.dart';
 
 class AuthMethods {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn googleSignIn = new GoogleSignIn();
-  User _userFromFirebaseUser(FirebaseUser user) {
-    return user != null ? User(userId: user.uid) : null;
-  }
 
-  Future signInWithEmailAndPassword(String email, String password) async {
-    try {
-      AuthResult result = await _auth.signInWithEmailAndPassword(
-          email: email, password: password);
-      FirebaseUser firebaseUser = result.user;
-
-      if (firebaseUser.isEmailVerified) {
-        return _userFromFirebaseUser(firebaseUser);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  Future signUpWithEmailAndPassword(String email, String password) async {
-    try{
-      AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      FirebaseUser firebaseUser = result.user;
-      try {
-        await firebaseUser.sendEmailVerification();
-      }
-      catch (e) {
-        print("An error has occured while trying to send email verification.");
-        print(e.toString());
-      }
-      return _userFromFirebaseUser(firebaseUser);
-    }catch(e)
-    {
-      print(e.toString());
-    }
-  }
+//  User _userFromFirebaseUser(FirebaseUser user) {
+//    return user != null ? User(userId: user.uid) : null;
+//  }
 
   Future resetPass(String email) async
   {
@@ -100,7 +66,39 @@ class AuthMethods {
 
   void signOutGoogle() async {
     await googleSignIn.signOut();
-
     print("User Signed Out");
+  }
+}
+
+class EmailValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return "Email cannot be empty";
+    }
+    return null;
+  }
+}
+
+class NameValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return "Username cannot be empty";
+    }
+    if (value.length < 5) {
+      return "Username must be at least 5 chars long";
+    }
+    if (value.length > 20) {
+      return "Username must be less than 20 chars long";
+    }
+    return null;
+  }
+}
+
+class PasswordValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return "Password cannot be empty";
+    }
+    return null;
   }
 }

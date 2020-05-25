@@ -34,7 +34,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
       Map<String, dynamic> chatRoomMap = {
         "users": users,
-        "chatRoomId": chatRoomID
+        "chatRoomId": chatRoomID,
+        "time": DateTime.now().millisecondsSinceEpoch
       };
 
       DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);
