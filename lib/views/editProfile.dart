@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 
 class EditProfile extends StatefulWidget {
@@ -156,6 +157,7 @@ class _EditProfileState extends State<EditProfile> {
         .getDownloadURL(); //download url of the image uploaded
     String url = downloadUrl.toString();
     print(url);
+    await HelperFunctions.saveUserImageURL(url);
     databaseMethods.updateProfilePicture(downloadUrl.toString());
     setState(() {
       profilePicURL = url;

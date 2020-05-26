@@ -90,7 +90,9 @@ class NameValidator {
     if (value.length > 20) {
       return "Username must be less than 20 chars long";
     }
-    return null;
+    return RegExp(r"^[a-zA-Z0-9_]+([_]?[a-zA-Z0-9])*$").hasMatch(value)
+        ? null
+        : "Username can contain only alphanumeric and underscore";
   }
 }
 

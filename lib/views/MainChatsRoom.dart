@@ -41,6 +41,7 @@ class _ChatRoomState extends State<ChatRoom> {
     HelperFunctions.saveUserLoggedInSharedPreference(false);
     HelperFunctions.saveUserNameSharedPreference(null);
     HelperFunctions.saveUserEmailSharedPreference(null);
+    HelperFunctions.saveUserImageURL(null);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) =>
         AuthHome()));
@@ -51,6 +52,7 @@ class _ChatRoomState extends State<ChatRoom> {
     HelperFunctions.saveUserLoggedInSharedPreference(false);
     HelperFunctions.saveUserNameSharedPreference(null);
     HelperFunctions.saveUserEmailSharedPreference(null);
+    HelperFunctions.saveUserImageURL(null);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
@@ -215,17 +217,24 @@ class _ChatRoomState extends State<ChatRoom> {
     assignURL();
     setState(() {
       firebaseMessaging.getToken().then((value) {
-        print(value);
       });
     });
   }
 
   assignURL() async
   {
-    url = await databaseMethods.getProfileUrl();
-    setState(() {
-
+    String tempURL;
+    await HelperFunctions.getUserImageURL().then((value) {
+      tempURL = value;
+      print(tempURL);
     });
+    if (tempURL == null) {
+      url = await databaseMethods.getProfileUrl();
+      setState(() {});
+    } else {
+      url = tempURL;
+      setState(() {});
+    }
   }
 
   getUserInfo() async {

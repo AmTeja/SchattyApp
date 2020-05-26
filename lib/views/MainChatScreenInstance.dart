@@ -113,7 +113,6 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Row(
         children: <Widget>[
           RawMaterialButton(
-
             onPressed: () {},
             child: Icon(
               Icons.camera_alt,

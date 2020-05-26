@@ -4,15 +4,9 @@ class HelperFunctions {
   static String sharedPreferenceUserLoggedInKey = "LOGGEDIN";
   static String sharedPreferenceUserNameKey = "KEYUSERNAME";
   static String sharedPreferenceUserEmailKey = "KEYUSEREMAIL";
-  static String sharedPreferenceFirstTime = "FIRSTTIME";
+  static String sharedPreferenceImageURL = "IMAGEURL";
 
   //Saving data to SharedPreference
-
-//  static Future<void> saveKeyPair(Future<crypto.AsymmetricKeyPair> keyPair ) async{
-//  final SharedPreferences preferences = await SharedPreferences.getInstance();
-//  String publickey = encodePrivateKeyToPemPKCS1(keyPair.privateKey);
-//  return await preferences.
-//  }
 
   static Future<void> saveUserLoggedInSharedPreference(
       bool isUserLoggedIn) async {
@@ -31,7 +25,20 @@ class HelperFunctions {
     return await prefers.setString(sharedPreferenceUserEmailKey, userEmail);
   }
 
+  static Future<void> saveUserImageURL(String imageURL) async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    return await sharedPreferences.setString(
+        sharedPreferenceImageURL, imageURL);
+  }
+
   //Getting data from Shared Preference
+
+  static Future<String> getUserImageURL() async {
+    final SharedPreferences sharedPreferences = await SharedPreferences
+        .getInstance();
+    return sharedPreferences.getString(sharedPreferenceImageURL);
+  }
 
   static Future<bool> getUserLoggedInSharedPreference() async {
     final SharedPreferences prefers = await SharedPreferences.getInstance();

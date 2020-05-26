@@ -23,104 +23,106 @@ class _SignInState extends State<SignIn> {
   AuthMethods authMethods = new AuthMethods();
   DatabaseMethods databaseMethods = new DatabaseMethods();
 
-  TextEditingController emailTEC = new TextEditingController();
+  TextEditingController userNameTEC = new TextEditingController();
   TextEditingController passwordTEC = new TextEditingController();
 
   QuerySnapshot snapshotUserInfo;
 
+  String email;
   String error;
 
+  bool hidePassword = true;
+  bool userNameExists = false;
   bool isLoading = false;
   bool incorrectPass = false;
 
+  getUserExists() async {
+    databaseMethods.getUserByUserName(userNameTEC.text).then((val) {
+      if (val != null || val != 0) {
+        setState(() {
+          userNameExists = true;
+          print("User exists");
+        });
+      }
+    });
+  }
+
   signIn() async {
     if (formKey.currentState.validate()) {
-      setState(() {
-        isLoading = true;
-      });
-
       try {
-        FirebaseAuth _auth = FirebaseAuth.instance;
-        AuthResult result = await _auth.signInWithEmailAndPassword(
-            email: emailTEC.text, password: passwordTEC.text);
-        FirebaseUser firebaseUser = result.user;
-
-        if (firebaseUser != null) {
-          HelperFunctions.saveUserLoggedInSharedPreference(true);
-          HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
-          Constants.ownerEmail = emailTEC.text;
-          print("Logged In true");
-          await databaseMethods
-              .getUserByUserEmail(emailTEC.text)
-              .then((value) async {
-            snapshotUserInfo = value;
-            HelperFunctions.saveUserNameSharedPreference(
-                await snapshotUserInfo.documents[0].data["username"]);
-            Constants.ownerName =
-                await snapshotUserInfo.documents[0].data["username"];
+        await getUserExists();
+        if (userNameExists) {
+          setState(() {
+            isLoading = true;
           });
-          Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChatRoom(),
-              ));
+          await Firestore.instance
+              .collection("users")
+              .where("username", isEqualTo: userNameTEC.text)
+              .getDocuments().then((value) async {
+            print(value.documents[0].data["email"]);
+            email = value.documents[0].data["email"];
+          });
+          if (email != null) {
+            FirebaseAuth _auth = FirebaseAuth.instance;
+            AuthResult result = await _auth.signInWithEmailAndPassword(
+                email: email, password: passwordTEC.text);
+            FirebaseUser firebaseUser = result.user;
+
+            if (firebaseUser != null && firebaseUser.isEmailVerified) {
+              HelperFunctions.saveUserLoggedInSharedPreference(true);
+              HelperFunctions.saveUserEmailSharedPreference(email);
+              Constants.ownerEmail = email;
+              print("Logged In true");
+              await databaseMethods
+                  .getUserByUserEmail(email)
+                  .then((value) async {
+                snapshotUserInfo = value;
+                HelperFunctions.saveUserNameSharedPreference(
+                    await snapshotUserInfo.documents[0].data["username"]);
+                Constants.ownerName =
+                await snapshotUserInfo.documents[0].data["username"];
+              });
+              setState(() {
+                isLoading = false;
+              });
+              Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatRoom(),
+                  ));
+            }
+            else {
+              await firebaseUser.sendEmailVerification();
+              setState(() {
+                error = "Email not Verified. Verification mail was sent!";
+                isLoading = false;
+              });
+            }
+          }
+          else {
+            print("null email");
+          }
         }
       } catch (e) {
         print(e);
-        setState(() {
-          error = e.message;
-        });
+        if (e.message == "Invalid value") {
+          setState(() {
+            error = "Username does not exist";
+            isLoading = false;
+          });
+        }
+        else {
+          setState(() {
+            error = e.message;
+            isLoading = false;
+          });
+        }
       }
-
-//      authMethods
-//          .signInWithEmailAndPassword(emailTEC.text, passwordTEC.text)
-//          .then((value) {
-//        if (value != null) {
-//          HelperFunctions.saveUserLoggedInSharedPreference(true);
-//          HelperFunctions.saveUserEmailSharedPreference(emailTEC.text);
-//          Constants.ownerEmail = emailTEC.text;
-//          print("Logged In true");
-//          databaseMethods.getUserByUserEmail(emailTEC.text).then((value) {
-//            snapshotUserInfo = value;
-//            HelperFunctions.saveUserNameSharedPreference(
-//                snapshotUserInfo.documents[0].data["username"]);
-//            Constants.ownerName =
-//            snapshotUserInfo.documents[0].data["username"];
-//          });
-//          Navigator.pushReplacement(
-//              context,
-//              MaterialPageRoute(
-//                builder: (context) => ChatRoom(),
-//              ));
-//        } else {
-//          AlertDialog(
-//            title: Text("Verify Email"),
-//            content: Text("Please verify your email to continue."),
-//            actions: <Widget>[
-//              FlatButton(
-//                child: Text("Close"),
-//                onPressed: () {
-//                  Navigator.of(context).pop();
-//                },
-//              )
-//            ],
-//          );
-//        }
-//      });
-//    }
-//    } else {
-//      Fluttertoast.showToast(
-//        msg: "Incorrect Email/Password!",
-//        toastLength: Toast.LENGTH_LONG,
-//        gravity: ToastGravity.BOTTOM,
-//      );
-//    }
     }
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
@@ -159,13 +161,12 @@ class _SignInState extends State<SignIn> {
     return SizedBox(height: 0,);
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       //appBar: appBarMain(context),
-      body: GestureDetector(
+      body: !isLoading ? GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
         },
@@ -178,7 +179,6 @@ class _SignInState extends State<SignIn> {
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-//              tileMode: TileMode.mirror,
               )),
           child: Center(
             child: Container(
@@ -207,11 +207,13 @@ class _SignInState extends State<SignIn> {
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: EdgeInsets.only(bottom: 40, top: 20),
-                    child: Text(
-                      "Welcome back.",
-                      style: TextStyle(color: Colors.white, fontSize: 40),
+                  Flexible(
+                    child: Container(
+                      padding: EdgeInsets.only(bottom: 40, top: 20),
+                      child: Text(
+                        "Welcome back.",
+                        style: TextStyle(color: Colors.white, fontSize: 40),
+                      ),
                     ),
                   ),
                   showAlert(),
@@ -221,13 +223,13 @@ class _SignInState extends State<SignIn> {
                     child: Column(
                       children: [
                         TextFormField(
-                          validator: EmailValidator.validate,
-                          controller: emailTEC,
+                          validator: NameValidator.validate,
+                          controller: userNameTEC,
                           style: simpleTextStyle(),
                           decoration: new InputDecoration(
                               contentPadding: EdgeInsets.only(
                                   left: 15, top: 20, bottom: 20),
-                              labelText: "Email",
+                              labelText: "Username",
                               labelStyle: TextStyle(
                                 fontSize: 18,
                                 color: Colors.white60,
@@ -241,11 +243,22 @@ class _SignInState extends State<SignIn> {
                           height: 20,
                         ),
                         TextFormField(
-                            obscureText: true,
+                            obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
                             style: simpleTextStyle(),
                             decoration: new InputDecoration(
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      hidePassword = !hidePassword;
+                                    });
+                                  },
+                                  icon: Icon(Icons.remove_red_eye),
+                                  color: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 20),
+                                ),
                                 contentPadding: EdgeInsets.only(
                                     left: 15, top: 20, bottom: 20),
                                 labelText: "Password",
@@ -305,6 +318,9 @@ class _SignInState extends State<SignIn> {
             ),
           ),
         ),
+      ) :
+      Container(
+        child: Center(child: CircularProgressIndicator()),
       ),
     );
   }

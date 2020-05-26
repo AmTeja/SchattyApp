@@ -31,6 +31,8 @@ class _SignUpState extends State<SignUp> {
 
   bool userNameExists = false;
   bool isLoading = false;
+  bool verificationSent = false;
+  bool hidePassword = true;
 
   signUp() async {
     if (formKey.currentState.validate() &&
@@ -59,15 +61,13 @@ class _SignUpState extends State<SignUp> {
               "photoUrl": profilePicURL
             };
             databaseMethods.uploadUserInfo(userInfoMap);
-            HelperFunctions.saveUserLoggedInSharedPreference(true);
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => ChatRoom()));
-            HelperFunctions.saveUserEmailSharedPreference(
-                emailTEC.text); //Saving username and email cache on device
-            HelperFunctions.saveUserNameSharedPreference(userNameTEC.text);
-            setState(() {
+            await firebaseUser.sendEmailVerification().then((value) => {
+                  setState(() {
+              verificationSent = true;
               isLoading = false;
+            })
             });
+
           }
         } else {
           setState(() {
@@ -91,7 +91,7 @@ class _SignUpState extends State<SignUp> {
     }
   }
 
-  Widget showAlert() {
+  Widget showErrorAlert() {
     if (error != null) {
       return Container(
         color: Colors.amberAccent,
@@ -116,6 +116,42 @@ class _SignUpState extends State<SignUp> {
                 onPressed: () {
                   setState(() {
                     error = null;
+                  });
+                },
+              ),
+            )
+          ],
+        ),
+      );
+    }
+    return SizedBox(height: 0,);
+  }
+
+  Widget showVerification() {
+    if (verificationSent) {
+      return Container(
+        color: Colors.teal,
+        width: double.infinity,
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Icon(Icons.check),
+            ),
+            Expanded(
+              child: Text(
+                "Verification Email Sent!",
+                maxLines: 3,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    verificationSent = false;
                   });
                 },
               ),
@@ -188,20 +224,23 @@ class _SignUpState extends State<SignUp> {
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: EdgeInsets.only(
-                        right: 140, bottom: 39,),
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        "Join Us",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
+                    Flexible(
+                      child: Container(
+                        padding: EdgeInsets.only(
+                          right: 140, top: 40,),
+                        alignment: Alignment.topCenter,
+                        child: Text(
+                          "Join Us",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 40,
+                          ),
                         ),
                       ),
                     ),
-                    showAlert(),
-                    SizedBox(height: 20,),
+                    showErrorAlert(),
+                    showVerification(),
+                    SizedBox(height: 30,),
                     Form(
                       key: formKey,
                       child: Column(
@@ -247,11 +286,22 @@ class _SignUpState extends State<SignUp> {
                             height: 20,
                           ),
                           TextFormField(
-                            obscureText: true,
+                            obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
                             style: simpleTextStyle(),
                             decoration: new InputDecoration(
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      hidePassword = !hidePassword;
+                                    });
+                                  },
+                                  icon: Icon(Icons.remove_red_eye),
+                                  color: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 20),
+                                ),
                                 contentPadding: EdgeInsets.only(left: 15),
                                 labelText: "Password",
                                 labelStyle: TextStyle(
@@ -267,7 +317,7 @@ class _SignUpState extends State<SignUp> {
                             height: 20,
                           ),
                           TextFormField(
-                            obscureText: true,
+                            obscureText: hidePassword,
                             validator: (val) {
                               return passwordTEC.text.isNotEmpty
                                   ? null
@@ -276,6 +326,17 @@ class _SignUpState extends State<SignUp> {
                             controller: rePasswordTEC,
                             style: simpleTextStyle(),
                             decoration: new InputDecoration(
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      hidePassword = !hidePassword;
+                                    });
+                                  },
+                                  icon: Icon(Icons.remove_red_eye),
+                                  color: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 10, horizontal: 20),
+                                ),
                                 contentPadding: EdgeInsets.only(left: 15),
                                 labelText: "Re-Enter Password",
                                 labelStyle: TextStyle(
@@ -293,23 +354,24 @@ class _SignUpState extends State<SignUp> {
                     SizedBox(
                       height: 30,
                     ),
-                    MaterialButton(
-                      onPressed: () {
-                        signUp();
-                      },
-                      color: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 90),
-                      textColor: Colors.black,
-                      splashColor: Colors.black,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40)),
-                      elevation: 4,
-                      child: Text("Sign Up"),
+                    Flexible(
+                      fit: FlexFit.loose,
+                      child: MaterialButton(
+                        onPressed: () {
+                          signUp();
+                        },
+                        color: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                            vertical: 20, horizontal: 90),
+                        textColor: Colors.black,
+                        splashColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(40)),
+                        elevation: 4,
+                        child: Text("Sign Up"),
+                      ),
                     ),
-                    SizedBox(
-                      height: 20,
-                    ),
+                    SizedBox(height: error != null ? 20 : 120,)
                   ],
                 ),
               ),

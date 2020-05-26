@@ -1,13 +1,22 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/model/user.dart';
 
 class DatabaseMethods {
   getUserByUserName(String username) async {
-    return await Firestore.instance
+    await Firestore.instance
         .collection("users")
         .where("username", isEqualTo: username)
-        .getDocuments();
+        .getDocuments()
+        .then((value) {
+      if (value.documents.length <= 0) {
+//              print(value.documents.length);
+        return null;
+      } else {
+        return value.documents.length;
+      }
+    });
   }
 
   getUserByUserEmail(String email) async {
@@ -17,6 +26,8 @@ class DatabaseMethods {
         .getDocuments();
   }
 
+  getEmailByUsername(String username) async {
+  }
   uploadUserInfo(userMap) {
     Firestore.instance.collection("users").add(userMap).catchError((e) {
       print(e.toString());
@@ -50,12 +61,13 @@ class DatabaseMethods {
       'photoURL': userInfo.profileImageUrl
     };
 
+    await HelperFunctions.saveUserImageURL(picUrl);
     await FirebaseAuth.instance.currentUser().then((user) async {
       await Firestore.instance
           .collection('/users')
           .where('uid', isEqualTo: user.uid)
           .getDocuments()
-          .then((docs) {
+          .then((docs) async {
         Firestore.instance
             .document('/users/${docs.documents[0].documentID}')
             .updateData(imageMap).whenComplete(() {
@@ -84,6 +96,7 @@ class DatabaseMethods {
         .then((value) async {
       url = await value.documents[0].data["photoURL"];
 //        length = await value.documents.length;
+      await HelperFunctions.saveUserImageURL(url);
       print(length);
     }).catchError((e) {
       print(e);
@@ -116,7 +129,7 @@ class DatabaseMethods {
       return Firestore.instance
           .collection("ChatRoom")
           .where("users", arrayContains: userName)
-          .orderBy("time", descending: true)
+//          .orderBy("time", descending: true)
           .snapshots();
     } catch (e) {
       print(e);

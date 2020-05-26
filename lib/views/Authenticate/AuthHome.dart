@@ -59,16 +59,20 @@ class _AuthHomeState extends State<AuthHome> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.only(bottom: 100, right: 0),
-                    alignment: Alignment.topCenter,
-                    child: Text("Schatty",
-                      textAlign: TextAlign.left,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 70,
-                        fontFamily: 'North Regular',
-                      ),),
+                  Flexible(
+                    child: Container(
+                      padding: EdgeInsets.only(bottom: 100, top: 80),
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                        "Schatty",
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 70,
+                          fontFamily: 'North Regular',
+                        ),
+                      ),
+                    ),
                   ),
                   signInButton(),
                   SizedBox(
@@ -79,7 +83,7 @@ class _AuthHomeState extends State<AuthHome> {
                     height: 20,
                   ),
                   googleButton(),
-                  SizedBox(height: 100,)
+                  SizedBox(height: 180,)
                 ],
               ),
             ),
@@ -207,9 +211,10 @@ class _AuthHomeState extends State<AuthHome> {
     authMethods.signInWithGoogle().then((val) {
       if (val != null) {
         String username = authMethods.googleSignIn.currentUser.displayName;
-        HelperFunctions.saveUserNameSharedPreference(username);
+        HelperFunctions.saveUserNameSharedPreference(
+            username.replaceAll(" ", "_"));
         HelperFunctions.saveUserLoggedInSharedPreference(true);
-        Navigator.push(
+        Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => ChatRoom()));
       } else {}
     });
