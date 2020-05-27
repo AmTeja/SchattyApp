@@ -36,8 +36,14 @@ class _ChatRoomState extends State<ChatRoom> {
   var imageUrl;
   String url;
 
-  logOut(BuildContext context) {
-    authMethods.signOut();
+  logOut(BuildContext context) async {
+    bool isGoogleUser = false;
+    isGoogleUser = await HelperFunctions.getIsGoogleUser();
+    if (isGoogleUser) {
+      authMethods.signOut();
+    } else {
+      authMethods.signOutGoogle();
+    }
     HelperFunctions.saveUserLoggedInSharedPreference(false);
     HelperFunctions.saveUserNameSharedPreference(null);
     HelperFunctions.saveUserEmailSharedPreference(null);
@@ -45,16 +51,6 @@ class _ChatRoomState extends State<ChatRoom> {
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) =>
         AuthHome()));
-  }
-
-  signOut(BuildContext context) {
-    authMethods.signOutGoogle();
-    HelperFunctions.saveUserLoggedInSharedPreference(false);
-    HelperFunctions.saveUserNameSharedPreference(null);
-    HelperFunctions.saveUserEmailSharedPreference(null);
-    HelperFunctions.saveUserImageURL(null);
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
 
   Widget mainDrawer(BuildContext context) {
@@ -145,24 +141,6 @@ class _ChatRoomState extends State<ChatRoom> {
                   ])),
           ListTile(
               onTap: () {
-                signOut(context);
-              },
-              title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text('Sign out',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),),
-                    Container(
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(Icons.exit_to_app)
-                    ),
-                  ])
-          ),
-          ListTile(
-              onTap: () {
                 Navigator.pop(context);
                 Navigator.pushReplacement(context, MaterialPageRoute(
                     builder: (context) => ChatRoom()
@@ -215,33 +193,16 @@ class _ChatRoomState extends State<ChatRoom> {
     super.initState();
     getUserInfo();
     assignURL();
-    setState(() {
-      firebaseMessaging.getToken().then((value) {
-      });
-    });
   }
 
   assignURL() async
   {
-    String tempURL;
-    await HelperFunctions.getUserImageURL().then((value) {
-      tempURL = value;
-      print(tempURL);
-    });
-    if (tempURL == null) {
       url = await databaseMethods.getProfileUrl();
       setState(() {});
-    } else {
-      url = tempURL;
-      setState(() {});
-    }
   }
 
   getUserInfo() async {
     Constants.ownerName = await HelperFunctions.getUserNameSharedPreference();
-    print("getting user infO");
-    print('Saved Username: $Constants.ownerName');
-    print(Constants.ownerName);
     try {
       databaseMethods.getChatRooms(Constants.ownerName).then((val) {
         setState(() {
@@ -249,7 +210,7 @@ class _ChatRoomState extends State<ChatRoom> {
         });
       });
     } catch (e) {
-      print(e);
+      print("getUserInfo: $e");
     }
   }
 
@@ -314,7 +275,11 @@ class ChatRoomTile extends StatelessWidget {
         ));
       },
       child: Container(
-        color: Colors.transparent,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          border: Border(bottom: BorderSide(
+              color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
+        ),
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         margin: EdgeInsets.symmetric(vertical: 2),
         child: Row(

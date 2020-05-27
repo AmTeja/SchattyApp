@@ -71,6 +71,7 @@ class _SignInState extends State<SignIn> {
             if (firebaseUser != null && firebaseUser.isEmailVerified) {
               HelperFunctions.saveUserLoggedInSharedPreference(true);
               HelperFunctions.saveUserEmailSharedPreference(email);
+              HelperFunctions.saveIsGoogleUser(false);
               Constants.ownerEmail = email;
               print("Logged In true");
               await databaseMethods

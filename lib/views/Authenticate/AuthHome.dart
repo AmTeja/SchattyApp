@@ -212,8 +212,10 @@ class _AuthHomeState extends State<AuthHome> {
       if (val != null) {
         String username = authMethods.googleSignIn.currentUser.displayName;
         HelperFunctions.saveUserNameSharedPreference(
-            username.replaceAll(" ", "_"));
+            username.replaceAll(" ", ""));
         HelperFunctions.saveUserLoggedInSharedPreference(true);
+        print(username.replaceAll(" ", ""));
+        HelperFunctions.saveIsGoogleUser(true);
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => ChatRoom()));
       } else {}

@@ -40,7 +40,7 @@ class DatabaseMethods {
         .document(chatRoomID)
         .setData(chatRoomMap)
         .catchError((e) {
-      print(e.toString());
+      print("CreateChatRoom: $e");
     });
   }
 
@@ -71,7 +71,6 @@ class DatabaseMethods {
         Firestore.instance
             .document('/users/${docs.documents[0].documentID}')
             .updateData(imageMap).whenComplete(() {
-          print('Updated');
         }).catchError((onError) {
           print(onError);
         }).catchError((onError) {
@@ -87,7 +86,6 @@ class DatabaseMethods {
     String uid;
     await FirebaseAuth.instance.currentUser().then((user) {
       uid = user.uid;
-      print(uid);
     });
 
     await Firestore.instance.collection('users')
@@ -99,19 +97,18 @@ class DatabaseMethods {
       await HelperFunctions.saveUserImageURL(url);
       print(length);
     }).catchError((e) {
-      print(e);
+      print("URL ERROR: $e");
     });
     return url;
   }
 
   updateChatRoomTime(chatRoomID, timeMap) async {
-    print('Called');
     await Firestore.instance
         .collection("ChatRoom")
         .document(chatRoomID)
         .updateData(timeMap)
         .catchError((onError) {
-      print(onError);
+      print("ChatRoomTime: $onError");
     });
   }
 
@@ -128,11 +125,11 @@ class DatabaseMethods {
     try {
       return Firestore.instance
           .collection("ChatRoom")
+          .orderBy("lastTime", descending: true)
           .where("users", arrayContains: userName)
-//          .orderBy("time", descending: true)
           .snapshots();
     } catch (e) {
-      print(e);
+      print("GetChatRooms: $e");
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class UserInfo extends StatefulWidget {
@@ -18,7 +19,7 @@ class _UserInfoState extends State<UserInfo> {
     print(widget.userName);
     await Firestore.instance
         .collection('users')
-        .where('username', isEqualTo: widget.userName)
+        .where('username', isEqualTo: widget.userName.replaceAll(" ", "_"))
         .getDocuments()
         .then((value) async {
       uid = await value.documents[0].data["uid"];
@@ -40,8 +41,10 @@ class _UserInfoState extends State<UserInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.black,
         title: Text(widget.userName),
       ),
+      backgroundColor: Color.fromARGB(255, 14, 14, 14),
       body: Center(
         child: Column(
           children: <Widget>[
@@ -67,20 +70,29 @@ class _UserInfoState extends State<UserInfo> {
               ),
             ),
             SizedBox(
-              height: 30,
+              height: 40,
             ),
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 30),
+              padding: EdgeInsets.symmetric(horizontal: 100),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Text(
                     "Username: ",
-                    style: TextStyle(fontSize: 24),
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  Text(
-                    widget.userName,
-                    style: TextStyle(fontSize: 24),
+                  SizedBox(width: 10,),
+                  Flexible(
+                    child: Text(
+                      widget.userName,
+                      style: TextStyle(fontSize: 24,
+                          color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),

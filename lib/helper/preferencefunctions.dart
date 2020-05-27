@@ -5,8 +5,15 @@ class HelperFunctions {
   static String sharedPreferenceUserNameKey = "KEYUSERNAME";
   static String sharedPreferenceUserEmailKey = "KEYUSEREMAIL";
   static String sharedPreferenceImageURL = "IMAGEURL";
+  static String isGoogleUser = "GOOGLEUSER";
 
   //Saving data to SharedPreference
+
+  static Future<void> saveIsGoogleUser(bool googleUser) async {
+    final SharedPreferences sharedPreferences =
+        await SharedPreferences.getInstance();
+    return await sharedPreferences.setBool(isGoogleUser, googleUser);
+  }
 
   static Future<void> saveUserLoggedInSharedPreference(
       bool isUserLoggedIn) async {
@@ -33,6 +40,11 @@ class HelperFunctions {
   }
 
   //Getting data from Shared Preference
+
+  static Future<bool> getIsGoogleUser() async {
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
+    return preferences.getBool(isGoogleUser);
+  }
 
   static Future<String> getUserImageURL() async {
     final SharedPreferences sharedPreferences = await SharedPreferences

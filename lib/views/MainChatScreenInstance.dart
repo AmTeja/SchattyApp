@@ -166,7 +166,7 @@ class _ChatScreenState extends State<ChatScreen> {
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
       messageTEC.text = "";
       Map<String, dynamic> timeMap = {
-        "time": DateTime.now().millisecondsSinceEpoch,
+        "lastTime": DateTime.now().millisecondsSinceEpoch,
       };
       databaseMethods.updateChatRoomTime(widget.chatRoomID, timeMap);
     }

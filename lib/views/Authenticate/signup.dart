@@ -372,8 +372,8 @@ class _SignUpState extends State<SignUp> {
                       ),
                     ),
                     SizedBox(height: error != null ? 20 : 120,)
-                  ],
-                ),
+                        ],
+                      ),
               ),
             ),
           ),
@@ -385,7 +385,8 @@ class _SignUpState extends State<SignUp> {
   void signInWithGoogle() {
     authMethods.signInWithGoogle().whenComplete(() {
       String username = authMethods.googleSignIn.currentUser.displayName;
-      HelperFunctions.saveUserNameSharedPreference(username);
+      HelperFunctions.saveUserNameSharedPreference(
+          username.replaceAll(" ", "_"));
       HelperFunctions.saveUserLoggedInSharedPreference(true);
       Navigator.push(
           context, MaterialPageRoute(builder: (context) => ChatRoom()));
