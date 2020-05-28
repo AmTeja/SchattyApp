@@ -50,60 +50,76 @@ class _SignInState extends State<SignIn> {
   signIn() async {
     if (formKey.currentState.validate()) {
       try {
-        await getUserExists();
-        if (userNameExists) {
-          setState(() {
-            isLoading = true;
-          });
-          await Firestore.instance
-              .collection("users")
-              .where("username", isEqualTo: userNameTEC.text)
-              .getDocuments().then((value) async {
-            print(value.documents[0].data["email"]);
-            email = value.documents[0].data["email"];
-          });
-          if (email != null) {
-            FirebaseAuth _auth = FirebaseAuth.instance;
-            AuthResult result = await _auth.signInWithEmailAndPassword(
-                email: email, password: passwordTEC.text);
-            FirebaseUser firebaseUser = result.user;
-
-            if (firebaseUser != null && firebaseUser.isEmailVerified) {
-              HelperFunctions.saveUserLoggedInSharedPreference(true);
-              HelperFunctions.saveUserEmailSharedPreference(email);
-              HelperFunctions.saveIsGoogleUser(false);
-              Constants.ownerEmail = email;
-              print("Logged In true");
-              await databaseMethods
-                  .getUserByUserEmail(email)
+        databaseMethods.getUserByUserName(userNameTEC.text).then((val) async {
+          if (val != null || val != 0) {
+            setState(() {
+              userNameExists = true;
+              print("User exists");
+              isLoading = true;
+            });
+            try {
+              await Firestore.instance
+                  .collection("users")
+                  .where("username", isEqualTo: userNameTEC.text)
+                  .getDocuments()
                   .then((value) async {
-                snapshotUserInfo = value;
-                HelperFunctions.saveUserNameSharedPreference(
-                    await snapshotUserInfo.documents[0].data["username"]);
-                Constants.ownerName =
-                await snapshotUserInfo.documents[0].data["username"];
+                print(value.documents[0].data["email"]);
+                email = value.documents[0].data["email"];
               });
-              setState(() {
-                isLoading = false;
-              });
-              Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ChatRoom(),
-                  ));
-            }
-            else {
-              await firebaseUser.sendEmailVerification();
-              setState(() {
-                error = "Email not Verified. Verification mail was sent!";
-                isLoading = false;
-              });
+              if (email != null) {
+                FirebaseAuth _auth = FirebaseAuth.instance;
+                AuthResult result = await _auth.signInWithEmailAndPassword(
+                    email: email, password: passwordTEC.text);
+                FirebaseUser firebaseUser = result.user;
+
+                if (firebaseUser != null && firebaseUser.isEmailVerified) {
+                  HelperFunctions.saveUserLoggedInSharedPreference(true);
+                  HelperFunctions.saveUserEmailSharedPreference(email);
+                  HelperFunctions.saveIsGoogleUser(false);
+                  Constants.ownerEmail = email;
+                  print("Logged In true");
+                  await databaseMethods
+                      .getUserByUserEmail(email)
+                      .then((value) async {
+                    snapshotUserInfo = value;
+                    HelperFunctions.saveUserNameSharedPreference(
+                        await snapshotUserInfo.documents[0].data["username"]);
+                    Constants.ownerName =
+                        await snapshotUserInfo.documents[0].data["username"];
+                  });
+                  setState(() {
+                    isLoading = false;
+                  });
+                  Navigator.pop(context);
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ChatRoom(),
+                      ));
+                } else {
+                  await firebaseUser.sendEmailVerification();
+                  setState(() {
+                    error = "Email not Verified. Verification mail was sent!";
+                    isLoading = false;
+                  });
+                }
+              }
+            } catch (e) {
+              print(e);
+              if (e.message == "Invalid value") {
+                setState(() {
+                  error = "Username does not exist";
+                  isLoading = false;
+                });
+              } else {
+                setState(() {
+                  error = e.message;
+                  isLoading = false;
+                });
+              }
             }
           }
-          else {
-            print("null email");
-          }
-        }
+        });
       } catch (e) {
         print(e);
         if (e.message == "Invalid value") {
@@ -121,12 +137,6 @@ class _SignInState extends State<SignIn> {
       }
     }
   }
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
   Widget showAlert() {
     if (error != null) {
       return Container(
@@ -320,9 +330,8 @@ class _SignInState extends State<SignIn> {
           ),
         ),
       ) :
-      Container(
-        child: Center(child: CircularProgressIndicator()),
-      ),
+      loadingScreen(),
     );
   }
+
 }

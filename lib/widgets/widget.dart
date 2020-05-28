@@ -40,3 +40,28 @@ TextStyle mediumTextStyle() {
     fontSize: 18,
   );
 }
+
+Widget loadingScreen() {
+  return Container(
+    child: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            "Just a moment...",
+            style: TextStyle(color: Colors.white, fontSize: 40),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+            child: LinearProgressIndicator(
+              backgroundColor: Colors.black,
+            ),
+          )
+        ],
+      ),
+    ),
+  );
+}

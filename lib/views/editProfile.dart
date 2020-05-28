@@ -131,7 +131,6 @@ class _EditProfileState extends State<EditProfile> {
             toolbarTitle: "Schatty",
             statusBarColor: Colors.black,
             backgroundColor: Colors.white,
-
           )
       );
     }
@@ -156,7 +155,6 @@ class _EditProfileState extends State<EditProfile> {
     var downloadUrl = await snapshotTask.ref
         .getDownloadURL(); //download url of the image uploaded
     String url = downloadUrl.toString();
-    print(url);
     await HelperFunctions.saveUserImageURL(url);
     databaseMethods.updateProfilePicture(downloadUrl.toString());
     setState(() {

@@ -174,11 +174,7 @@ class _SignUpState extends State<SignUp> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: isLoading
-          ? Container(
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
-      )
+          ? loadingScreen()
           : Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(

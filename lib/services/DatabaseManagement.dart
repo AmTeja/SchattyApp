@@ -95,7 +95,6 @@ class DatabaseMethods {
       url = await value.documents[0].data["photoURL"];
 //        length = await value.documents.length;
       await HelperFunctions.saveUserImageURL(url);
-      print(length);
     }).catchError((e) {
       print("URL ERROR: $e");
     });

@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
@@ -23,6 +27,8 @@ class _ChatScreenState extends State<ChatScreen> {
   Stream chatMessageStream;
 
   DateTime lastAccessedTime;
+
+  File newImage;
 
   @override
   void initState() {
@@ -112,23 +118,26 @@ class _ChatScreenState extends State<ChatScreen> {
       color: Colors.black,
       child: Row(
         children: <Widget>[
-          RawMaterialButton(
+          IconButton(
             onPressed: () {},
-            child: Icon(
+            icon: Icon(
               Icons.camera_alt,
               color: Colors.white,
               size: 25,
             ),
-            shape: CircleBorder(),
-            elevation: 2,
-            fillColor: Colors.black54,
-            padding: EdgeInsets.only(right: 10),
+            splashColor: Colors.blue,
+            padding: EdgeInsets.symmetric(horizontal: 10),
           ),
           Expanded(
             child: TextField(
               controller: messageTEC,
               textCapitalization: TextCapitalization.sentences,
               onChanged: (value) {},
+              textInputAction: TextInputAction.send,
+
+              onSubmitted: (val) {
+                sendMessage();
+              },
               decoration: InputDecoration(
                 contentPadding: EdgeInsets.only(left: 15, top: 20, bottom: 20),
                 border: OutlineInputBorder(
@@ -172,6 +181,33 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
+  sendImage() async {
+
+  }
+
+
+  Future getImage() async {
+    var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
+    File edited;
+    if (tempPic != null) {
+      edited = await ImageCropper.cropImage(sourcePath: tempPic.path,
+          compressQuality: 70,
+          cropStyle: CropStyle.rectangle,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+              toolbarColor: Colors.blue,
+              statusBarColor: Colors.blue,
+              activeControlsWidgetColor: Colors.blue
+          )
+      );
+    }
+    setState(() {
+      if (edited != null) {
+        newImage = edited;
+        sendImage();
+      }
+    });
+  }
 
   buildMessage(String message, bool isMe, int time) {
     final Widget msg = SafeArea(
@@ -204,16 +240,16 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                    Text(
-                        message,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        )),
-          ],
-        ),
-      ),
+                Text(
+                    message,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    )),
+              ],
+            ),
+          ),
         ));
     return msg;
   }

@@ -276,9 +276,10 @@ class ChatRoomTile extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(23),
           color: Colors.transparent,
-          border: Border(bottom: BorderSide(
-              color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
+//          border: Border(bottom: BorderSide(
+//              color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
         ),
         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         margin: EdgeInsets.symmetric(vertical: 2),
