@@ -90,6 +90,7 @@ class _SignInState extends State<SignIn> {
                   setState(() {
                     isLoading = false;
                   });
+                  await authMethods.updateUID(userNameTEC.text);
                   Navigator.pop(context);
                   Navigator.pushReplacement(
                       context,

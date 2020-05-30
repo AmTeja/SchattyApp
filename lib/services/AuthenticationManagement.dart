@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -14,8 +15,7 @@ class AuthMethods {
   {
     try{
       return await _auth.sendPasswordResetEmail(email: email);
-    }catch(e)
-    {
+    }catch(e) {
       print(e.toString());
     }
   }
@@ -24,8 +24,7 @@ class AuthMethods {
   {
     try{
       return await _auth.signOut();
-    }catch(e)
-    {
+    }catch(e) {
       print(e.toString());
     }
   }
@@ -34,15 +33,15 @@ class AuthMethods {
   Future<String> signInWithGoogle() async {
     try {
       final GoogleSignInAccount googleSignInAccount =
-          await googleSignIn.signIn();
+      await googleSignIn.signIn();
       final GoogleSignInAuthentication googleSignInAuthentication =
-          await googleSignInAccount.authentication;
+      await googleSignInAccount.authentication;
       final AuthCredential authCredential = GoogleAuthProvider.getCredential(
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken);
 
       final AuthResult authResult =
-          await _auth.signInWithCredential(authCredential);
+      await _auth.signInWithCredential(authCredential);
       final FirebaseUser user = authResult.user;
 
       assert(!user.isAnonymous);
@@ -62,6 +61,29 @@ class AuthMethods {
     final FirebaseUser user = await auth.currentUser();
     final uid = user.uid;
     return uid;
+  }
+
+  updateUID(String username) async {
+    String uid;
+    try {
+      uid = await getUserUID();
+      if (uid != null) {
+        Map<String, String> uidMap = {
+          "uid": uid,
+        };
+        await Firestore.instance
+            .collection("users")
+            .where("username", isEqualTo: username)
+            .getDocuments()
+            .then((docs) async {
+          await Firestore.instance
+              .document("users/${docs.documents[0].documentID}")
+              .updateData(uidMap);
+        });
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   void signOutGoogle() async {

@@ -74,26 +74,19 @@ class _UserInfoState extends State<UserInfo> {
             ),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 100),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
+              child: Column(
+                children: [
                   Text(
-                    "Username: ",
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
+                    "Username",
+                    style: TextStyle(color: Colors.white, fontSize: 26),
                   ),
-                  SizedBox(width: 10,),
-                  Flexible(
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
                     child: Text(
                       widget.userName,
-                      style: TextStyle(fontSize: 24,
-                          color: Colors.white),
-                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white, fontSize: 26),
                     ),
-                  ),
+                  )
                 ],
               ),
             )

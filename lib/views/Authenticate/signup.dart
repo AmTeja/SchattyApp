@@ -2,10 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/views/MainChatsRoom.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SignUp extends StatefulWidget {
@@ -58,7 +56,8 @@ class _SignUpState extends State<SignUp> {
               "username": userNameTEC.text,
               "email": emailTEC.text,
               "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
-              "photoUrl": profilePicURL
+              "photoUrl": profilePicURL,
+              "uid": firebaseUser.uid
             };
             databaseMethods.uploadUserInfo(userInfoMap);
             await firebaseUser.sendEmailVerification().then((value) => {
@@ -376,16 +375,5 @@ class _SignUpState extends State<SignUp> {
         ),
       ),
     );
-  }
-
-  void signInWithGoogle() {
-    authMethods.signInWithGoogle().whenComplete(() {
-      String username = authMethods.googleSignIn.currentUser.displayName;
-      HelperFunctions.saveUserNameSharedPreference(
-          username.replaceAll(" ", "_"));
-      HelperFunctions.saveUserLoggedInSharedPreference(true);
-      Navigator.push(
-          context, MaterialPageRoute(builder: (context) => ChatRoom()));
-    });
   }
 }

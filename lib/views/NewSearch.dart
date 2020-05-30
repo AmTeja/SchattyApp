@@ -14,12 +14,14 @@ class NewSearch extends StatefulWidget {
 class _NewSearchState extends State<NewSearch> {
   var queryResultSet = [];
   var tempSearchStore = [];
+  bool foundNone = false;
 
   initiateSearch(String value) {
     if (value.length == 0) {
       setState(() {
         queryResultSet = [];
         tempSearchStore = [];
+        foundNone = false;
       });
     }
 
@@ -29,6 +31,9 @@ class _NewSearchState extends State<NewSearch> {
       SearchService().searchByName(value).then((QuerySnapshot docs) {
         for (int i = 0; i < docs.documents.length; i++) {
           queryResultSet.add(docs.documents[i].data);
+          setState(() {
+            foundNone = false;
+          });
         }
       });
     } else {
@@ -38,12 +43,15 @@ class _NewSearchState extends State<NewSearch> {
             element['username'].startsWith(capitalisedValue)) {
           setState(() {
             tempSearchStore.add(element);
+            foundNone = false;
           });
         }
       });
     }
     if (tempSearchStore.length == 0 && value.length > 1) {
-      setState(() {});
+      setState(() {
+        foundNone = true;
+      });
     }
   }
 
@@ -52,7 +60,7 @@ class _NewSearchState extends State<NewSearch> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black26,
         title: Text(
           "Schatty",
           style: TextStyle(
@@ -80,12 +88,6 @@ class _NewSearchState extends State<NewSearch> {
                   hintStyle: TextStyle(
                     color: Colors.white54,
                   ),
-                  suffixIcon: IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.search),
-                    iconSize: 30,
-                    color: Colors.black,
-                  ),
                   border: new OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30)
                   ),
@@ -95,17 +97,41 @@ class _NewSearchState extends State<NewSearch> {
             SizedBox(
               height: 10,
             ),
-            ListView(
-              padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-              primary: false,
-              shrinkWrap: true,
-              children: tempSearchStore.map((element) {
-                return buildResultCard(element);
-              }).toList(),
-            )
+            !foundNone
+                ? ListView(
+                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                    primary: false,
+                    shrinkWrap: true,
+                    children: tempSearchStore.map((element) {
+                      return buildResultCard(element);
+                    }).toList(),
+                  )
+                : showEmptyList()
           ],
         ),
       ),
+    );
+  }
+
+  Widget showEmptyList() {
+    return Container(
+      child: Center(
+          child: Container(
+        width: 350,
+        height: 300,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                "No user found...",
+                style: TextStyle(color: Colors.white, fontSize: 26),
+              ),
+            )
+          ],
+        ),
+      )),
     );
   }
 

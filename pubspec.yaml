@@ -39,6 +39,8 @@ dependencies:
   animated_text_kit: ^2.0.1
   rsa_encrypt:
   image_cropper: ^1.2.2
+  intl: ^0.16.1
+
 
 
 

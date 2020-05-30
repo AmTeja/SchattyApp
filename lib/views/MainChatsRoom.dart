@@ -156,34 +156,60 @@ class _ChatRoomState extends State<ChatRoom> {
                     Container(
                         alignment: Alignment.centerRight,
                         padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(Icons.refresh)
-                    ),
-                  ])
-
-          )
+                        child: Icon(Icons.refresh)),
+                  ]))
         ],
       ),
-
     );
   }
 
+  Widget suchEmpty(BuildContext context) {
+    return Center(
+        child: Container(
+      width: 350,
+      height: 300,
+      decoration: BoxDecoration(
+          color: Color.fromARGB(196, 14, 14, 14),
+          borderRadius: BorderRadius.circular(43)),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Such Empty",
+              style: TextStyle(color: Colors.white, fontSize: 40),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "Find someone using search...",
+              style: TextStyle(color: Colors.white, fontSize: 26),
+            ),
+          )
+        ],
+      ),
+    ));
+  }
 
   Widget chatRoomList() {
     return StreamBuilder(
       stream: chatRoomsStream,
       builder: (context, snapshot) {
-        return snapshot.hasData ? ListView.builder(
-            reverse: false,
-            itemCount: snapshot.data.documents.length,
-            itemBuilder: (context, index) {
-              return ChatRoomTile(
-                  snapshot.data.documents[index].data["chatRoomId"]
-                      .toString()
-                      .replaceAll("_", "")
-                      .replaceAll(Constants.ownerName, ""),
-                  snapshot.data.documents[index].data["chatRoomId"]
-              );
-            }) : Container();
+        return snapshot.hasData
+            ? ListView.builder(
+                reverse: false,
+                itemCount: snapshot.data.documents.length,
+                itemBuilder: (context, index) {
+                  return ChatRoomTile(
+                      snapshot.data.documents[index].data["chatRoomId"]
+                          .toString()
+                          .replaceAll("_", "")
+                          .replaceAll(Constants.ownerName, ""),
+                      snapshot.data.documents[index].data["chatRoomId"]);
+                })
+            : suchEmpty(context);
       },
     );
   }
@@ -193,12 +219,21 @@ class _ChatRoomState extends State<ChatRoom> {
     super.initState();
     getUserInfo();
     assignURL();
+    uploadToken();
+  }
+
+  uploadToken() async
+  {
+    String token;
+    token = await firebaseMessaging.getToken();
+    print(token);
+    databaseMethods.updateToken(token);
   }
 
   assignURL() async
   {
-      url = await databaseMethods.getProfileUrl();
-      setState(() {});
+    url = await databaseMethods.getProfileUrl();
+    setState(() {});
   }
 
   getUserInfo() async {
@@ -218,8 +253,9 @@ class _ChatRoomState extends State<ChatRoom> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: mainDrawer(context),
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black26,
         title: Text("Schatty"),
         elevation: 3,
       ),

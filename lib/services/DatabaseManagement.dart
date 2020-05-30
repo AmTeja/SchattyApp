@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/model/user.dart';
+import 'package:schatty/services/AuthenticationManagement.dart';
 
 class DatabaseMethods {
   getUserByUserName(String username) async {
@@ -19,6 +20,27 @@ class DatabaseMethods {
     });
   }
 
+  updateToken(String token) async {
+    final AuthMethods authMethods = new AuthMethods();
+    try {
+      String uid = await authMethods.getUserUID();
+      Map<String, String> tokenMap = {
+        "token": token,
+      };
+      await Firestore.instance
+          .collection("users")
+          .where("uid", isEqualTo: uid)
+          .getDocuments()
+          .then((docs) async {
+        await Firestore.instance
+            .document("users/${docs.documents[0].documentID}")
+            .updateData(tokenMap);
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
   getUserByUserEmail(String email) async {
     return await Firestore.instance
         .collection("users")
@@ -26,8 +48,7 @@ class DatabaseMethods {
         .getDocuments();
   }
 
-  getEmailByUsername(String username) async {
-  }
+  getEmailByUsername(String username) async {}
   uploadUserInfo(userMap) {
     Firestore.instance.collection("users").add(userMap).catchError((e) {
       print(e.toString());
@@ -132,5 +153,20 @@ class DatabaseMethods {
     }
   }
 
+  getUIDByUsername(String username) async
+  {
+    String uid;
+    try {
+      await Firestore.instance.collection("users").where(
+          "username", isEqualTo: username)
+          .getDocuments().then((docs) async {
+        uid = docs.documents[0].data["uid"];
+        print(docs.documents[0].data["uid"]);
+        return uid;
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
 
 }

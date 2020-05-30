@@ -4,8 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/TargetUserInfo.dart';
 
@@ -24,11 +26,16 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController messageTEC = TextEditingController();
 
   DatabaseMethods databaseMethods = new DatabaseMethods();
+  final AuthMethods authMethods = new AuthMethods();
   Stream chatMessageStream;
 
   DateTime lastAccessedTime;
 
+  String sentTo;
+
   File newImage;
+
+  ScrollController scrollController;
 
   @override
   void initState() {
@@ -40,6 +47,15 @@ class _ChatScreenState extends State<ChatScreen> {
       });
     });
     super.initState();
+    scrollController = ScrollController();
+    setSentTo();
+  }
+
+  setSentTo() async {
+    sentTo = await databaseMethods.getUIDByUsername(widget.userName);
+    setState(() {
+      print(sentTo);
+    });
   }
 
 //  Future<String> getDataFromFuture(String message) async {
@@ -59,10 +75,10 @@ class _ChatScreenState extends State<ChatScreen> {
       child: SafeArea(
         top: false,
         child: Scaffold(
-            backgroundColor: Color.fromARGB(255, 14, 14, 14),
+            backgroundColor: Color.fromARGB(255, 18, 18, 18),
             appBar: AppBar(
               title: Text(chatWith),
-              backgroundColor: Colors.black,
+              backgroundColor: Colors.black12,
               actions: <Widget>[
                 IconButton(
                   icon: Icon(Icons.info),
@@ -86,6 +102,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           builder: (context, snapshot) {
                             return snapshot.hasData
                                 ? ListView.builder(
+                                controller: scrollController,
                                 reverse: true,
                                 padding: EdgeInsets.only(top: 15),
                                 itemCount: snapshot.data.documents.length,
@@ -111,6 +128,12 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
   buildMessageComposer() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8),
@@ -134,7 +157,6 @@ class _ChatScreenState extends State<ChatScreen> {
               textCapitalization: TextCapitalization.sentences,
               onChanged: (value) {},
               textInputAction: TextInputAction.send,
-
               onSubmitted: (val) {
                 sendMessage();
               },
@@ -171,13 +193,18 @@ class _ChatScreenState extends State<ChatScreen> {
         "time": DateTime
             .now()
             .millisecondsSinceEpoch,
+        "sendTo": sentTo,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
       messageTEC.text = "";
       Map<String, dynamic> timeMap = {
-        "lastTime": DateTime.now().millisecondsSinceEpoch,
+        "lastTime": DateTime
+            .now()
+            .millisecondsSinceEpoch,
       };
       databaseMethods.updateChatRoomTime(widget.chatRoomID, timeMap);
+      scrollController.animateTo(scrollController.position.minScrollExtent,
+          duration: Duration(milliseconds: 600), curve: Curves.easeInOut);
     }
   }
 
@@ -223,6 +250,12 @@ class _ChatScreenState extends State<ChatScreen> {
           child:
           Container(
             padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.8,
+            ),
             decoration: BoxDecoration(
                 gradient: LinearGradient(
                     colors: isMe
@@ -237,16 +270,28 @@ class _ChatScreenState extends State<ChatScreen> {
                     topLeft: Radius.circular(23),
                     topRight: Radius.circular(23),
                     bottomRight: Radius.circular(23))),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(
-                    message,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    )),
+                Flexible(
+                  child: Text(
+                      message,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      )),
+                ),
+                Container(
+                  padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
+                  child: Text(
+                    DateFormat('kk:mm').format(
+                        DateTime.fromMillisecondsSinceEpoch(time)),
+//                      textAlign: TextAlign.right,
+                  ),
+                )
               ],
             ),
           ),
