@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import 'package:schatty/helper/NavigationService.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
@@ -24,7 +25,7 @@ class _ChatRoomState extends State<ChatRoom> {
 
   AuthMethods authMethods = new AuthMethods();
   DatabaseMethods databaseMethods = new DatabaseMethods();
-
+  NavigationService navigationService = new NavigationService();
   FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
 
 //  final StorageReference storageRef = FirebaseStorage.instance.ref().child(fileName);
@@ -84,13 +85,13 @@ class _ChatRoomState extends State<ChatRoom> {
                     alignment: Alignment.center,
                     child: Constants.ownerName != null
                         ? Text(
-                            Constants.ownerName,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 22,
-                              color: Colors.white,
-                            ),
-                          )
+                      Constants.ownerName,
+                      textAlign: TextAlign.left,
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: Colors.white,
+                      ),
+                    )
                         : Text("Error"),
                   ),
                 )
@@ -166,31 +167,31 @@ class _ChatRoomState extends State<ChatRoom> {
   Widget suchEmpty(BuildContext context) {
     return Center(
         child: Container(
-      width: 350,
-      height: 300,
-      decoration: BoxDecoration(
-          color: Color.fromARGB(196, 14, 14, 14),
-          borderRadius: BorderRadius.circular(43)),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Such Empty",
-              style: TextStyle(color: Colors.white, fontSize: 40),
-            ),
+          width: 350,
+          height: 300,
+          decoration: BoxDecoration(
+              color: Color.fromARGB(196, 14, 14, 14),
+              borderRadius: BorderRadius.circular(43)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Such Empty",
+                  style: TextStyle(color: Colors.white, fontSize: 40),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Find someone using search...",
+                  style: TextStyle(color: Colors.white, fontSize: 26),
+                ),
+              )
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              "Find someone using search...",
-              style: TextStyle(color: Colors.white, fontSize: 26),
-            ),
-          )
-        ],
-      ),
-    ));
+        ));
   }
 
   Widget chatRoomList() {
@@ -199,16 +200,16 @@ class _ChatRoomState extends State<ChatRoom> {
       builder: (context, snapshot) {
         return snapshot.hasData
             ? ListView.builder(
-                reverse: false,
-                itemCount: snapshot.data.documents.length,
-                itemBuilder: (context, index) {
-                  return ChatRoomTile(
-                      snapshot.data.documents[index].data["chatRoomId"]
-                          .toString()
-                          .replaceAll("_", "")
-                          .replaceAll(Constants.ownerName, ""),
-                      snapshot.data.documents[index].data["chatRoomId"]);
-                })
+            reverse: false,
+            itemCount: snapshot.data.documents.length,
+            itemBuilder: (context, index) {
+              return ChatRoomTile(
+                  snapshot.data.documents[index].data["chatRoomId"]
+                      .toString()
+                      .replaceAll("_", "")
+                      .replaceAll(Constants.ownerName, ""),
+                  snapshot.data.documents[index].data["chatRoomId"]);
+            })
             : suchEmpty(context);
       },
     );
@@ -217,6 +218,7 @@ class _ChatRoomState extends State<ChatRoom> {
   @override
   void initState() {
     super.initState();
+    getToken();
     getUserInfo();
     assignURL();
     uploadToken();

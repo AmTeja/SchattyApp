@@ -27,6 +27,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   DatabaseMethods databaseMethods = new DatabaseMethods();
   final AuthMethods authMethods = new AuthMethods();
+
   Stream chatMessageStream;
 
   DateTime lastAccessedTime;

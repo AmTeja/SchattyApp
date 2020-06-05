@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:schatty/helper/NavigationService.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/Authenticate/StartScreen.dart';
@@ -15,7 +16,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  NavigationService navigationService = new NavigationService();
   bool isUserLoggedIn = false;
+
   @override
   void initState() {
     getState();
@@ -33,6 +36,9 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {
+        '/ChatsRoom': (context) => ChatRoom(),
+      },
       title: 'Schatty',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
