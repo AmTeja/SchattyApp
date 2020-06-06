@@ -27,15 +27,17 @@ class _ChatRoomState extends State<ChatRoom> {
   DatabaseMethods databaseMethods = new DatabaseMethods();
   NavigationService navigationService = new NavigationService();
   FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
+  FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
 //  final StorageReference storageRef = FirebaseStorage.instance.ref().child(fileName);
-
+  BuildContext newContext;
   final String fileName =
       Constants.ownerName + Random().nextInt(10000).toString() + '.$extension';
   Stream chatRoomsStream;
   bool newMessageReceived = false;
   var imageUrl;
   String url;
+  String UID;
 
   logOut(BuildContext context) async {
     bool isGoogleUser = false;
@@ -104,8 +106,8 @@ class _ChatRoomState extends State<ChatRoom> {
           ListTile(
             onTap: () {
               Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => EditProfile(Constants.ownerName)
-              ));
+                  builder: (context) =>
+                          EditProfile(Constants.ownerName, UID)));
             },
             title: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -219,6 +221,7 @@ class _ChatRoomState extends State<ChatRoom> {
   void initState() {
     super.initState();
     getToken();
+    getUID();
     getUserInfo();
     assignURL();
     uploadToken();
@@ -253,6 +256,7 @@ class _ChatRoomState extends State<ChatRoom> {
 
   @override
   Widget build(BuildContext context) {
+    newContext = context;
     return Scaffold(
       drawer: mainDrawer(context),
       backgroundColor: Colors.black,

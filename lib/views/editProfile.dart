@@ -10,8 +10,9 @@ import 'package:schatty/services/DatabaseManagement.dart';
 
 class EditProfile extends StatefulWidget {
   final String username;
+  final String uid;
 
-  EditProfile(this.username);
+  EditProfile(this.username, this.uid);
 
   @override
   _EditProfileState createState() => _EditProfileState();
@@ -144,13 +145,13 @@ class _EditProfileState extends State<EditProfile> {
 
   uploadImage() async {
     var randomNum = Random(25);
-    final String fileName =
-        'profilepic/' + widget.username + '/${randomNum.nextInt(5000)
-            .toString()}.jpg'; //filename to be stored
+    final String fileName = 'profilepic/' +
+        widget.uid +
+        '/${randomNum.nextInt(5000).toString()}.jpg'; //filename to be stored
     final StorageReference storageReference =
-    FirebaseStorage.instance.ref().child(fileName); //ref to storage
-    StorageUploadTask task = storageReference.putFile(
-        newProfilePic); //task to upload file
+        FirebaseStorage.instance.ref().child(fileName); //ref to storage
+    StorageUploadTask task =
+        storageReference.putFile(newProfilePic); //task to upload file
     StorageTaskSnapshot snapshotTask = await task.onComplete;
     var downloadUrl = await snapshotTask.ref
         .getDownloadURL(); //download url of the image uploaded

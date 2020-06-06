@@ -5,8 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:schatty/enums/view_state.dart';
+import 'package:schatty/helper/cachednetworkimage.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/TargetUserInfo.dart';
@@ -30,6 +34,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Stream chatMessageStream;
 
+  ImageUploadProvider imageUploadProvider;
+
   DateTime lastAccessedTime;
 
   String sentTo;
@@ -52,6 +58,10 @@ class _ChatScreenState extends State<ChatScreen> {
     setSentTo();
   }
 
+  getUID() async {
+    uid = await databaseMethods.getUIDByUsername(Constants.ownerName);
+  }
+
   setSentTo() async {
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
     setState(() {
@@ -71,6 +81,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     String chatWith = widget.userName;
+    imageUploadProvider = Provider.of<ImageUploadProvider>(context);
     return Container(
       color: Colors.white,
       child: SafeArea(
@@ -96,7 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
               onTap: () => FocusScope.of(context).unfocus(),
               child: Column(
                 children: <Widget>[
-                  Expanded(
+                  Flexible(
                     child: Container(
                       child: StreamBuilder(
                           stream: chatMessageStream,
@@ -116,11 +127,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                             .data["sendBy"] ==
                                             Constants.ownerName,
                                         snapshot.data.documents[index]
-                                            .data["time"]);
+                                            .data["time"],
+                                        snapshot.data.documents[index]
+                                            .data["url"]);
                                 }) : Container();
                           }),
                     ),
                   ),
+                  imageUploadProvider.getViewState == ViewState.LOADING
+                      ? Container(
+                    alignment: Alignment.centerRight,
+                    margin: EdgeInsets.only(right: 15, top: 10),
+                    child: CircularProgressIndicator(),
+                  )
+                      : Container(),
                   buildMessageComposer(),
                 ],
               ),
@@ -143,7 +163,9 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Row(
         children: <Widget>[
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              getImage();
+            },
             icon: Icon(
               Icons.camera_alt,
               color: Colors.white,
@@ -210,34 +232,75 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   sendImage() async {
+    try {
+      imageUploadProvider.setToLoading();
+      final String fileName =
+          'userImages/' + uid.toString() + '/${DateTime
+              .now()
+              .millisecondsSinceEpoch
+              .toString()}.jgp';
+      print("Filename Set!");
+      final StorageReference storageReference =
+      FirebaseStorage.instance.ref().child(fileName); //ref to storage
+      StorageUploadTask task = storageReference.putFile(
+          newImage); //task to upload file
+      StorageTaskSnapshot snapshotTask = await task.onComplete;
+      var downloadUrl = await snapshotTask.ref
+          .getDownloadURL(); //download url of the image uploaded
+      String url = downloadUrl.toString();
+      setState(() {
 
+      });
+      Map<String, dynamic> imageMap = {
+        "message": "Image",
+        "sendBy": Constants.ownerName,
+        "time": DateTime
+            .now()
+            .millisecondsSinceEpoch,
+        "sendTo": sentTo,
+        "sentFrom": sentFrom,
+        "url": url
+      };
+
+      databaseMethods.addMessage(widget.chatRoomID, imageMap);
+      imageUploadProvider.setToIdle();
+    } catch (e) {
+      print("SendImageError: $e");
+    }
   }
 
 
   Future getImage() async {
-    var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
-    File edited;
-    if (tempPic != null) {
-      edited = await ImageCropper.cropImage(sourcePath: tempPic.path,
-          compressQuality: 70,
-          cropStyle: CropStyle.rectangle,
-          compressFormat: ImageCompressFormat.jpg,
-          androidUiSettings: AndroidUiSettings(
-              toolbarColor: Colors.blue,
-              statusBarColor: Colors.blue,
-              activeControlsWidgetColor: Colors.blue
-          )
-      );
-    }
-    setState(() {
-      if (edited != null) {
-        newImage = edited;
-        sendImage();
+    try {
+      var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
+      File edited;
+      if (tempPic != null) {
+        edited = await ImageCropper.cropImage(sourcePath: tempPic.path,
+            compressQuality: 70,
+            cropStyle: CropStyle.rectangle,
+            compressFormat: ImageCompressFormat.jpg,
+            androidUiSettings: AndroidUiSettings(
+                toolbarColor: Colors.blue,
+                statusBarColor: Colors.blue,
+                activeControlsWidgetColor: Colors.blue
+            )
+        );
       }
-    });
+//    await Future.delayed(Duration(seconds: 2));
+      setState(() {
+        if (edited != null) {
+          newImage = edited;
+          print("newImage set");
+          sendImage();
+        }
+      });
+    }
+    catch (e) {
+      print("GetImageError: $e");
+    }
   }
 
-  buildMessage(String message, bool isMe, int time) {
+  buildMessage(String message, bool isMe, int time, String imageUrl) {
     final Widget msg = SafeArea(
         child: Container(
           padding: EdgeInsets.only(
@@ -274,25 +337,25 @@ class _ChatScreenState extends State<ChatScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 Flexible(
-                  child: Text(
+                  child: imageUrl == null ? Text(
                       message,
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
-                      )),
+                      )) : CachedImage(url: imageUrl,),
                 ),
-                Container(
+                imageUrl == null ? Container(
                   padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
                   child: Text(
                     DateFormat('kk:mm').format(
                         DateTime.fromMillisecondsSinceEpoch(time)),
 //                      textAlign: TextAlign.right,
                   ),
-                )
+                ) : Container(),
               ],
             ),
           ),
