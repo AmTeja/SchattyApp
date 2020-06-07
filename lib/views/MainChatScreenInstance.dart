@@ -2,6 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -27,7 +29,10 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   bool isComposing = false;
+  bool isSelected = false;
+
   final TextEditingController messageTEC = TextEditingController();
+  final TextEditingController captionTEC = TextEditingController();
 
   DatabaseMethods databaseMethods = new DatabaseMethods();
   final AuthMethods authMethods = new AuthMethods();
@@ -82,72 +87,78 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     String chatWith = widget.userName;
     imageUploadProvider = Provider.of<ImageUploadProvider>(context);
-    return Container(
-      color: Colors.white,
-      child: SafeArea(
-        top: false,
-        child: Scaffold(
-            backgroundColor: Color.fromARGB(255, 18, 18, 18),
-            appBar: AppBar(
-              title: Text(chatWith),
-              backgroundColor: Colors.black12,
-              actions: <Widget>[
-                IconButton(
-                  icon: Icon(Icons.info),
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => UserInfo(chatWith)));
-                  },
-                )
-              ],
-            ),
-            body: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: Column(
-                children: <Widget>[
-                  Flexible(
-                    child: Container(
-                      child: StreamBuilder(
-                          stream: chatMessageStream,
-                          builder: (context, snapshot) {
-                            return snapshot.hasData
-                                ? ListView.builder(
-                                controller: scrollController,
-                                reverse: true,
-                                padding: EdgeInsets.only(top: 15),
-                                itemCount: snapshot.data.documents.length,
-                                itemBuilder: (context, index) {
-                                  return
-                                    buildMessage(
-                                        snapshot.data.documents[index]
-                                            .data["message"],
-                                        snapshot.data.documents[index]
-                                            .data["sendBy"] ==
-                                            Constants.ownerName,
-                                        snapshot.data.documents[index]
-                                            .data["time"],
-                                        snapshot.data.documents[index]
-                                            .data["url"]);
-                                }) : Container();
-                          }),
-                    ),
-                  ),
-                  imageUploadProvider.getViewState == ViewState.LOADING
-                      ? Container(
-                    alignment: Alignment.centerRight,
-                    margin: EdgeInsets.only(right: 15, top: 10),
-                    child: CircularProgressIndicator(),
-                  )
-                      : Container(),
-                  buildMessageComposer(),
-                ],
+    return Scaffold(
+        backgroundColor: Color.fromARGB(255, 18, 18, 18),
+        appBar: AppBar(
+          title: isComposing ? Text(chatWith + "is typing...") : Text(chatWith),
+          backgroundColor: Colors.black12,
+          actions: <Widget>[
+            isSelected ? IconButton(
+              icon: Icon(Icons.content_copy),
+              onPressed: () {
+                Clipboard.setData(ClipboardData(text: selectedText),);
+                setState(() {
+                  isSelected = false;
+                  selectedText = "";
+                  Fluttertoast.showToast(msg: "Copied Content!");
+                });
+              },
+            ) : SizedBox(),
+            IconButton(
+              icon: Icon(Icons.info),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => TargetUserInfo(chatWith)));
+              },
+            )
+          ],
+        ),
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Column(
+            children: <Widget>[
+              Flexible(
+                child: Container(
+                  child: StreamBuilder(
+                      stream: chatMessageStream,
+                      builder: (context, snapshot) {
+                        return snapshot.hasData
+                            ? ListView.builder(
+                            controller: scrollController,
+                            reverse: true,
+                            padding: EdgeInsets.only(top: 15),
+                            itemCount: snapshot.data.documents.length,
+                            itemBuilder: (context, index) {
+                              return
+                                buildMessage(
+                                    snapshot.data.documents[index]
+                                        .data["message"],
+                                    snapshot.data.documents[index]
+                                        .data["sendBy"] ==
+                                        Constants.ownerName,
+                                    snapshot.data.documents[index]
+                                        .data["time"],
+                                    snapshot.data.documents[index]
+                                        .data["url"]);
+                            }) : Container();
+                      }),
+                ),
               ),
-            )),
-      ),
-    );
+              imageUploadProvider.getViewState == ViewState.LOADING
+                  ? Container(
+                alignment: Alignment.centerRight,
+                margin: EdgeInsets.only(right: 15, top: 10),
+                child: CircularProgressIndicator(),
+              )
+                  : Container(),
+              buildMessageComposer(),
+            ],
+          ),
+        ));
   }
+
 
   @override
   void dispose() {
@@ -178,7 +189,9 @@ class _ChatScreenState extends State<ChatScreen> {
             child: TextField(
               controller: messageTEC,
               textCapitalization: TextCapitalization.sentences,
-              onChanged: (value) {},
+              onChanged: (value) {
+
+              },
               textInputAction: TextInputAction.send,
               onSubmitted: (val) {
                 sendMessage();
@@ -231,8 +244,9 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  sendImage() async {
+  sendImage(BuildContext context) async {
     try {
+      Navigator.pop(context);
       imageUploadProvider.setToLoading();
       final String fileName =
           'userImages/' + uid.toString() + '/${DateTime
@@ -252,7 +266,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
       });
       Map<String, dynamic> imageMap = {
-        "message": "Image",
+        "message": captionTEC.text,
         "sendBy": Constants.ownerName,
         "time": DateTime
             .now()
@@ -261,7 +275,6 @@ class _ChatScreenState extends State<ChatScreen> {
         "sentFrom": sentFrom,
         "url": url
       };
-
       databaseMethods.addMessage(widget.chatRoomID, imageMap);
       imageUploadProvider.setToIdle();
     } catch (e) {
@@ -291,8 +304,11 @@ class _ChatScreenState extends State<ChatScreen> {
         if (edited != null) {
           newImage = edited;
           print("newImage set");
-          sendImage();
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) => composeImage(),
+          ));
         }
+
       });
     }
     catch (e) {
@@ -301,6 +317,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   buildMessage(String message, bool isMe, int time, String imageUrl) {
+    var currentTime = DateTime.now();
+    bool newDay = false;
     final Widget msg = SafeArea(
         child: Container(
           padding: EdgeInsets.only(
@@ -312,54 +330,176 @@ class _ChatScreenState extends State<ChatScreen> {
               .width,
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
           child:
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery
-                  .of(context)
-                  .size
-                  .width * 0.8,
-            ),
-            decoration: BoxDecoration(
-                gradient: LinearGradient(
-                    colors: isMe
-                        ? [const Color(0xffff758c), const Color(0xffff7eb3)]
-                        : [Color(0xff93a5cf), const Color(0xff93a5cf)]),
-                borderRadius: isMe
-                    ? BorderRadius.only(
-                    topLeft: Radius.circular(23),
-                    topRight: Radius.circular(23),
-                    bottomLeft: Radius.circular(23))
-                    : BorderRadius.only(
-                    topLeft: Radius.circular(23),
-                    topRight: Radius.circular(23),
-                    bottomRight: Radius.circular(23))),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Flexible(
-                  child: imageUrl == null ? Text(
-                      message,
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      )) : CachedImage(url: imageUrl,),
-                ),
-                imageUrl == null ? Container(
-                  padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
-                  child: Text(
-                    DateFormat('kk:mm').format(
-                        DateTime.fromMillisecondsSinceEpoch(time)),
-//                      textAlign: TextAlign.right,
+          GestureDetector(
+            onTap: () {
+              if (imageUrl == null && !isSelected) {
+                setState(() {
+                  isSelected = !isSelected;
+                  selectedText = message;
+                });
+              }
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.8,
+              ),
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: isMe
+                          ? ([const Color(0xffff758c), const Color(0xffff7eb3)])
+                          : ([Color(0xff93a5cf), const Color(0xff93a5cf)])),
+                  borderRadius: isMe
+                      ? BorderRadius.only(
+                      topLeft: Radius.circular(23),
+                      topRight: Radius.circular(23),
+                      bottomLeft: Radius.circular(23))
+                      : BorderRadius.only(
+                      topLeft: Radius.circular(23),
+                      topRight: Radius.circular(23),
+                      bottomRight: Radius.circular(23))),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Flexible(
+                    child: imageUrl == null ? Text(
+                        message,
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        )) : Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(
+                                builder: (context) => viewImage(imageUrl),
+                              ));
+                            },
+                            child: CachedImage(url: imageUrl,)),
+                        message != "" ? Container(
+
+                          padding: EdgeInsets.only(top: 10),
+                          child: Text(message,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),),
+                        ) : Container(),
+                      ],
+                    ),
                   ),
-                ) : Container(),
-              ],
+                  imageUrl == null ? Container(
+                    padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
+                    child: Text(
+                      DateFormat('kk:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(time)),
+//                      textAlign: TextAlign.right,
+                    ),
+                  ) : Container(),
+                ],
+              ),
             ),
           ),
         ));
     return msg;
   }
+
+  Widget viewImage(String url) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+      ),
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Container(
+            child: CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.fill,
+            )
+        ),
+      ),
+    );
+  }
+
+  Widget composeImage() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(),
+      body: Center(
+        child: Column(
+          children: [
+            Expanded(
+              flex: 2,
+              child: Container(
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: FileImage(newImage),
+                      fit: BoxFit.none,
+                    )
+                ),
+              ),
+            ),
+            Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  SizedBox(width: 20,),
+                  Expanded(
+                    child: TextField(
+                        controller: captionTEC,
+                        textCapitalization: TextCapitalization.sentences,
+                        onSubmitted: sendImage(context),
+                        decoration: InputDecoration(
+                          hintText: "Caption",
+                          hintStyle: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 24,
+                          ),
+                          contentPadding: EdgeInsets.only(
+                              left: 15, top: 20, bottom: 20),
+                          fillColor: Colors.white70,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+//                        focusedBorder: UnderlineInputBorder(
+//                          borderSide: BorderSide(
+//                            color: Colors.white,
+//                          )
+//                        ),
+//                        enabledBorder: UnderlineInputBorder(
+//                         borderSide: BorderSide(
+//                           color: Colors.white,
+//                         )
+//                        ),
+                        )),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      sendImage(context);
+//                      Navigator.pop(context);
+                    },
+                    icon: Icon(Icons.send),
+                    color: Colors.blue,
+                    iconSize: 25,
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
 }

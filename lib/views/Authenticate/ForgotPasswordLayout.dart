@@ -1,9 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ForgotPassword extends StatefulWidget {
@@ -18,38 +16,123 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   bool isLoading = false;
+  bool emailSent = false;
+
+  String error;
 
   resetPassword() async {
-    if (formKey.currentState.validate()) {
+    try {
+      if (formKey.currentState.validate()) {
+        setState(() {
+          isLoading = true;
+        });
+        await _firebaseAuth.sendPasswordResetEmail(email: emailTEC.text);
+        setState(() {
+          isLoading = false;
+          emailSent = true;
+        });
+      }
+    } catch (e) {
       setState(() {
-        isLoading = true;
+        isLoading = false;
+        error = e.message;
       });
-      await _firebaseAuth.sendPasswordResetEmail(email: emailTEC.text);
-      Fluttertoast.showToast(
-          msg: "Reset link sent to email!",
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.CENTER);
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (context) => AuthHome()));
     }
+  }
+
+  Widget showErrorAlert() {
+    if (error != null) {
+      return Container(
+        color: Colors.amberAccent,
+        width: double.infinity,
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Icon(Icons.error_outline),
+            ),
+            Expanded(
+              child: Text(
+                error,
+                maxLines: 3,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    error = null;
+                  });
+                },
+              ),
+            )
+          ],
+        ),
+      );
+    }
+    return SizedBox(
+      height: 0,
+    );
+  }
+
+  Widget showEmailSent() {
+    if (emailSent) {
+      return Container(
+        color: Colors.teal,
+        width: double.infinity,
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Icon(Icons.check),
+            ),
+            Expanded(
+              child: Text(
+                "Reset Email Sent!",
+                maxLines: 3,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    emailSent = false;
+                  });
+                },
+              ),
+            )
+          ],
+        ),
+      );
+    }
+    return SizedBox(
+      height: 0,
+    );
   }
 
   final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
-        child: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-            colors: [
-              Color.fromARGB(255, 0, 0, 0),
-              Color.fromARGB(100, 39, 38, 38)
+    return !isLoading
+        ? Scaffold(
+            backgroundColor: Colors.black,
+            body: GestureDetector(
+              onTap: () {
+                FocusScope.of(context).unfocus();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                  colors: [
+                    Color.fromARGB(255, 0, 0, 0),
+                    Color.fromARGB(100, 39, 38, 38)
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -89,6 +172,11 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                     style: TextStyle(color: Colors.white, fontSize: 40),
                   ),
                 ),
+                SizedBox(
+                  height: 20,
+                ),
+                showErrorAlert(),
+                showEmailSent(),
                 Form(
                   key: formKey,
                   child: Column(
@@ -136,6 +224,9 @@ class _ForgotPasswordState extends State<ForgotPassword> {
           ),
         ),
       ),
+    ) : Scaffold(
+      backgroundColor: Colors.black,
+      body: loadingScreen("Sending email!"),
     );
   }
 }

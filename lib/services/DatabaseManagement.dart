@@ -103,7 +103,6 @@ class DatabaseMethods {
 
   getProfileUrl() async {
     String url;
-    int length;
     String uid;
     await FirebaseAuth.instance.currentUser().then((user) {
       uid = user.uid;

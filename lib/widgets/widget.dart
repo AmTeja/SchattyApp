@@ -41,15 +41,17 @@ TextStyle mediumTextStyle() {
   );
 }
 
-Widget loadingScreen() {
+Widget loadingScreen(String text) {
   return Container(
     child: Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            "Just a moment...",
-            style: TextStyle(color: Colors.white, fontSize: 40),
+          Flexible(
+            child: Text(
+              text,
+              style: TextStyle(color: Colors.white, fontSize: 40),
+            ),
           ),
           SizedBox(
             height: 20,

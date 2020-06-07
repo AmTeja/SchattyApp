@@ -173,18 +173,18 @@ class _SignUpState extends State<SignUp> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: isLoading
-          ? loadingScreen()
+          ? loadingScreen("Signing you in")
           : Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color.fromARGB(255, 0, 0, 0),
-                Color.fromARGB(100, 39, 38, 38)
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                colors: [
+                  Color.fromARGB(255, 0, 0, 0),
+                  Color.fromARGB(100, 39, 38, 38)
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
 //              tileMode: TileMode.mirror,
-            )),
+              )),
         child: GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();

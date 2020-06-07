@@ -321,17 +321,17 @@ class _SignInState extends State<SignIn> {
                         borderRadius: BorderRadius.circular(40)),
                     elevation: 4,
                     child: Text("Sign in"),
+                        ),
+                        SizedBox(
+                          height: 40,
+                        )
+                      ],
+                    ),
                   ),
-                  SizedBox(
-                    height: 40,
-                  )
-                ],
+                ),
               ),
-            ),
-          ),
-        ),
-      ) :
-      loadingScreen(),
+            )
+          : loadingScreen("Signing you in"),
     );
   }
 
