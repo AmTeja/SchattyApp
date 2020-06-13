@@ -226,9 +226,7 @@ class _ChatScreenState extends State<ChatScreen> {
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        "time": DateTime.now().millisecondsSinceEpoch,
         "sendTo": sentTo,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
@@ -253,7 +251,6 @@ class _ChatScreenState extends State<ChatScreen> {
               .now()
               .millisecondsSinceEpoch
               .toString()}.jgp';
-      print("Filename Set!");
       final StorageReference storageReference =
       FirebaseStorage.instance.ref().child(fileName); //ref to storage
       StorageUploadTask task = storageReference.putFile(
@@ -299,17 +296,13 @@ class _ChatScreenState extends State<ChatScreen> {
             )
         );
       }
-//    await Future.delayed(Duration(seconds: 2));
-      setState(() {
-        if (edited != null) {
+      await Future.delayed(Duration(seconds: 2, milliseconds: 500));
+      if (edited != null) {
+        setState(() {
           newImage = edited;
-          print("newImage set");
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) => composeImage(),
-          ));
-        }
-
-      });
+        });
+        sendImage(context);
+      }
     }
     catch (e) {
       print("GetImageError: $e");

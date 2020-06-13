@@ -12,7 +12,6 @@ class DatabaseMethods {
         .getDocuments()
         .then((value) {
       if (value.documents.length <= 0) {
-//              print(value.documents.length);
         return null;
       } else {
         return value.documents.length;
@@ -49,8 +48,13 @@ class DatabaseMethods {
   }
 
   getEmailByUsername(String username) async {}
-  uploadUserInfo(userMap) {
-    Firestore.instance.collection("users").add(userMap).catchError((e) {
+
+  uploadUserInfo(userMap, String uid) {
+    Firestore.instance
+        .collection("users")
+        .document(uid)
+        .setData(userMap)
+        .catchError((e) {
       print(e.toString());
     });
   }

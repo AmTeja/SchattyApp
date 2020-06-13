@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/signin.dart';
 import 'package:schatty/views/Authenticate/signup.dart';
 
@@ -13,6 +15,8 @@ class AuthHome extends StatefulWidget {
 }
 
 class _AuthHomeState extends State<AuthHome> {
+  DatabaseMethods databaseMethods = new DatabaseMethods();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,10 +24,10 @@ class _AuthHomeState extends State<AuthHome> {
       body: Container(
         decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
+          colors: [
             Color.fromARGB(255, 0, 0, 0),
             Color.fromARGB(100, 39, 38, 38)
-          ],
+              ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
 //              tileMode: TileMode.mirror,
@@ -173,7 +177,7 @@ class _AuthHomeState extends State<AuthHome> {
     return OutlineButton(
       splashColor: Colors.grey,
       onPressed: () {
-        signInWithGoogle();
+        signInWithGoogle(context);
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
       highlightElevation: 1,
@@ -207,15 +211,30 @@ class _AuthHomeState extends State<AuthHome> {
   AuthMethods authMethods = new AuthMethods();
   HelperFunctions helperFunctions = new HelperFunctions();
 
-  void signInWithGoogle() {
-    authMethods.signInWithGoogle().then((val) {
+  void signInWithGoogle(BuildContext context) {
+    authMethods.signInWithGoogle().then((val) async {
       if (val != null) {
-        String username = authMethods.googleSignIn.currentUser.displayName;
+        String username = authMethods.googleSignIn.currentUser.displayName
+            .replaceAll(" ", "");
+        String email = authMethods.googleSignIn.currentUser.email;
+        String profilePicURL =
+            "https://www.searchpng.com/wp-content/uploads/2019/02/Deafult-Profile-Pitcher.png";
+        FirebaseUser user = await FirebaseAuth.instance.currentUser();
+        String uid = user.uid;
         HelperFunctions.saveUserNameSharedPreference(
             username.replaceAll(" ", ""));
         HelperFunctions.saveUserLoggedInSharedPreference(true);
         print(username.replaceAll(" ", ""));
         HelperFunctions.saveIsGoogleUser(true);
+        Map<String, String> userInfoMap = {
+          //Making MAP for firebase
+          "username": username,
+          "email": email,
+          "searchKey": username.substring(0, 1).toUpperCase(),
+          "photoUrl": profilePicURL,
+          "uid": uid
+        };
+        databaseMethods.uploadUserInfo(userInfoMap, uid);
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => ChatRoom()));
       } else {}

@@ -39,7 +39,6 @@ class AuthMethods {
       final AuthCredential authCredential = GoogleAuthProvider.getCredential(
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken);
-
       final AuthResult authResult =
       await _auth.signInWithCredential(authCredential);
       final FirebaseUser user = authResult.user;
@@ -87,7 +86,7 @@ class AuthMethods {
   }
 
   void signOutGoogle() async {
-    await googleSignIn.signOut();
+    await googleSignIn.disconnect();
     print("User Signed Out");
   }
 }

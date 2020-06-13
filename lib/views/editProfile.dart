@@ -7,6 +7,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
+import 'package:schatty/views/Authenticate/ChangePassword.dart';
 
 class EditProfile extends StatefulWidget {
   final String username;
@@ -109,17 +110,52 @@ class _EditProfileState extends State<EditProfile> {
                 ),
               ),
             ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 120, vertical: 20),
+              child: MaterialButton(
+                padding: EdgeInsets.symmetric(vertical: 10),
+                onPressed: () {
+                  changePassword();
+                },
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(40)),
+                color: Colors.white,
+                elevation: 3,
+                splashColor: Colors.black,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Container(
+                      height: 40,
+                      child: Center(
+                        child: Text(
+                          "Change Password",
+                          style: TextStyle(color: Colors.black, fontSize: 18),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
+  changePassword() async {
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => ChangePassword()));
+  }
+
   Future getImage() async {
     var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
     File cropped;
     if (tempPic != null) {
-      cropped = await ImageCropper.cropImage(sourcePath: tempPic.path,
+      cropped = await ImageCropper.cropImage(
+          sourcePath: tempPic.path,
 //            aspectRatio: CropAspectRatio(
 //                ratioX: 1, ratioY: 1),
           compressQuality: 100,

@@ -48,7 +48,7 @@ class _ChatRoomState extends State<ChatRoom> {
   void initState() {
     super.initState();
     setState(() {
-      isLoading = true;
+//      isLoading = true;
     });
     uploadToken();
     configureFirebaseListeners();
@@ -207,9 +207,12 @@ class _ChatRoomState extends State<ChatRoom> {
 
   logOut(BuildContext context) async {
     bool isGoogleUser = false;
+
     isGoogleUser = await HelperFunctions.getIsGoogleUser();
-    if (isGoogleUser) {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    if (user.providerId != "Google") {
       authMethods.signOut();
+      print("not google :)");
     } else {
       authMethods.signOutGoogle();
     }
@@ -382,7 +385,6 @@ class _ChatRoomState extends State<ChatRoom> {
       },
     );
   }
-
 }
 
 

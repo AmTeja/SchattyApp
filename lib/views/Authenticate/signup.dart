@@ -59,14 +59,14 @@ class _SignUpState extends State<SignUp> {
               "photoUrl": profilePicURL,
               "uid": firebaseUser.uid
             };
-            databaseMethods.uploadUserInfo(userInfoMap);
+            String uid = firebaseUser.uid;
+            databaseMethods.uploadUserInfo(userInfoMap, uid);
             await firebaseUser.sendEmailVerification().then((value) => {
                   setState(() {
-              verificationSent = true;
-              isLoading = false;
-            })
-            });
-
+                    verificationSent = true;
+                    isLoading = false;
+                  })
+                });
           }
         } else {
           setState(() {

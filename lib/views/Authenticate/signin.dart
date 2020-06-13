@@ -36,17 +36,6 @@ class _SignInState extends State<SignIn> {
   bool isLoading = false;
   bool incorrectPass = false;
 
-  getUserExists() async {
-    databaseMethods.getUserByUserName(userNameTEC.text).then((val) {
-      if (val != null || val != 0) {
-        setState(() {
-          userNameExists = true;
-          print("User exists");
-        });
-      }
-    });
-  }
-
   signIn() async {
     if (formKey.currentState.validate()) {
       try {
