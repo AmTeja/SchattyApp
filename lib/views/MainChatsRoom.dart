@@ -329,11 +329,42 @@ class _ChatRoomState extends State<ChatRoom> {
                         alignment: Alignment.centerRight,
                         padding: EdgeInsets.symmetric(horizontal: 10),
                         child: Icon(Icons.refresh)),
-                  ]))
+                  ])),
+          ListTile(
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: "Schatty",
+                applicationVersion: '0.1 (Beta)',
+                applicationIcon: SchattyIcon(),
+                children: [
+                  SizedBox(height: 40,),
+                  Text("Developed by: Krishna Teja J"),
+                  SizedBox(height: 10,),
+                  Text("Designed by: D Sai Sandeep")
+                ],
+              );
+            },
+            title: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text('About',
+                  style: TextStyle(
+                      fontSize: 16
+                  ),),
+                Container(
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Icon(Icons.info),
+                )
+              ],
+            ),
+          )
         ],
       ),
     );
   }
+
 
   Widget suchEmpty(BuildContext context) {
     return Center(
@@ -411,32 +442,61 @@ class ChatRoomTile extends StatelessWidget {
       },
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(23),
+//          borderRadius: BorderRadius.circular(23),
           color: Colors.transparent,
-//          border: Border(bottom: BorderSide(
-//              color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
+          border: Border(
+              bottom: BorderSide(
+                  color: Color.fromARGB(255, 141, 133, 133), width: 0.2)),
         ),
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
         margin: EdgeInsets.symmetric(vertical: 2),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Container( //Letter in the circle Container
-              height: 40,
-              width: 40,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                  color: Colors.black,
-                  borderRadius: BorderRadius.circular(40)
-              ),
-              child: Text("${userName.substring(0, 1).toUpperCase()}",
-                style: TextStyle(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container( //Letter in the circle Container
+                  height: 60,
+                  width: 60,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(40),
+                  ),
+                  child: Text("${userName.substring(0, 1).toUpperCase()}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),),
+                ),
+                SizedBox(width: 12,),
+                Text(userName, style: TextStyle(
+                  fontSize: 20,
                   color: Colors.white,
                 ),),
+              ],
             ),
-            SizedBox(width: 7,),
-            Text(userName, style: mediumTextStyle(),)
+//            Padding(
+//              padding: const EdgeInsets.only(left: 30.0),
+//              child: Container(
+//                alignment: Alignment.center,
+//                height: 33,
+//                width: 33,
+//                decoration: BoxDecoration(
+//                  borderRadius: BorderRadius.circular(40),
+//                  color: Colors.blueGrey[300]
+//                ),
+//                child: Text(
+//                  "!",
+//                  style: TextStyle(fontSize: 18, color: Colors.white),
+//                ),
+//              ),
+//            )
           ],
         ),
+
       ),
     );
   }

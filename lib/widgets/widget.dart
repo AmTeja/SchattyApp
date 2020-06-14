@@ -41,6 +41,11 @@ TextStyle mediumTextStyle() {
   );
 }
 
+Widget SchattyIcon() {
+  return Image(image: AssetImage('assets/icon/icon.png'),);
+}
+
+
 Widget loadingScreen(String text) {
   return Container(
     child: Center(

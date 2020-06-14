@@ -102,7 +102,7 @@ class _EditProfileState extends State<EditProfile> {
                       width: 20,
                     ),
                     Icon(
-                      Icons.camera_enhance,
+                      Icons.camera_alt,
                       size: 40,
                       color: Colors.black,
                     )
