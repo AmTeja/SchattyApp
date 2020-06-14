@@ -90,18 +90,21 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
         backgroundColor: Color.fromARGB(255, 18, 18, 18),
         appBar: AppBar(
-          title: isComposing ? Text(chatWith + "is typing...") : Text(chatWith),
+          title: Text(chatWith),
           backgroundColor: Colors.black12,
           actions: <Widget>[
-            isSelected ? IconButton(
-              icon: Icon(Icons.content_copy),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(text: selectedText),);
-                setState(() {
-                  isSelected = false;
-                  selectedText = "";
-                  Fluttertoast.showToast(msg: "Copied Content!");
-                });
+            isSelected
+                ? IconButton(
+                    icon: Icon(Icons.content_copy),
+                    onPressed: () {
+                      Clipboard.setData(
+                        ClipboardData(text: selectedText),
+                      );
+                      setState(() {
+                        isSelected = false;
+                        selectedText = "";
+                        Fluttertoast.showToast(msg: "Copied Content!");
+                      });
               },
             ) : SizedBox(),
             IconButton(
@@ -121,6 +124,13 @@ class _ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               Flexible(
                 child: Container(
+//                  decoration: BoxDecoration(
+//                    image: DecorationImage(
+//                      image: AssetImage('assets/images/background.png'),
+//                      fit: BoxFit.cover,
+//                    ),
+//                    color: Color.fromARGB(10, 255, 255, 255)
+//                  ),
                   child: StreamBuilder(
                       stream: chatMessageStream,
                       builder: (context, snapshot) {
@@ -226,7 +236,9 @@ class _ChatScreenState extends State<ChatScreen> {
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime.now().millisecondsSinceEpoch,
+        "time": DateTime
+            .now()
+            .millisecondsSinceEpoch,
         "sendTo": sentTo,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
@@ -313,14 +325,12 @@ class _ChatScreenState extends State<ChatScreen> {
     var time = timeInDM.split(':');
     int sentDay = int.parse(time[0]);
     int sentMonth = int.parse(time[1]);
-    ;
     int sentYear = int.parse(time[2]);
 
     var currentTime = DateFormat('dd:M:y').format(DateTime.now()).split(':');
     int currentDay = int.parse(currentTime[0]);
     int currentMonth = int.parse(currentTime[1]);
     int currentYear = int.parse(currentTime[2]);
-    ;
 
     if (currentYear >= sentYear) {
       if (currentMonth >= sentMonth) {

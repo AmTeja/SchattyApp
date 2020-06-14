@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -177,7 +179,7 @@ class _ChatRoomState extends State<ChatRoom> {
     }
   }
 
-  setupEncrpytion() async {
+  setupEncryption() async {
     try {
       print("Encryption Setting up");
       encryptionService.futureKeyPair = encryptionService.getKeyPair();
@@ -186,7 +188,8 @@ class _ChatRoomState extends State<ChatRoom> {
         "privateKey": encryptionService.keyPair.privateKey,
       };
 
-      await Firestore.instance.collection('users')
+      await Firestore.instance
+          .collection('users')
           .where('uid', isEqualTo: uid)
           .getDocuments().then((docs) async {
         await Firestore.instance.document(
@@ -206,9 +209,9 @@ class _ChatRoomState extends State<ChatRoom> {
   }
 
   logOut(BuildContext context) async {
-    bool isGoogleUser = false;
-
-    isGoogleUser = await HelperFunctions.getIsGoogleUser();
+//    bool isGoogleUser = false;
+//
+//    isGoogleUser = await HelperFunctions.getIsGoogleUser();
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     if (user.providerId != "Google") {
       authMethods.signOut();
@@ -406,11 +409,14 @@ class _ChatRoomState extends State<ChatRoom> {
             itemCount: snapshot.data.documents.length,
             itemBuilder: (context, index) {
               return ChatRoomTile(
-                  snapshot.data.documents[index].data["chatRoomId"]
-                      .toString()
-                      .replaceAll("_", "")
-                      .replaceAll(Constants.ownerName, ""),
-                  snapshot.data.documents[index].data["chatRoomId"]);
+                snapshot.data.documents[index].data["chatRoomId"]
+                    .toString()
+                    .replaceAll("_", "")
+                    .replaceAll(Constants.ownerName, ""),
+                snapshot.data.documents[index].data["chatRoomId"],
+                snapshot.data.documents[index].data["photoURLS"],
+                snapshot.data.documents[index].data["users"],
+              );
             })
             : suchEmpty(context);
       },
@@ -424,11 +430,20 @@ class ChatRoomTile extends StatelessWidget {
 
   final String userName;
   final String chatRoomId;
+  final urls;
+  final users;
 
-  ChatRoomTile(this.userName, this.chatRoomId);
+  ChatRoomTile(this.userName, this.chatRoomId, this.urls, this.users);
 
   @override
   Widget build(BuildContext context) {
+    String targetUrl;
+    if (users[0] == userName) {
+      targetUrl = urls[1];
+    }
+    else {
+      targetUrl = urls[0];
+    }
     return GestureDetector(
       onTap: () {
         Navigator.push(context, MaterialPageRoute(
@@ -443,57 +458,51 @@ class ChatRoomTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
 //          borderRadius: BorderRadius.circular(23),
-          color: Colors.transparent,
+          color: Color.fromARGB(40, 0, 0, 0),
           border: Border(
               bottom: BorderSide(
-                  color: Color.fromARGB(255, 141, 133, 133), width: 0.2)),
+                  color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
         ),
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-        margin: EdgeInsets.symmetric(vertical: 2),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+        margin: EdgeInsets.symmetric(vertical: 1),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container( //Letter in the circle Container
-                  height: 60,
-                  width: 60,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    borderRadius: BorderRadius.circular(40),
-                  ),
-                  child: Text("${userName.substring(0, 1).toUpperCase()}",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                    ),),
-                ),
-                SizedBox(width: 12,),
-                Text(userName, style: TextStyle(
-                  fontSize: 20,
+            targetUrl == null ? Container( //Letter in the circle Container
+              height: 60,
+              width: 60,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(40),
+              ),
+              child: Text("${userName.substring(0, 1).toUpperCase()}",
+                style: TextStyle(
                   color: Colors.white,
+                  fontSize: 18,
                 ),),
-              ],
-            ),
-//            Padding(
-//              padding: const EdgeInsets.only(left: 30.0),
-//              child: Container(
-//                alignment: Alignment.center,
-//                height: 33,
-//                width: 33,
-//                decoration: BoxDecoration(
-//                  borderRadius: BorderRadius.circular(40),
-//                  color: Colors.blueGrey[300]
-//                ),
-//                child: Text(
-//                  "!",
-//                  style: TextStyle(fontSize: 18, color: Colors.white),
-//                ),
+            )
+                : Container(
+              height: 60,
+              width: 60,
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(40),
+                  image: DecorationImage(
+                    image: NetworkImage(targetUrl,),
+                    fit: BoxFit.cover,
+                  )
+              ),
+              alignment: Alignment.center,
+//              child: CachedNetworkImage(
+//                imageUrl: targetUrl,
 //              ),
-//            )
+            ),
+            SizedBox(width: 12,),
+            Text(userName, style: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+            ),),
           ],
         ),
 

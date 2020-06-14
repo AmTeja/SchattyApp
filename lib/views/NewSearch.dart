@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/helper/constants.dart';
+import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/helper/targetURL.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/services/SearchService.dart';
 
@@ -135,15 +137,19 @@ class _NewSearchState extends State<NewSearch> {
     );
   }
 
-  createChatInstance(String userName) {
+  createChatInstance(String userName) async {
+    final GetPhotoURL targetURL = new GetPhotoURL();
     if (userName != Constants.ownerName) {
       String chatRoomID = getChatRoomID(userName, Constants.ownerName);
-
+      String targetUserURL = await targetURL.fetchTargetURL(userName);
+      String currentUserURL = await HelperFunctions.getUserImageURL();
       List<String> users = [userName, Constants.ownerName];
-
+      List<String> photos = [targetUserURL, currentUserURL];
       Map<String, dynamic> chatRoomMap = {
         "users": users,
-        "chatRoomId": chatRoomID
+        "chatRoomId": chatRoomID,
+        "photoURLS": photos,
+        "lastTime": DateTime.now(),
       };
 
       DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);

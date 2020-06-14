@@ -41,6 +41,7 @@ TextStyle mediumTextStyle() {
   );
 }
 
+// ignore: non_constant_identifier_names
 Widget SchattyIcon() {
   return Image(image: AssetImage('assets/icon/icon.png'),);
 }

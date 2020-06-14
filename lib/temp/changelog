@@ -24,3 +24,11 @@ Changelog:
     -Hold user to open info.
 -28/05/2020
     -eh
+-15/06/2020
+    -Added Profile Picture to ChatRoom
+    -Added Change Password
+    -Added Licenses
+    -Updated Forgot Password
+    -Added Message Copy Button
+    -Added Sharing of images
+    -Added Date and Time to messages
