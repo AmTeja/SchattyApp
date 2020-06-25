@@ -64,32 +64,40 @@ class _ChatRoomState extends State<ChatRoom> {
     return !isLoading
         ? Scaffold(
             drawer: mainDrawer(context),
-            backgroundColor: Colors.black,
-            appBar: AppBar(
-              backgroundColor: Colors.black26,
-              title: Text("Schatty"),
-              elevation: 3,
-            ),
-            body: Container(
-              child: Scaffold(
-                backgroundColor: Colors.black,
-                body: Container(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black26,
+        title: Text("Schatty"),
+        elevation: 3,
+      ),
+      body: Container(
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: Container(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(colors: [
-                    Color.fromARGB(255, 0, 0, 0),
-                    Color.fromARGB(100, 39, 38, 38)
-                  ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                  gradient: LinearGradient(
+                      colors: [
+                        Color.fromARGB(255, 0, 0, 0),
+                        Color.fromARGB(100, 39, 38, 38)
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter),
                   image: DecorationImage(
+                      colorFilter: ColorFilter.mode(
+                          Colors.black.withOpacity(0.3),
+                          BlendMode.luminosity),
                       image: ExactAssetImage(
-                        "assets/images/chatroombg.png",
+                        "assets/images/background.png",
                       ),
                       fit: BoxFit.cover)),
               child: chatRoomList()),
           floatingActionButton: FloatingActionButton(
             backgroundColor: Color.fromARGB(255, 141, 133, 133),
-            child: Icon(Icons.search,
+            child: Icon(
+              Icons.search,
               color: Colors.black,
-              size: 30,),
+              size: 30,
+            ),
             onPressed: () {
               Navigator.push(context,
                   MaterialPageRoute(builder: (context) => NewSearch()));
@@ -97,10 +105,9 @@ class _ChatRoomState extends State<ChatRoom> {
           ),
         ),
       ),
-    ) : Scaffold(
-        backgroundColor: Colors.black,
-        body: loadingScreen("Hold on")
-    );
+    )
+        : Scaffold(
+        backgroundColor: Colors.black, body: loadingScreen("Hold on"));
   }
 
   configureFirebaseListeners() {
@@ -119,32 +126,33 @@ class _ChatRoomState extends State<ChatRoom> {
     );
   }
 
-  sendToChatScreen(Map<String, dynamic> message) async
-  {
+  sendToChatScreen(Map<String, dynamic> message) async {
     String chatRoomID;
     var data = message["data"];
     String sentUser = await data["sentUser"];
     String toUser = await data["toUser"];
     String roomID1 = getChatRoomID(sentUser, toUser);
     try {
-      await Firestore.instance.collection("ChatRoom")
+      await Firestore.instance
+          .collection("ChatRoom")
           .where("chatRoomId", isEqualTo: roomID1)
-          .getDocuments().then((docs) async {
+          .getDocuments()
+          .then((docs) async {
         chatRoomID = await docs.documents[0].data["chatRoomId"];
         print(chatRoomID);
       });
-      String username = chatRoomID.replaceAll("_", "").replaceAll(
-          Constants.ownerName, "");
-      await Navigator.push(newContext, MaterialPageRoute(
-          builder: (newContext) => ChatScreen(chatRoomID, username)
-      ));
+      String username =
+      chatRoomID.replaceAll("_", "").replaceAll(Constants.ownerName, "");
+      await Navigator.push(
+          newContext,
+          MaterialPageRoute(
+              builder: (newContext) => ChatScreen(chatRoomID, username)));
     } catch (e) {
       print(e);
     }
   }
 
-  uploadToken() async
-  {
+  uploadToken() async {
     String token;
     token = await firebaseMessaging.getToken();
     print(token);
@@ -191,16 +199,17 @@ class _ChatRoomState extends State<ChatRoom> {
       await Firestore.instance
           .collection('users')
           .where('uid', isEqualTo: uid)
-          .getDocuments().then((docs) async {
-        await Firestore.instance.document(
-            '/users/${docs.documents[0].documentID}')
+          .getDocuments()
+          .then((docs) async {
+        await Firestore.instance
+            .document('/users/${docs.documents[0].documentID}')
             .updateData(keyMap);
       });
 
-      var privateString = await encryptionService.getPrivatekeyInPlain(
-          encryptionService.keyPair);
-      var publicString = await encryptionService.getPublicKeyInPlain(
-          encryptionService.keyPair);
+      var privateString = await encryptionService
+          .getPrivatekeyInPlain(encryptionService.keyPair);
+      var publicString = await encryptionService
+          .getPublicKeyInPlain(encryptionService.keyPair);
       print("Private: $privateString");
       print("Public: $publicString");
     } catch (e) {
@@ -224,8 +233,7 @@ class _ChatRoomState extends State<ChatRoom> {
     HelperFunctions.saveUserEmailSharedPreference(null);
     HelperFunctions.saveUserImageURL(null);
     Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) =>
-        AuthHome()));
+        context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
 
   Widget mainDrawer(BuildContext context) {
@@ -244,10 +252,15 @@ class _ChatRoomState extends State<ChatRoom> {
                     child: SizedBox(
                       width: 100,
                       height: 100,
-                      child: url != null ? (Image.network(url,
-                        fit: BoxFit.cover,)) : Image.asset(
-                        "assets/images/username.png",
-                        fit: BoxFit.fill,),
+                      child: url != null
+                          ? (Image.network(
+                              url,
+                              fit: BoxFit.cover,
+                            ))
+                          : Image.asset(
+                              "assets/images/username.png",
+                              fit: BoxFit.fill,
+                            ),
                     ),
                   ),
                 ),
@@ -277,15 +290,16 @@ class _ChatRoomState extends State<ChatRoom> {
           ),
           ListTile(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(
-                  builder: (context) =>
-                      EditProfile(Constants.ownerName, uid)));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          EditProfile(Constants.ownerName, uid)));
             },
             title: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
-                Text(
-                    "Edit profile",
+                Text("Edit profile",
                     style: TextStyle(
                       fontSize: 16,
                     )),
@@ -304,30 +318,32 @@ class _ChatRoomState extends State<ChatRoom> {
               title: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Text('Logout',
+                    Text(
+                      'Logout',
                       style: TextStyle(
                         fontSize: 16,
-                      ),),
+                      ),
+                    ),
                     Container(
                         alignment: Alignment.centerRight,
                         padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(Icons.exit_to_app)
-                    ),
+                        child: Icon(Icons.exit_to_app)),
                   ])),
           ListTile(
               onTap: () {
                 Navigator.pop(context);
-                Navigator.pushReplacement(context, MaterialPageRoute(
-                    builder: (context) => ChatRoom()
-                ));
+                Navigator.pushReplacement(context,
+                    MaterialPageRoute(builder: (context) => ChatRoom()));
               },
               title: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
-                    Text('Refresh',
+                    Text(
+                      'Refresh',
                       style: TextStyle(
                         fontSize: 16,
-                      ),),
+                      ),
+                    ),
                     Container(
                         alignment: Alignment.centerRight,
                         padding: EdgeInsets.symmetric(horizontal: 10),
@@ -341,9 +357,13 @@ class _ChatRoomState extends State<ChatRoom> {
                 applicationVersion: '0.1 (Beta)',
                 applicationIcon: SchattyIcon(),
                 children: [
-                  SizedBox(height: 40,),
+                  SizedBox(
+                    height: 40,
+                  ),
                   Text("Developed by: Krishna Teja J"),
-                  SizedBox(height: 10,),
+                  SizedBox(
+                    height: 10,
+                  ),
                   Text("Designed by: D Sai Sandeep")
                 ],
               );
@@ -351,10 +371,10 @@ class _ChatRoomState extends State<ChatRoom> {
             title: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('About',
-                  style: TextStyle(
-                      fontSize: 16
-                  ),),
+                Text(
+                  'About',
+                  style: TextStyle(fontSize: 16),
+                ),
                 Container(
                   alignment: Alignment.centerRight,
                   padding: EdgeInsets.symmetric(horizontal: 10),
@@ -367,7 +387,6 @@ class _ChatRoomState extends State<ChatRoom> {
       ),
     );
   }
-
 
   Widget suchEmpty(BuildContext context) {
     return Center(
@@ -424,10 +443,7 @@ class _ChatRoomState extends State<ChatRoom> {
   }
 }
 
-
-
 class ChatRoomTile extends StatelessWidget {
-
   final String userName;
   final String chatRoomId;
   final urls;
@@ -438,22 +454,21 @@ class ChatRoomTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String targetUrl;
-    if (users[0] == userName) {
+    if (users[1] == userName) {
       targetUrl = urls[1];
-    }
-    else {
+    } else {
       targetUrl = urls[0];
     }
     return GestureDetector(
       onTap: () {
-        Navigator.push(context, MaterialPageRoute(
-            builder: (context) => ChatScreen(chatRoomId, userName)
-        ));
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ChatScreen(chatRoomId, userName)));
       },
       onLongPress: () {
-        Navigator.push(context, MaterialPageRoute(
-            builder: (context) => UserInfo(userName)
-        ));
+        Navigator.push(context,
+            MaterialPageRoute(builder: (context) => TargetUserInfo(userName)));
       },
       child: Container(
         decoration: BoxDecoration(
@@ -469,7 +484,9 @@ class ChatRoomTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            targetUrl == null ? Container( //Letter in the circle Container
+            targetUrl == null
+                ? Container(
+              //Letter in the circle Container
               height: 60,
               width: 60,
               alignment: Alignment.center,
@@ -477,11 +494,13 @@ class ChatRoomTile extends StatelessWidget {
                 color: Colors.black,
                 borderRadius: BorderRadius.circular(40),
               ),
-              child: Text("${userName.substring(0, 1).toUpperCase()}",
+              child: Text(
+                "${userName.substring(0, 1).toUpperCase()}",
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 18,
-                ),),
+                ),
+              ),
             )
                 : Container(
               height: 60,
@@ -489,25 +508,29 @@ class ChatRoomTile extends StatelessWidget {
               decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(40),
                   image: DecorationImage(
-                    image: NetworkImage(targetUrl,),
+                    image: NetworkImage(
+                      targetUrl,
+                    ),
                     fit: BoxFit.cover,
-                  )
-              ),
+                  )),
               alignment: Alignment.center,
 //              child: CachedNetworkImage(
 //                imageUrl: targetUrl,
 //              ),
             ),
-            SizedBox(width: 12,),
-            Text(userName, style: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-            ),),
+            SizedBox(
+              width: 12,
+            ),
+            Text(
+              userName,
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
-
       ),
     );
   }
 }
-

@@ -143,8 +143,8 @@ class _NewSearchState extends State<NewSearch> {
       String chatRoomID = getChatRoomID(userName, Constants.ownerName);
       String targetUserURL = await targetURL.fetchTargetURL(userName);
       String currentUserURL = await HelperFunctions.getUserImageURL();
-      List<String> users = [userName, Constants.ownerName];
-      List<String> photos = [targetUserURL, currentUserURL];
+      List<String> users = [Constants.ownerName, userName];
+      List<String> photos = [currentUserURL, targetUserURL];
       Map<String, dynamic> chatRoomMap = {
         "users": users,
         "chatRoomId": chatRoomID,
