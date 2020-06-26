@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:schatty/enums/globalcolors.dart';
 import 'package:schatty/helper/NavigationService.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/Authenticate/StartScreen.dart';
@@ -19,16 +21,22 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   NavigationService navigationService = new NavigationService();
+  DarkThemeProvider themeChangeProvider = new DarkThemeProvider();
   bool isUserLoggedIn = false;
 
   @override
   void initState() {
     getState();
+    getThemePreference();
     super.initState();
   }
 
+  getThemePreference() async {
+    themeChangeProvider.darkTheme = await Preferences.getThemePreference();
+  }
+
   getState() async {
-    await HelperFunctions.getUserLoggedInSharedPreference().then((value) {
+    await Preferences.getUserLoggedInSharedPreference().then((value) {
       setState(() {
         isUserLoggedIn = value;
       });
@@ -37,27 +45,34 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<ImageUploadProvider>(
-      create: (context) => ImageUploadProvider(),
-      child: MaterialApp(
-        routes: {
-          '/ChatsRoom': (context) => ChatRoom(),
-        },
-        title: 'Schatty',
-        navigatorKey: navigationService.navigatorKey,
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primaryColor: Colors.blue,
-          scaffoldBackgroundColor: Color(0xffffffff),
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<ImageUploadProvider>(
+          create: (context) => ImageUploadProvider(),
         ),
-//      home: EditProfile(),
-        home: isUserLoggedIn != null
-            ? (isUserLoggedIn ? ChatRoom() : AuthHome())
-            : StartScreen(),
+        ChangeNotifierProvider<DarkThemeProvider>(
+          create: (_) {
+            return themeChangeProvider;
+          },
+        )
+      ],
+      child: Consumer<DarkThemeProvider>(
+        builder: (BuildContext context, value, Widget child) {
+          return MaterialApp(
+            routes: {
+              '/ChatsRoom': (context) => ChatRoom(),
+            },
+            title: 'Schatty',
+            navigatorKey: navigationService.navigatorKey,
+            debugShowCheckedModeBanner: false,
+            theme:
+                GlobalColors.themeData(themeChangeProvider.darkTheme, context),
+            home: isUserLoggedIn != null
+                ? (isUserLoggedIn ? ChatRoom() : AuthHome())
+                : StartScreen(),
+          );
+        },
       ),
     );
   }
 }
-

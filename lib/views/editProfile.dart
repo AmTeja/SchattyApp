@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -23,34 +24,34 @@ class _EditProfileState extends State<EditProfile> {
   File newProfilePic;
   String profilePicURL;
 
+  bool isLoading = false;
+
   DatabaseMethods databaseMethods = new DatabaseMethods();
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    isLoading = true;
     assignURL();
+    setState(() {
+      isLoading = false;
+    });
   }
 
-  assignURL() async
-  {
+  assignURL() async {
     profilePicURL = await databaseMethods.getProfileUrl();
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(100, 39, 38, 38),
+//      backgroundColor: Color.fromARGB(100, 39, 38, 38),
       appBar: AppBar(
         title: Text(
           "Schatty",
-          style: TextStyle(
-            color: Colors.white,
-          ),
         ),
-        backgroundColor: Colors.black,
       ),
       body: Center(
         child: Column(
@@ -59,20 +60,36 @@ class _EditProfileState extends State<EditProfile> {
               padding: EdgeInsets.only(top: 70),
               alignment: Alignment.topCenter,
               child: CircleAvatar(
-                radius: 120,
+                radius: 125,
+                backgroundImage: AssetImage("assets/images/username.png"),
                 child: ClipOval(
-                  child: SizedBox(
-                    width: 250,
-                    height: 250,
-                    child: Image(
-                      image: profilePicURL != null
-                          ? NetworkImage(profilePicURL)
-                          : AssetImage(
-                        "assets/images/username.png",
-                      ),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+//                        child: CachedNetworkImage(
+//                          height: 250,
+//                          width: 250,
+//                          fit: BoxFit.cover,
+//                          imageUrl: profilePicURL,
+//                          placeholder: (context, url) =>
+//                              new CircularProgressIndicator(),
+//                        ),
+                  child: profilePicURL != null
+                      ? CachedNetworkImage(
+                          imageUrl: profilePicURL,
+                          imageBuilder: (context, imageProvider) => Container(
+                            decoration: BoxDecoration(
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          placeholder: (context, url) =>
+                              CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              Icon(Icons.error),
+                        )
+                      : Image(
+                          image: AssetImage("assets/images/username.png"),
+                        ),
                 ),
               ),
             ),
@@ -168,8 +185,7 @@ class _EditProfileState extends State<EditProfile> {
             toolbarTitle: "Schatty",
             statusBarColor: Colors.black,
             backgroundColor: Colors.white,
-          )
-      );
+          ));
     }
     setState(() {
       if (cropped != null) {
@@ -185,18 +201,17 @@ class _EditProfileState extends State<EditProfile> {
         widget.uid +
         '/${randomNum.nextInt(5000).toString()}.jpg'; //filename to be stored
     final StorageReference storageReference =
-        FirebaseStorage.instance.ref().child(fileName); //ref to storage
+    FirebaseStorage.instance.ref().child(fileName); //ref to storage
     StorageUploadTask task =
-        storageReference.putFile(newProfilePic); //task to upload file
+    storageReference.putFile(newProfilePic); //task to upload file
     StorageTaskSnapshot snapshotTask = await task.onComplete;
     var downloadUrl = await snapshotTask.ref
         .getDownloadURL(); //download url of the image uploaded
     String url = downloadUrl.toString();
-    await HelperFunctions.saveUserImageURL(url);
+    await Preferences.saveUserImageURL(url);
     databaseMethods.updateProfilePicture(downloadUrl.toString());
     setState(() {
       profilePicURL = url;
     });
   }
-
 }

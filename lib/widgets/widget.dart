@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
-Widget appBarMain(BuildContext context)
-{
-  return AppBar(
-    title: Image.asset("assets/images/logo999.png", height: 50,),
-  );
+Widget appBarMain(BuildContext context) {
+  return AppBar();
 }
 
-InputDecoration textFieldInputDecoration(String hintText)
-{
+InputDecoration textFieldInputDecoration(String hintText) {
   return InputDecoration(
       hintText: hintText,
       hintStyle: TextStyle(
@@ -16,18 +12,15 @@ InputDecoration textFieldInputDecoration(String hintText)
       ),
       focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.blue,
-          )
-      ),
+        color: Colors.blue,
+      )),
       enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.black,
-          )
-      )
-  );
+        color: Colors.black,
+      )));
 }
 
-TextStyle simpleTextStyle()  {
+TextStyle simpleTextStyle() {
   return TextStyle(
     color: Colors.white,
     fontSize: 18,
@@ -43,9 +36,10 @@ TextStyle mediumTextStyle() {
 
 // ignore: non_constant_identifier_names
 Widget SchattyIcon() {
-  return Image(image: AssetImage('assets/icon/icon.png'),);
+  return Image(
+    image: AssetImage('assets/icon/icon.png'),
+  );
 }
-
 
 Widget loadingScreen(String text) {
   return Container(

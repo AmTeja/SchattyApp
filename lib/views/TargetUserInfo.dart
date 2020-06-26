@@ -41,10 +41,9 @@ class _UserInfoState extends State<UserInfo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
         title: Text(widget.userName),
       ),
-      backgroundColor: Color.fromARGB(255, 14, 14, 14),
+//      backgroundColor: Color.fromARGB(255, 14, 14, 14),
       body: Center(
         child: Column(
           children: <Widget>[
@@ -78,13 +77,13 @@ class _UserInfoState extends State<UserInfo> {
                 children: [
                   Text(
                     "Username",
-                    style: TextStyle(color: Colors.white, fontSize: 26),
+                    style: TextStyle(fontSize: 26),
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12.0),
                     child: Text(
                       widget.userName,
-                      style: TextStyle(color: Colors.white, fontSize: 26),
+                      style: TextStyle(fontSize: 26),
                     ),
                   )
                 ],

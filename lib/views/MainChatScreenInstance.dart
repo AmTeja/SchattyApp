@@ -88,10 +88,9 @@ class _ChatScreenState extends State<ChatScreen> {
     String chatWith = widget.userName;
     imageUploadProvider = Provider.of<ImageUploadProvider>(context);
     return Scaffold(
-        backgroundColor: Color.fromARGB(255, 18, 18, 18),
+//        backgroundColor: Color.fromARGB(255, 18, 18, 18),
         appBar: AppBar(
           title: Text(chatWith),
-          backgroundColor: Colors.black12,
           actions: <Widget>[
             isSelected
                 ? IconButton(
@@ -180,7 +179,6 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8),
       height: 70,
-      color: Colors.black,
       child: Row(
         children: <Widget>[
           IconButton(
@@ -189,7 +187,6 @@ class _ChatScreenState extends State<ChatScreen> {
             },
             icon: Icon(
               Icons.camera_alt,
-              color: Colors.white,
               size: 25,
             ),
             splashColor: Colors.blue,
@@ -212,7 +209,6 @@ class _ChatScreenState extends State<ChatScreen> {
                   borderRadius: BorderRadius.all(Radius.circular(30)),
                 ),
                 hintText: 'Say something...',
-                fillColor: Colors.white,
                 filled: true,
                 hintStyle: TextStyle(color: Colors.grey[400]),
               ),
@@ -221,7 +217,7 @@ class _ChatScreenState extends State<ChatScreen> {
           IconButton(
             icon: Icon(Icons.send),
             iconSize: 25,
-            color: Theme.of(context).primaryColor,
+            color: Color(0xff51cec0),
             onPressed: () {
               sendMessage();
             },
@@ -236,9 +232,7 @@ class _ChatScreenState extends State<ChatScreen> {
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        "time": DateTime.now().millisecondsSinceEpoch,
         "sendTo": sentTo,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
@@ -450,7 +444,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget viewImage(String url) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+//        backgroundColor: Colors.black,
       ),
       backgroundColor: Colors.black,
       body: Center(

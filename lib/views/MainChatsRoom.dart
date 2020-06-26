@@ -1,11 +1,13 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
+import 'package:schatty/enums/globalcolors.dart';
 import 'package:schatty/helper/NavigationService.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
@@ -15,6 +17,7 @@ import 'package:schatty/services/encryptionservice.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
 import 'package:schatty/views/NewSearch.dart';
+import 'package:schatty/views/SettingsView.dart';
 import 'package:schatty/views/TargetUserInfo.dart';
 import 'package:schatty/views/editProfile.dart';
 import 'package:schatty/widgets/widget.dart';
@@ -30,6 +33,7 @@ class _ChatRoomState extends State<ChatRoom> {
   NavigationService navigationService = new NavigationService();
   FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
   EncryptionService encryptionService = new EncryptionService();
+  GlobalColors gc = new GlobalColors();
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
 //  final StorageReference storageRef = FirebaseStorage.instance.ref().child(fileName);
@@ -63,51 +67,40 @@ class _ChatRoomState extends State<ChatRoom> {
     newContext = context;
     return !isLoading
         ? Scaffold(
-            drawer: mainDrawer(context),
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black26,
-        title: Text("Schatty"),
-        elevation: 3,
-      ),
-      body: Container(
-        child: Scaffold(
-          backgroundColor: Colors.black,
-          body: Container(
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: [
-                        Color.fromARGB(255, 0, 0, 0),
-                        Color.fromARGB(100, 39, 38, 38)
-                      ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter),
-                  image: DecorationImage(
-                      colorFilter: ColorFilter.mode(
-                          Colors.black.withOpacity(0.3),
-                          BlendMode.luminosity),
-                      image: ExactAssetImage(
-                        "assets/images/background.png",
-                      ),
-                      fit: BoxFit.cover)),
-              child: chatRoomList()),
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: Color.fromARGB(255, 141, 133, 133),
-            child: Icon(
-              Icons.search,
-              color: Colors.black,
-              size: 30,
+            drawer: Theme(data: Theme.of(context), child: mainDrawer(context)),
+            backgroundColor: Colors.black,
+            appBar: AppBar(
+              title: Text("Schatty"),
+              elevation: 3,
             ),
-            onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => NewSearch()));
-            },
-          ),
-        ),
-      ),
-    )
+            body: Container(
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [
+                      Color.fromARGB(255, 0, 0, 0),
+                      Color.fromARGB(100, 39, 38, 38)
+                    ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+                    image: DecorationImage(
+                        colorFilter: ColorFilter.mode(
+                            Colors.black.withOpacity(0.3),
+                            BlendMode.luminosity),
+                        image: ExactAssetImage(
+                          "assets/images/background.png",
+                        ),
+                        fit: BoxFit.cover)),
+                child: chatRoomList()),
+            floatingActionButton: FloatingActionButton(
+              child: Icon(
+                Icons.search,
+                size: 30,
+              ),
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => NewSearch()));
+              },
+            ),
+          )
         : Scaffold(
-        backgroundColor: Colors.black, body: loadingScreen("Hold on"));
+            backgroundColor: Colors.black, body: loadingScreen("Hold on"));
   }
 
   configureFirebaseListeners() {
@@ -168,7 +161,7 @@ class _ChatRoomState extends State<ChatRoom> {
   }
 
   getUserInfo() async {
-    Constants.ownerName = await HelperFunctions.getUserNameSharedPreference();
+    Constants.ownerName = await Preferences.getUserNameSharedPreference();
     try {
       databaseMethods.getChatRooms(Constants.ownerName).then((val) {
         setState(() {
@@ -228,10 +221,10 @@ class _ChatRoomState extends State<ChatRoom> {
     } else {
       authMethods.signOutGoogle();
     }
-    HelperFunctions.saveUserLoggedInSharedPreference(false);
-    HelperFunctions.saveUserNameSharedPreference(null);
-    HelperFunctions.saveUserEmailSharedPreference(null);
-    HelperFunctions.saveUserImageURL(null);
+    Preferences.saveUserLoggedInSharedPreference(false);
+    Preferences.saveUserNameSharedPreference(null);
+    Preferences.saveUserEmailSharedPreference(null);
+    Preferences.saveUserImageURL(null);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
@@ -253,14 +246,13 @@ class _ChatRoomState extends State<ChatRoom> {
                       width: 100,
                       height: 100,
                       child: url != null
-                          ? (Image.network(
-                              url,
-                              fit: BoxFit.cover,
-                            ))
+                          ? CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,)
                           : Image.asset(
-                              "assets/images/username.png",
-                              fit: BoxFit.fill,
-                            ),
+                        "assets/images/username.png",
+                        fit: BoxFit.fill,
+                      ),
                     ),
                   ),
                 ),
@@ -276,7 +268,6 @@ class _ChatRoomState extends State<ChatRoom> {
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: 22,
-                        color: Colors.white,
                       ),
                     )
                         : Text("Error"),
@@ -284,9 +275,9 @@ class _ChatRoomState extends State<ChatRoom> {
                 )
               ],
             ),
-            decoration: BoxDecoration(
-              color: Colors.black,
-            ),
+//            decoration: BoxDecoration(
+//              color: Colors.black,
+//            ),
           ),
           ListTile(
             onTap: () {
@@ -296,60 +287,56 @@ class _ChatRoomState extends State<ChatRoom> {
                       builder: (context) =>
                           EditProfile(Constants.ownerName, uid)));
             },
-            title: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                Text("Edit profile",
-                    style: TextStyle(
-                      fontSize: 16,
-                    )),
-                Container(
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Icon(Icons.edit),
-                )
-              ],
-            ),
+            title: Text("Edit profile",
+                style: TextStyle(
+                  fontSize: 20,
+                )),
+            trailing: Icon(Icons.edit),
           ),
           ListTile(
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (context) => ChatRoom()));
+            },
+            title: Text(
+              'Refresh',
+              style: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+            trailing: Icon(Icons.refresh),
+          ),
+          ListTile(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SettingsView(),
+                  ));
+            },
+            title: Text(
+              'Settings',
+              style: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+            trailing: Icon(Icons.settings),
+          ),
+          ListTile(
+            //Logout Tile
               onTap: () {
                 logOut(context);
               },
-              title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Logout',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                    Container(
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(Icons.exit_to_app)),
-                  ])),
+              title: Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              trailing: Icon(Icons.exit_to_app)),
           ListTile(
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (context) => ChatRoom()));
-              },
-              title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Refresh',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
-                    ),
-                    Container(
-                        alignment: Alignment.centerRight,
-                        padding: EdgeInsets.symmetric(horizontal: 10),
-                        child: Icon(Icons.refresh)),
-                  ])),
-          ListTile(
+            //About Tile
             onTap: () {
               showAboutDialog(
                 context: context,
@@ -368,20 +355,11 @@ class _ChatRoomState extends State<ChatRoom> {
                 ],
               );
             },
-            title: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'About',
-                  style: TextStyle(fontSize: 16),
-                ),
-                Container(
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Icon(Icons.info),
-                )
-              ],
+            title: Text(
+              'About',
+              style: TextStyle(fontSize: 20),
             ),
+            trailing: Icon(Icons.info),
           )
         ],
       ),
@@ -502,21 +480,13 @@ class ChatRoomTile extends StatelessWidget {
                 ),
               ),
             )
-                : Container(
-              height: 60,
-              width: 60,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(40),
-                  image: DecorationImage(
-                    image: NetworkImage(
-                      targetUrl,
-                    ),
-                    fit: BoxFit.cover,
-                  )),
-              alignment: Alignment.center,
-//              child: CachedNetworkImage(
-//                imageUrl: targetUrl,
-//              ),
+                : ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: targetUrl,
+                height: 60,
+                width: 60,
+                fit: BoxFit.cover,
+              ),
             ),
             SizedBox(
               width: 12,

@@ -1,11 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
-class HelperFunctions {
-
+class Preferences {
   static String sharedPreferenceUserLoggedInKey = "LOGGEDIN";
   static String sharedPreferenceUserNameKey = "KEYUSERNAME";
   static String sharedPreferenceUserEmailKey = "KEYUSEREMAIL";
   static String sharedPreferenceImageURL = "IMAGEURL";
   static String isGoogleUser = "GOOGLEUSER";
+  static const themePreference = "THEMESTATUS";
 
   //Saving data to SharedPreference
 
@@ -34,9 +34,14 @@ class HelperFunctions {
 
   static Future<void> saveUserImageURL(String imageURL) async {
     final SharedPreferences sharedPreferences =
-        await SharedPreferences.getInstance();
+    await SharedPreferences.getInstance();
     return await sharedPreferences.setString(
         sharedPreferenceImageURL, imageURL);
+  }
+
+  static saveThemePreference(bool value) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    preferences.setBool(themePreference, value);
   }
 
   //Getting data from Shared Preference
@@ -65,5 +70,10 @@ class HelperFunctions {
   static Future<String> getUserEmailSharedPreference() async {
     SharedPreferences prefers = await SharedPreferences.getInstance();
     return prefers.getString(sharedPreferenceUserEmailKey);
+  }
+
+  static Future<bool> getThemePreference() async {
+    SharedPreferences prefers = await SharedPreferences.getInstance();
+    return prefers.getBool(themePreference) ?? false;
   }
 }

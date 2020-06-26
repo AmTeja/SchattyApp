@@ -209,7 +209,7 @@ class _AuthHomeState extends State<AuthHome> {
   }
 
   AuthMethods authMethods = new AuthMethods();
-  HelperFunctions helperFunctions = new HelperFunctions();
+  Preferences helperFunctions = new Preferences();
 
   void signInWithGoogle(BuildContext context) {
     authMethods.signInWithGoogle().then((val) async {
@@ -221,11 +221,10 @@ class _AuthHomeState extends State<AuthHome> {
             "https://www.searchpng.com/wp-content/uploads/2019/02/Deafult-Profile-Pitcher.png";
         FirebaseUser user = await FirebaseAuth.instance.currentUser();
         String uid = user.uid;
-        HelperFunctions.saveUserNameSharedPreference(
-            username.replaceAll(" ", ""));
-        HelperFunctions.saveUserLoggedInSharedPreference(true);
+        Preferences.saveUserNameSharedPreference(username.replaceAll(" ", ""));
+        Preferences.saveUserLoggedInSharedPreference(true);
         print(username.replaceAll(" ", ""));
-        HelperFunctions.saveIsGoogleUser(true);
+        Preferences.saveIsGoogleUser(true);
         Map<String, String> userInfoMap = {
           //Making MAP for firebase
           "username": username,

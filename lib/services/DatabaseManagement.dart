@@ -82,11 +82,9 @@ class DatabaseMethods {
     var userInfo = User();
     userInfo.profileImageUrl = picUrl;
 //    print(userInfo.profileImageUrl);
-    Map<String, String> imageMap = {
-      'photoURL': userInfo.profileImageUrl
-    };
+    Map<String, String> imageMap = {'photoURL': userInfo.profileImageUrl};
 
-    await HelperFunctions.saveUserImageURL(picUrl);
+    await Preferences.saveUserImageURL(picUrl);
     await FirebaseAuth.instance.currentUser().then((user) async {
       await Firestore.instance
           .collection('/users')
@@ -95,8 +93,9 @@ class DatabaseMethods {
           .then((docs) async {
         Firestore.instance
             .document('/users/${docs.documents[0].documentID}')
-            .updateData(imageMap).whenComplete(() {
-        }).catchError((onError) {
+            .updateData(imageMap)
+            .whenComplete(() {})
+            .catchError((onError) {
           print(onError);
         }).catchError((onError) {
           print(onError);
@@ -118,7 +117,7 @@ class DatabaseMethods {
         .then((value) async {
       url = await value.documents[0].data["photoURL"];
 //        length = await value.documents.length;
-      await HelperFunctions.saveUserImageURL(url);
+      await Preferences.saveUserImageURL(url);
     }).catchError((e) {
       print("URL ERROR: $e");
     });

@@ -62,16 +62,16 @@ class _SignInState extends State<SignIn> {
                 FirebaseUser firebaseUser = result.user;
 
                 if (firebaseUser != null && firebaseUser.isEmailVerified) {
-                  HelperFunctions.saveUserLoggedInSharedPreference(true);
-                  HelperFunctions.saveUserEmailSharedPreference(email);
-                  HelperFunctions.saveIsGoogleUser(false);
+                  Preferences.saveUserLoggedInSharedPreference(true);
+                  Preferences.saveUserEmailSharedPreference(email);
+                  Preferences.saveIsGoogleUser(false);
                   Constants.ownerEmail = email;
                   print("Logged In true");
                   await databaseMethods
                       .getUserByUserEmail(email)
                       .then((value) async {
                     snapshotUserInfo = value;
-                    HelperFunctions.saveUserNameSharedPreference(
+                    Preferences.saveUserNameSharedPreference(
                         await snapshotUserInfo.documents[0].data["username"]);
                     Constants.ownerName =
                         await snapshotUserInfo.documents[0].data["username"];

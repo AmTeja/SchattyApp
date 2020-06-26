@@ -60,14 +60,9 @@ class _NewSearchState extends State<NewSearch> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
-        backgroundColor: Colors.black26,
         title: Text(
           "Schatty",
-          style: TextStyle(
-            color: Colors.white,
-          ),
         ),
       ),
       body: GestureDetector(
@@ -80,15 +75,12 @@ class _NewSearchState extends State<NewSearch> {
               padding: const EdgeInsets.only(
                   top: 20, bottom: 20, left: 30, right: 30),
               child: TextField(
-                style: TextStyle(color: Colors.white),
                 onChanged: (val) {
                   initiateSearch(val);
                 },
                 decoration: new InputDecoration(
-                  fillColor: Colors.white,
                   hintText: "Search for users",
                   hintStyle: TextStyle(
-                    color: Colors.white54,
                   ),
                   border: new OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30)
@@ -128,7 +120,7 @@ class _NewSearchState extends State<NewSearch> {
               padding: const EdgeInsets.all(8.0),
               child: Text(
                 "No user found...",
-                style: TextStyle(color: Colors.white, fontSize: 26),
+                style: TextStyle(fontSize: 26),
               ),
             )
           ],
@@ -142,7 +134,7 @@ class _NewSearchState extends State<NewSearch> {
     if (userName != Constants.ownerName) {
       String chatRoomID = getChatRoomID(userName, Constants.ownerName);
       String targetUserURL = await targetURL.fetchTargetURL(userName);
-      String currentUserURL = await HelperFunctions.getUserImageURL();
+      String currentUserURL = await Preferences.getUserImageURL();
       List<String> users = [Constants.ownerName, userName];
       List<String> photos = [currentUserURL, targetUserURL];
       Map<String, dynamic> chatRoomMap = {
