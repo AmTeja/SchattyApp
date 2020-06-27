@@ -141,7 +141,7 @@ class _NewSearchState extends State<NewSearch> {
         "users": users,
         "chatRoomId": chatRoomID,
         "photoURLS": photos,
-        "lastTime": DateTime.now(),
+        "lastTime": DateTime.now().millisecondsSinceEpoch,
       };
 
       DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);

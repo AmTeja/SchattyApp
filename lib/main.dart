@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/enums/globalcolors.dart';
 import 'package:schatty/helper/NavigationService.dart';
@@ -10,6 +12,10 @@ import 'package:schatty/views/Authenticate/StartScreen.dart';
 import 'package:schatty/views/MainChatsRoom.dart';
 
 void main() {
+  LicenseRegistry.addLicense(() async* {
+    final license = await rootBundle.loadString('google_fonts/OFL.txt');
+    yield LicenseEntryWithLineBreaks(['google_fonts'], license);
+  });
   runApp(MyApp());
   //  SystemChrome.setEnabledSystemUIOverlays([]);
 }

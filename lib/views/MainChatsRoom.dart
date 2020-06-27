@@ -70,7 +70,9 @@ class _ChatRoomState extends State<ChatRoom> {
             drawer: Theme(data: Theme.of(context), child: mainDrawer(context)),
             backgroundColor: Colors.black,
             appBar: AppBar(
-              title: Text("Schatty"),
+              title: Text("SCHATTY",
+//              style: GoogleFonts.odibeeSans(fontSize: 28),
+              ),
               elevation: 3,
             ),
             body: Container(

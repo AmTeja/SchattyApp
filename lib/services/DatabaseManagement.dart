@@ -164,8 +164,8 @@ class DatabaseMethods {
           .getDocuments().then((docs) async {
         uid = docs.documents[0].data["uid"];
         print(docs.documents[0].data["uid"]);
-        return uid;
       });
+      return uid;
     } catch (e) {
       print(e);
     }

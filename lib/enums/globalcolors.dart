@@ -33,6 +33,11 @@ class GlobalColors {
       appBarTheme: AppBarTheme(
         elevation: 0.0,
       ),
+
+      //Fonts
+//      textTheme: GoogleFonts.robotoSlabTextTheme(
+//        Theme.of(context).textTheme,
+//      ),
     );
   }
 

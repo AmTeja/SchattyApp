@@ -2,16 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class UserInfo extends StatefulWidget {
+class TargetUserInfo extends StatefulWidget {
   final String userName;
 
-  UserInfo(this.userName);
+  TargetUserInfo(this.userName);
 
   @override
-  _UserInfoState createState() => _UserInfoState();
+  _TargetUserInfoState createState() => _TargetUserInfoState();
 }
 
-class _UserInfoState extends State<UserInfo> {
+class _TargetUserInfoState extends State<TargetUserInfo> {
   String uid;
   String profileURL;
 

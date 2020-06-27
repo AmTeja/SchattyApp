@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -44,6 +47,10 @@ class _ChatScreenState extends State<ChatScreen> {
   DateTime lastAccessedTime;
 
   String sentTo;
+  String uid;
+  String sentFrom;
+  String url;
+  String selectedText;
 
   File newImage;
 
@@ -52,7 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
 //    lastAccessedTime = DateTime.now();
-    HelperFunctions.getUserNameSharedPreference();
+    Preferences.getUserNameSharedPreference();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
         chatMessageStream = val;
@@ -68,9 +75,12 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   setSentTo() async {
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    FirebaseUser user = await firebaseAuth.currentUser();
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
+    sentFrom = user.uid;
+    print(sentTo);
     setState(() {
-      print(sentTo);
     });
   }
 
@@ -94,16 +104,16 @@ class _ChatScreenState extends State<ChatScreen> {
           actions: <Widget>[
             isSelected
                 ? IconButton(
-                    icon: Icon(Icons.content_copy),
-                    onPressed: () {
-                      Clipboard.setData(
-                        ClipboardData(text: selectedText),
-                      );
-                      setState(() {
-                        isSelected = false;
-                        selectedText = "";
-                        Fluttertoast.showToast(msg: "Copied Content!");
-                      });
+              icon: Icon(Icons.content_copy),
+              onPressed: () {
+                Clipboard.setData(
+                  ClipboardData(text: selectedText),
+                );
+                setState(() {
+                  isSelected = false;
+                  selectedText = "";
+                  Fluttertoast.showToast(msg: "Copied Content!");
+                });
               },
             ) : SizedBox(),
             IconButton(
@@ -229,11 +239,14 @@ class _ChatScreenState extends State<ChatScreen> {
 
   sendMessage() async {
     if (messageTEC.text.isNotEmpty) {
+      print(sentTo);
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
         "time": DateTime.now().millisecondsSinceEpoch,
         "sendTo": sentTo,
+        "sentFrom": sentFrom,
+        "url": "",
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
       messageTEC.text = "";
@@ -393,7 +406,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Flexible(
-                    child: imageUrl == null ? Text(
+                    child: (imageUrl == null || imageUrl == "") ? Text(
                         message,
                         style: TextStyle(
                           color: Colors.white70,
