@@ -16,7 +16,7 @@ class GlobalColors {
 
       hintColor: isDarkTheme ? Colors.white : Colors.grey,
 
-      highlightColor: isDarkTheme ? Color(0xff372901) : Color(0xffFCE192),
+      highlightColor: isDarkTheme ? Colors.grey : Color(0xff509ece),
       hoverColor: isDarkTheme ? Color(0xff3A3A3B) : Color(0xff4285F4),
       splashColor: isDarkTheme ? Colors.white : Colors.black,
       floatingActionButtonTheme: FloatingActionButtonThemeData(

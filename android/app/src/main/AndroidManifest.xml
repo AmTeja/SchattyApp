@@ -3,8 +3,8 @@
 
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="Schatty"
-        android:icon="@mipmap/launcher_icon">
+        android:icon="@mipmap/launcher_icon"
+        android:label="Schatty">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -15,8 +15,7 @@
 
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
+                android:resource="@style/NormalTheme" />
 
             <meta-data
               android:name="io.flutter.embedding.android.SplashScreenDrawable"
@@ -48,5 +47,9 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-1304691467262814~7353905593" />
     </application>
 </manifest>

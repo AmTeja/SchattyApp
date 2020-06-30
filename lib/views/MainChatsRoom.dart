@@ -2,10 +2,12 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:path/path.dart';
 import 'package:schatty/enums/globalcolors.dart';
 import 'package:schatty/helper/NavigationService.dart';
@@ -18,9 +20,10 @@ import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/views/SettingsView.dart';
-import 'package:schatty/views/TargetUserInfo.dart';
 import 'package:schatty/views/editProfile.dart';
 import 'package:schatty/widgets/widget.dart';
+
+import 'TargetUserInfo.dart';
 
 class ChatRoom extends StatefulWidget {
   @override
@@ -68,28 +71,30 @@ class _ChatRoomState extends State<ChatRoom> {
     return !isLoading
         ? Scaffold(
             drawer: Theme(data: Theme.of(context), child: mainDrawer(context)),
-            backgroundColor: Colors.black,
             appBar: AppBar(
-              title: Text("SCHATTY",
+              title: Text(
+                "SCHATTY",
 //              style: GoogleFonts.odibeeSans(fontSize: 28),
               ),
               elevation: 3,
             ),
             body: Container(
-                decoration: BoxDecoration(
-                    gradient: LinearGradient(colors: [
-                      Color.fromARGB(255, 0, 0, 0),
-                      Color.fromARGB(100, 39, 38, 38)
-                    ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-                    image: DecorationImage(
-                        colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(0.3),
-                            BlendMode.luminosity),
-                        image: ExactAssetImage(
-                          "assets/images/background.png",
-                        ),
-                        fit: BoxFit.cover)),
-                child: chatRoomList()),
+//                decoration: BoxDecoration(
+//                    gradient: LinearGradient(colors: [
+//                      Color.fromARGB(255, 0, 0, 0),
+//                      Color.fromARGB(100, 39, 38, 38)
+//                    ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+////                    image: DecorationImage(
+////                        colorFilter: ColorFilter.mode(
+////                            Colors.black.withOpacity(0.2),
+////                            BlendMode.darken),
+////                        image: ExactAssetImage(
+////                          "assets/images/background.png",
+////                        ),
+////                        fit: BoxFit.cover)
+//                ),
+              child: chatRoomList(),
+            ),
             floatingActionButton: FloatingActionButton(
               child: Icon(
                 Icons.search,
@@ -103,6 +108,11 @@ class _ChatRoomState extends State<ChatRoom> {
           )
         : Scaffold(
             backgroundColor: Colors.black, body: loadingScreen("Hold on"));
+  }
+
+  configureAdMob() {
+    FirebaseAdMob.instance
+        .initialize(appId: "ca-app-pub-1304691467262814~7353905593");
   }
 
   configureFirebaseListeners() {
@@ -431,6 +441,8 @@ class ChatRoomTile extends StatelessWidget {
 
   ChatRoomTile(this.userName, this.chatRoomId, this.urls, this.users);
 
+  final SlidableController slidableController = SlidableController();
+
   @override
   Widget build(BuildContext context) {
     String targetUrl;
@@ -439,70 +451,133 @@ class ChatRoomTile extends StatelessWidget {
     } else {
       targetUrl = urls[0];
     }
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => ChatScreen(chatRoomId, userName)));
-      },
-      onLongPress: () {
-        Navigator.push(context,
-            MaterialPageRoute(builder: (context) => TargetUserInfo(userName)));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-//          borderRadius: BorderRadius.circular(23),
-          color: Color.fromARGB(40, 0, 0, 0),
-          border: Border(
-              bottom: BorderSide(
-                  color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-        margin: EdgeInsets.symmetric(vertical: 1),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            targetUrl == null
-                ? Container(
-              //Letter in the circle Container
-              height: 60,
-              width: 60,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                borderRadius: BorderRadius.circular(40),
-              ),
-              child: Text(
-                "${userName.substring(0, 1).toUpperCase()}",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
+//    return GestureDetector(
+//      onTap: () {
+//        Navigator.push(
+//            context,
+//            MaterialPageRoute(
+//                builder: (context) => ChatScreen(chatRoomId, userName)));
+//      },
+//      onLongPress: () {
+//        Navigator.push(context,
+//            MaterialPageRoute(builder: (context) => TargetUserInfo(userName)));
+//      },
+//      child: Container(
+//        decoration: BoxDecoration(
+////          borderRadius: BorderRadius.circular(23),
+//          color: Color.fromARGB(40, 0, 0, 0),
+//          border: Border(
+//              bottom: BorderSide(
+//                  color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
+//        ),
+//        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+//        margin: EdgeInsets.symmetric(vertical: 1),
+//        child: Row(
+//          mainAxisAlignment: MainAxisAlignment.start,
+//          crossAxisAlignment: CrossAxisAlignment.center,
+//          children: [
+//            targetUrl == null
+//                ? Container(
+//              //Letter in the circle Container
+//              height: 60,
+//              width: 60,
+//              alignment: Alignment.center,
+//              decoration: BoxDecoration(
+//                color: Colors.black,
+//                borderRadius: BorderRadius.circular(40),
+//              ),
+//              child: Text(
+//                "${userName.substring(0, 1).toUpperCase()}",
+//                style: TextStyle(
+//                  color: Colors.white,
+//                  fontSize: 18,
+//                ),
+//              ),
+//            )
+//                : ClipOval(
+//              child: CachedNetworkImage(
+//                imageUrl: targetUrl,
+//                height: 60,
+//                width: 60,
+//                fit: BoxFit.cover,
+//              ),
+//            ),
+//            SizedBox(
+//              width: 12,
+//            ),
+//            Text(
+//              userName,
+//              style: TextStyle(
+//                fontSize: 20,
+//                color: Colors.white,
+//              ),
+//            ),
+//          ],
+//        ),
+//      ),
+//    );
+
+    return Slidable(
+      key: Key("slidable"),
+      controller: slidableController,
+      actionPane: SlidableDrawerActionPane(),
+      actionExtentRatio: 0.25,
+      child: InkWell(
+        onTap: () {
+          Navigator.push(context, MaterialPageRoute(
+              builder: (context) => ChatScreen(chatRoomId, userName))
+          );
+        },
+        child: Container(
+//        color: Colors.white,
+          height: 90,
+          alignment: Alignment.center,
+          child: ListTile(
+            leading: InkWell(
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(
+                        builder: (context) => TargetUserInfo(userName)));
+              },
+              child: CircleAvatar(
+                radius: 30,
+                backgroundColor: Colors.indigoAccent,
+                child: Container(
+                  child: targetUrl != null ? ClipOval(
+                    child: CachedNetworkImage(
+                      imageUrl: targetUrl,
+                      fit: BoxFit.cover,
+                    ),
+                  ) : Text("${userName.substring(0, 1).toUpperCase()}",),
                 ),
-              ),
-            )
-                : ClipOval(
-              child: CachedNetworkImage(
-                imageUrl: targetUrl,
-                height: 60,
-                width: 60,
-                fit: BoxFit.cover,
+                foregroundColor: Colors.white,
               ),
             ),
-            SizedBox(
-              width: 12,
-            ),
-            Text(
-              userName,
+            title: Text('$userName',
               style: TextStyle(
                 fontSize: 20,
-                color: Colors.white,
-              ),
-            ),
-          ],
+              ),),
+          ),
         ),
       ),
+      secondaryActions: <Widget>[
+        IconSlideAction(
+          caption: 'Archive',
+          color: Colors.black45,
+          icon: Icons.archive,
+          onTap: () {},
+        ),
+        IconSlideAction(
+          caption: 'Info',
+          color: Color(0xff509ece),
+          icon: Icons.info,
+          onTap: () {
+            Navigator.push(context,
+                MaterialPageRoute(
+                    builder: (context) => TargetUserInfo(userName)));
+          },
+        ),
+      ],
     );
   }
 }

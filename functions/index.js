@@ -23,8 +23,9 @@ exports.sendNotification = functions.region('asia-east2').firestore
                 .then(querySnapshot => {
                     querySnapshot.forEach(userTo => {
                     const toUsername = userTo.data().username
+                    const toToken = userTo.data().token
                         console.log('Found User to: ' + toUsername)
-                        if(userTo.data().token && userTo.data().sendTo !== idFrom){
+                        if(toToken && userTo.data().sendTo !== idFrom){
                             console.log('Token is: ' + userTo.data().token)
                             admin
                                 .firestore()
