@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -40,7 +41,7 @@ class _ChatRoomState extends State<ChatRoom> {
 
 //  final StorageReference storageRef = FirebaseStorage.instance.ref().child(fileName);
   BuildContext newContext;
-  final String fileName =
+  String fileName =
       Constants.ownerName + Random().nextInt(10000).toString() + '.$extension';
   Stream chatRoomsStream;
 

@@ -17,7 +17,7 @@ exports.sendNotification = functions.region('asia-east2').firestore
 
            admin
                 .firestore()
-                .collection('users')
+                .collection('tokens')
                 .where('uid', '==',idTo)
                 .get()
                 .then(querySnapshot => {
@@ -29,7 +29,7 @@ exports.sendNotification = functions.region('asia-east2').firestore
                             console.log('Token is: ' + userTo.data().token)
                             admin
                                 .firestore()
-                                .collection('users')
+                                .collection('tokens')
                                 .where("uid", "==", idFrom)
                                 .get()
                                 .then(querySnapshot2 => {

@@ -1,3 +1,4 @@
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +13,9 @@ import 'package:schatty/views/Authenticate/StartScreen.dart';
 import 'package:schatty/views/MainChatsRoom.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  FirebaseAdMob.instance
+      .initialize(appId: "ca-app-pub-1304691467262814~7353905593");
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
@@ -73,10 +77,10 @@ class _MyAppState extends State<MyApp> {
             navigatorKey: navigationService.navigatorKey,
             debugShowCheckedModeBanner: false,
             theme:
-                GlobalColors.themeData(themeChangeProvider.darkTheme, context),
+            GlobalColors.themeData(themeChangeProvider.darkTheme, context),
             home: isUserLoggedIn != null
                 ? (isUserLoggedIn ? ChatRoom() : AuthHome())
-                : StartScreen(),
+                : AuthHome(),
           );
         },
       ),

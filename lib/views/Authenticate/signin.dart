@@ -222,7 +222,7 @@ class _SignInState extends State<SignIn> {
                     child: Column(
                       children: [
                         TextFormField(
-                          validator: NameValidator.validate,
+                            validator: NameValidator.validate,
                           controller: userNameTEC,
                           style: simpleTextStyle(),
                           decoration: new InputDecoration(

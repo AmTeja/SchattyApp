@@ -104,3 +104,12 @@ class PasswordValidator {
     return null;
   }
 }
+
+class UrlValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return "Url cannot be empty!";
+    }
+    return null;
+  }
+}

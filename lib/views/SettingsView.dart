@@ -4,13 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 
+import 'AdView.dart';
+
 class SettingsView extends StatefulWidget {
   @override
   _SettingsViewState createState() => _SettingsViewState();
 }
 
 class _SettingsViewState extends State<SettingsView> {
-
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
@@ -49,7 +50,9 @@ class _SettingsViewState extends State<SettingsView> {
                             )),
                   )),
               InkWell(
-              //  onTap: showAd(context),
+                onTap: () {
+                  showAd(context);
+                },
                 child: Container(
                   height: 100,
                   padding: EdgeInsets.symmetric(horizontal: 30),
@@ -66,8 +69,8 @@ class _SettingsViewState extends State<SettingsView> {
                   ),
                   decoration: BoxDecoration(
                       border: Border(
-                    bottom: BorderSide(),
-                  )),
+                        bottom: BorderSide(),
+                      )),
                 ),
               )
             ],
@@ -75,5 +78,10 @@ class _SettingsViewState extends State<SettingsView> {
         ));
   }
 
+  showAd(context) {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (context) => ViewAd(),
+    ));
+  }
 
 }

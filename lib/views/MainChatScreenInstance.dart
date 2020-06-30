@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -19,6 +18,7 @@ import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/TargetUserInfo.dart';
+import 'package:share/share.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomID;
@@ -80,8 +80,7 @@ class _ChatScreenState extends State<ChatScreen> {
     FirebaseUser user = await firebaseAuth.currentUser();
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
     sentFrom = user.uid;
-    setState(() {
-    });
+    setState(() {});
   }
 
 //  Future<String> getDataFromFuture(String message) async {
@@ -115,7 +114,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   Fluttertoast.showToast(msg: "Copied Content!");
                 });
               },
-            ) : SizedBox(),
+            )
+                : SizedBox(),
             IconButton(
               icon: Icon(Icons.info),
               onPressed: () {
@@ -150,18 +150,18 @@ class _ChatScreenState extends State<ChatScreen> {
                             padding: EdgeInsets.only(top: 15),
                             itemCount: snapshot.data.documents.length,
                             itemBuilder: (context, index) {
-                              return
-                                buildMessage(
-                                    snapshot.data.documents[index]
-                                        .data["message"],
-                                    snapshot.data.documents[index]
-                                        .data["sendBy"] ==
-                                        Constants.ownerName,
-                                    snapshot.data.documents[index]
-                                        .data["time"],
-                                    snapshot.data.documents[index]
-                                        .data["url"]);
-                            }) : Container();
+                              return buildMessage(
+                                  snapshot.data.documents[index]
+                                      .data["message"],
+                                  snapshot.data.documents[index]
+                                      .data["sendBy"] ==
+                                      Constants.ownerName,
+                                  snapshot
+                                      .data.documents[index].data["time"],
+                                  snapshot
+                                      .data.documents[index].data["url"]);
+                            })
+                            : Container();
                       }),
                 ),
               ),
@@ -178,7 +178,6 @@ class _ChatScreenState extends State<ChatScreen> {
         ));
   }
 
-
   @override
   void dispose() {
     scrollController.dispose();
@@ -192,29 +191,36 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Row(
         children: <Widget>[
           IconButton(
+            icon: Icon(Icons.arrow_drop_up),
             onPressed: () {
-              getImage(context);
+              showSheet();
             },
-            icon: Icon(
-              Icons.camera_alt,
-              size: 25,
-            ),
-            splashColor: Colors.blue,
-            padding: EdgeInsets.symmetric(horizontal: 10),
           ),
           Expanded(
             child: TextField(
               controller: messageTEC,
               textCapitalization: TextCapitalization.sentences,
               onChanged: (value) {
-
+                setState(() {
+                  isComposing = true;
+                });
               },
+              onEditingComplete: () {
+                setState(() {
+                  isComposing = false;
+                });
+              },
+              enableSuggestions: true,
               textInputAction: TextInputAction.send,
               onSubmitted: (val) {
                 sendMessage();
+                setState(() {
+                  isComposing = false;
+                });
               },
               decoration: InputDecoration(
-                contentPadding: EdgeInsets.only(left: 15, top: 20, bottom: 20),
+                contentPadding: EdgeInsets.only(
+                    left: 15, top: 20, bottom: 20, right: 15),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(30)),
                 ),
@@ -237,12 +243,121 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  showSheet() {
+    showModalBottomSheet(context: context,
+        elevation: 3,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topRight: Radius.circular(30),
+              topLeft: Radius.circular(30),
+            )
+        ),
+        builder: (context) {
+          return _buildBottomNavigationMenu();
+        });
+  }
+
+  Column _buildBottomNavigationMenu() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(
+          leading: Icon(Icons.camera_alt),
+          title: Text("Camera"),
+          onTap: () => getImage(context, ImageSource.camera),
+        ),
+        ListTile(
+          leading: Icon(Icons.collections),
+          title: Text("Gallery"),
+          onTap: () => getImage(context, ImageSource.gallery),
+        ),
+        ListTile(
+          leading: Icon(Icons.attach_file),
+          title: Text("Image from Url"),
+          onTap: () => ShowAlertDialog(context),
+        )
+      ],
+    );
+  }
+
+  ShowAlertDialog(BuildContext context) {
+    TextEditingController urlTEC = new TextEditingController();
+    TextEditingController captionTEC = new TextEditingController();
+
+    final formKey = GlobalKey<FormState>();
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Image from Url"),
+            content: Container(
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width * 65,
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      validator: UrlValidator.validate,
+                      controller: urlTEC,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(
+                            left: 15, top: 20, bottom: 20, right: 15),
+                        hintText: 'Url',
+                        filled: true,
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                      ),
+                    ),
+                    SizedBox(height: 10,),
+                    TextField(
+                      controller: captionTEC,
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.only(
+                            left: 15, top: 20, bottom: 20, right: 15),
+                        hintText: 'Caption',
+                        filled: true,
+                        hintStyle: TextStyle(color: Colors.grey[400]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: [
+              FlatButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+              FlatButton(
+                child: Text("Send"),
+                onPressed: () {
+                  if (formKey.currentState.validate()) {
+                    sendImageFromUrl(urlTEC.text, captionTEC.text);
+                    Navigator.pop(context);
+                  }
+                  else {}
+                },
+              )
+            ],
+          );
+        }
+    );
+  }
+
   sendMessage() async {
     if (messageTEC.text.isNotEmpty) {
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime.now().millisecondsSinceEpoch,
+        "time": DateTime
+            .now()
+            .millisecondsSinceEpoch,
         "sendTo": sentTo,
         "sentFrom": sentFrom,
         "url": "",
@@ -264,22 +379,21 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
 //      Navigator.pop(context);
       imageUploadProvider.setToLoading();
-      final String fileName =
-          'userImages/' + uid.toString() + '/${DateTime
+      final String fileName = 'userImages/' +
+          uid.toString() +
+          '/${DateTime
               .now()
               .millisecondsSinceEpoch
               .toString()}.jgp';
       final StorageReference storageReference =
       FirebaseStorage.instance.ref().child(fileName); //ref to storage
-      StorageUploadTask task = storageReference.putFile(
-          newImage); //task to upload file
+      StorageUploadTask task =
+      storageReference.putFile(newImage); //task to upload file
       StorageTaskSnapshot snapshotTask = await task.onComplete;
       var downloadUrl = await snapshotTask.ref
           .getDownloadURL(); //download url of the image uploaded
       String url = downloadUrl.toString();
-      setState(() {
-
-      });
+      setState(() {});
       Map<String, dynamic> imageMap = {
         "message": captionTEC.text,
         "sendBy": Constants.ownerName,
@@ -297,27 +411,47 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-
-  Future getImage(BuildContext context) async {
+  sendImageFromUrl(String url, String caption) {
     try {
-      PickedFile tempPickedFile = await _picker.getImage(source: ImageSource.gallery);
+      imageUploadProvider.setToLoading();
+      setState(() {});
+      Map<String, dynamic> imageMap = {
+        "message": caption,
+        "sendBy": Constants.ownerName,
+        "time": DateTime
+            .now()
+            .millisecondsSinceEpoch,
+        "sendTo": sentTo,
+        "sentFrom": sentFrom,
+        "url": url
+      };
+      databaseMethods.addMessage(widget.chatRoomID, imageMap);
+      imageUploadProvider.setToIdle();
+    } catch (e) {
+      print("IMAGE FROM URL ERROR: $e");
+    }
+  }
+
+  Future getImage(BuildContext context, ImageSource source) async {
+    try {
+      PickedFile tempPickedFile =
+      await _picker.getImage(source: source);
       File tempPic;
       setState(() {
-         tempPic = File(tempPickedFile.path);
-         cropImage(File(tempPickedFile.path), context);
+        tempPic = File(tempPickedFile.path);
+        cropImage(File(tempPickedFile.path), context);
       });
 //      await Future.delayed(Duration(seconds: 2, milliseconds: 500));
-    }
-    catch (e) {
+    } catch (e) {
       print("GetImageError: $e");
     }
   }
 
-  cropImage(File tempPic, BuildContext context) async
-  {
+  cropImage(File tempPic, BuildContext context) async {
     File edited;
     if (tempPic != null) {
-      edited = await ImageCropper.cropImage(sourcePath: tempPic.path,
+      edited = await ImageCropper.cropImage(
+          sourcePath: tempPic.path,
           compressQuality: 70,
 //          cropStyle: CropStyle.rectangle,
           compressFormat: ImageCompressFormat.jpg,
@@ -325,16 +459,15 @@ class _ChatScreenState extends State<ChatScreen> {
 //              toolbarColor: Colors.blue,
 //              statusBarColor: Colors.blue,
 //              activeControlsWidgetColor: Colors.blue
-          )
-      ).whenComplete(() {
+          ))
+          .whenComplete(() {
         print("Completed!");
       });
     }
     if (edited != null) {
       newImage = edited;
       sendImage(context);
-    }
-    else{
+    } else {
       print("null");
     }
   }
@@ -366,23 +499,21 @@ class _ChatScreenState extends State<ChatScreen> {
   bool newDay = true;
 
   buildMessage(String message, bool isMe, int time, String imageUrl) {
-    var timeInDM = DateFormat('dd:M:y').format(
-        DateTime.fromMillisecondsSinceEpoch(time));
+    var timeInDM =
+    DateFormat('dd:M:y').format(DateTime.fromMillisecondsSinceEpoch(time));
     newDay = compareTime(timeInDM);
     final Widget msg = SafeArea(
         child: Container(
-          padding: EdgeInsets.only(
-              left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+          padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
           margin: EdgeInsets.symmetric(vertical: 8),
           width: MediaQuery
               .of(context)
               .size
               .width,
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-          child:
-          GestureDetector(
+          child: GestureDetector(
             onTap: () {
-              if (imageUrl == null && !isSelected) {
+              if ((imageUrl == null || imageUrl == "")) {
                 setState(() {
                   isSelected = !isSelected;
                   selectedText = message;
@@ -417,46 +548,58 @@ class _ChatScreenState extends State<ChatScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Flexible(
-                    child: (imageUrl == null || imageUrl == "") ? Text(
-                        message,
+                    child: (imageUrl == null || imageUrl == "")
+                        ? Text(message,
                         style: TextStyle(
                           color: Colors.white70,
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                        )) : Column(
+                        ))
+                        : Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         InkWell(
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(
-                                builder: (context) => viewImage(imageUrl),
-                              ));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        viewImage(imageUrl, context, message),
+                                  ));
                             },
-                            child: CachedImage(url: imageUrl,)),
-                        message != "" ? Container(
-
+                            child: CachedImage(
+                              url: imageUrl,
+                            )),
+                        message != ""
+                            ? Container(
                           padding: EdgeInsets.only(top: 10),
-                          child: Text(message,
+                          child: Text(
+                            message,
                             style: TextStyle(
                               color: Colors.white70,
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
-                            ),),
-                        ) : Container(),
+                            ),
+                          ),
+                        )
+                            : Container(),
                       ],
                     ),
                   ),
-                  imageUrl == null ? Container(
+                  imageUrl == null
+                      ? Container(
                     padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
-                    child: Text(!newDay ?
-                    DateFormat('kk:mm').format(
-                        DateTime.fromMillisecondsSinceEpoch(time)) :
-                    DateFormat('kk:mm dd/M').format(
-                        DateTime.fromMillisecondsSinceEpoch(time)),
+                    child: Text(
+                      !newDay
+                          ? DateFormat('kk:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(time))
+                          : DateFormat('kk:mm dd/M').format(
+                          DateTime.fromMillisecondsSinceEpoch(time)),
 //                      textAlign: TextAlign.right,
                     ),
-                  ) : Container(),
+                  )
+                      : Container(),
                 ],
               ),
             ),
@@ -465,19 +608,40 @@ class _ChatScreenState extends State<ChatScreen> {
     return msg;
   }
 
-  Widget viewImage(String url) {
+  void share(BuildContext context, String url) {
+    final RenderBox box = context.findRenderObject();
+    Share.share(url,
+        sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+  }
+
+  Widget viewImage(String url, BuildContext context, String message) {
     return Scaffold(
       appBar: AppBar(
-//        backgroundColor: Colors.black,
+        title: Text(message),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.share),
+            onPressed: () {
+              share(context, url);
+            },
+          )
+        ],
       ),
       backgroundColor: Colors.black,
       body: Center(
         child: Container(
+            height: MediaQuery
+                .of(context)
+                .size
+                .height,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
             child: CachedNetworkImage(
               imageUrl: url,
-              fit: BoxFit.fill,
-            )
-        ),
+              fit: BoxFit.contain,
+            )),
       ),
     );
   }
@@ -496,8 +660,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     image: DecorationImage(
                       image: FileImage(newImage),
                       fit: BoxFit.none,
-                    )
-                ),
+                    )),
               ),
             ),
             Container(
@@ -505,7 +668,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.max,
                 children: [
-                  SizedBox(width: 20,),
+                  SizedBox(
+                    width: 20,
+                  ),
                   Expanded(
                     child: TextField(
                         controller: captionTEC,
@@ -517,8 +682,8 @@ class _ChatScreenState extends State<ChatScreen> {
                             color: Colors.black54,
                             fontSize: 24,
                           ),
-                          contentPadding: EdgeInsets.only(
-                              left: 15, top: 20, bottom: 20),
+                          contentPadding:
+                          EdgeInsets.only(left: 15, top: 20, bottom: 20),
                           fillColor: Colors.white70,
                           filled: true,
                           border: OutlineInputBorder(
@@ -553,5 +718,4 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
-
 }
