@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ChangePassword.dart';
@@ -209,7 +210,7 @@ class _EditProfileState extends State<EditProfile> {
         .getDownloadURL(); //download url of the image uploaded
     String url = downloadUrl.toString();
     await Preferences.saveUserImageURL(url);
-    databaseMethods.updateProfilePicture(downloadUrl.toString());
+    databaseMethods.updateProfilePicture(downloadUrl.toString(), Constants.ownerName);
     setState(() {
       profilePicURL = url;
     });

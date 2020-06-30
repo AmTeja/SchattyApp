@@ -194,8 +194,8 @@ class _SignUpState extends State<SignUp> {
             left: true,
             child: Center(
               child: Container(
-                width: 370,
-                height: 700,
+                width: MediaQuery.of(context).size.width * 0.85,
+                height: MediaQuery.of(context).size.height * 0.75,
                 decoration: BoxDecoration(
                   boxShadow: [
                     new BoxShadow(
@@ -215,21 +215,17 @@ class _SignUpState extends State<SignUp> {
                   ),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: ListView(
                   children: [
-                    Flexible(
-                      child: Container(
-                        padding: EdgeInsets.only(
-                          right: 140, top: 40,),
-                        alignment: Alignment.topCenter,
-                        child: Text(
-                          "Join Us",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 40,
-                          ),
+                    Container(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      alignment: Alignment.topCenter,
+                      child: Text(
+                        "Join Us",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 40,
                         ),
                       ),
                     ),
@@ -349,22 +345,19 @@ class _SignUpState extends State<SignUp> {
                     SizedBox(
                       height: 30,
                     ),
-                    Flexible(
-                      fit: FlexFit.loose,
-                      child: MaterialButton(
-                        onPressed: () {
-                          signUp();
-                        },
-                        color: Colors.white,
-                        padding: EdgeInsets.symmetric(
-                            vertical: 20, horizontal: 90),
-                        textColor: Colors.black,
-                        splashColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(40)),
-                        elevation: 4,
-                        child: Text("Sign Up"),
-                      ),
+                    MaterialButton(
+                      onPressed: () {
+                        signUp();
+                      },
+                      color: Colors.white,
+                      padding: EdgeInsets.symmetric(
+                          vertical: 20, horizontal: 90),
+                      textColor: Colors.black,
+                      splashColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(40)),
+                      elevation: 4,
+                      child: Text("Sign Up"),
                     ),
                     SizedBox(height: error != null ? 20 : 120,)
                         ],

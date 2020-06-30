@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
@@ -11,12 +10,6 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  getDarkTheme() {}
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +49,7 @@ class _SettingsViewState extends State<SettingsView> {
                             )),
                   )),
               InkWell(
-                onTap: ShowAd(),
+              //  onTap: showAd(context),
                 child: Container(
                   height: 100,
                   padding: EdgeInsets.symmetric(horizontal: 30),
@@ -82,39 +75,5 @@ class _SettingsViewState extends State<SettingsView> {
         ));
   }
 
-  ShowAd() {
-    MobileAdTargetingInfo targetingInfo = MobileAdTargetingInfo(
-      keywords: <String>['flutterio', 'apps'],
-      contentUrl: 'https://flutter.io',
-      childDirected: false,
-    );
 
-    InterstitialAd interstitialAd = InterstitialAd(
-        adUnitId: "ca-app-pub-1304691467262814/9808678544",
-        targetingInfo: targetingInfo,
-        listener: (MobileAdEvent event) {
-          print("Interstitial Ad Event is $event");
-        });
-
-//      BannerAd bannerAd = BannerAd(
-//        adUnitId: BannerAd.testAdUnitId,
-//        targetingInfo: targetingInfo,
-//        size: AdSize.smartBanner,
-//        listener: (MobileAdEvent event){
-//          print("BannerAD event is $event");
-//        }
-//      );
-    interstitialAd
-      ..load()
-      ..show(
-        anchorType: AnchorType.top,
-        anchorOffset: 0.0,
-        horizontalCenterOffset: 0.0,
-      );
-
-//      bannerAd..dispose();
-//      bannerAd..load()..show(
-//        anchorType: AnchorType.bottom,
-//      );
-  }
 }

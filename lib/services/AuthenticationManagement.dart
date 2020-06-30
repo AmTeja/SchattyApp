@@ -31,28 +31,7 @@ class AuthMethods {
 
   // ignore: missing_return
   Future<String> signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount googleSignInAccount =
-      await googleSignIn.signIn();
-      final GoogleSignInAuthentication googleSignInAuthentication =
-      await googleSignInAccount.authentication;
-      final AuthCredential authCredential = GoogleAuthProvider.getCredential(
-          idToken: googleSignInAuthentication.idToken,
-          accessToken: googleSignInAuthentication.accessToken);
-      final AuthResult authResult =
-      await _auth.signInWithCredential(authCredential);
-      final FirebaseUser user = authResult.user;
 
-      assert(!user.isAnonymous);
-      assert(await user.getIdToken() != null);
-
-      final FirebaseUser currentUser = await _auth.currentUser();
-      assert(user.uid == currentUser.uid);
-
-      return 'signInWithGoogle succeeded: $user';
-    } catch (e) {
-      //print(e.toString());
-    }
   }
 
   getUserUID() async {

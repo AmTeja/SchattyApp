@@ -5,6 +5,7 @@
         android:name="io.flutter.app.FlutterApplication"
         android:icon="@mipmap/launcher_icon"
         android:label="Schatty">
+        android:requestLegacyExternalStorage="true"
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

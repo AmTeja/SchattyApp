@@ -23,7 +23,6 @@ class _StartScreenState extends State<StartScreen> {
               text: [
                 "Hello.",
                 "Welcome To Schatty",
-                "Tap!",
               ],
               textStyle: TextStyle(
                 color: Colors.white,
@@ -33,6 +32,7 @@ class _StartScreenState extends State<StartScreen> {
               textAlign: TextAlign.center,
               displayFullTextOnTap: false,
               isRepeatingAnimation: false,
+              onFinished: pushPage(context),
               onTap: () {
                 setState(() {
                   pushPage(context);

@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/signin.dart';
@@ -16,81 +18,56 @@ class AuthHome extends StatefulWidget {
 
 class _AuthHomeState extends State<AuthHome> {
   DatabaseMethods databaseMethods = new DatabaseMethods();
+  DarkThemeProvider darkThemeProvider = new DarkThemeProvider();
+
 
   @override
   Widget build(BuildContext context) {
+    bool darkTheme = darkThemeProvider.darkTheme;
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          colors: [
-            Color.fromARGB(255, 0, 0, 0),
-            Color.fromARGB(100, 39, 38, 38)
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-//              tileMode: TileMode.mirror,
-            )
-        ),
-        child: Center(
-          child: Container(
-            color: Colors.transparent,
-            child: Container(
-              width: 370,
-              height: 650,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  new BoxShadow(
-//                      color: Colors.red,
-                    color: Color.fromARGB(217, 0, 0, 0),
-                    offset: new Offset(2, 3),
-                    blurRadius: 5,
-                    spreadRadius: 6,
-                  )
-                ],
-                borderRadius: BorderRadius.circular(46),
-                gradient: LinearGradient(
-                  colors: [
-                    Color.fromARGB(255, 14, 14, 14),
-                    Color.fromARGB(100, 46, 45, 45)
+      body: Center(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.85,
+          height: MediaQuery.of(context).size.height * 0.75,
+          decoration: BoxDecoration(
+            color: Color(0xff111111),
+            borderRadius: BorderRadius.circular(46),
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromARGB(217, 0, 0, 0),
+                offset: Offset(2, 3),
+                blurRadius: 5,
+                spreadRadius: 6,
+              )
+          ],
+          ),
+          child: ListView(
+            children: <Widget>[
+              Container(
+                alignment: Alignment.topCenter,
+                padding: EdgeInsets.symmetric(vertical: 50),
+                child: Text("Schatty",
+                style: TextStyle(
+                  fontSize: 70,
+//                  fontFamily: 'odibeeSans',
+                  color:  Colors.white,
+                ),),
+              ),
+              SizedBox(height: 20,),
+              Container(
+                alignment: Alignment.center,
+                child: Column(
+                  children: <Widget>[
+                    signInButton(),
+                    SizedBox(height: 20,),
+                    signUpButton(),
+                    SizedBox(height: 30,),
+                    googleButton(),
                   ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
                 ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Flexible(
-                    child: Container(
-                      padding: EdgeInsets.only(bottom: 100, top: 80),
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        "Schatty",
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 70,
-                          fontFamily: 'North Regular',
-                        ),
-                      ),
-                    ),
-                  ),
-                  signInButton(),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  signUpButton(),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  googleButton(),
-                  SizedBox(height: 180,)
-                ],
-              ),
-            ),
+              )
+            ],
           ),
         ),
       ),
@@ -105,7 +82,7 @@ class _AuthHomeState extends State<AuthHome> {
             context, MaterialPageRoute(builder: (context) => SignIn()));
       },
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
-      highlightElevation: 3,
+      highlightElevation: 4,
       color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 18, 80, 18),
@@ -125,7 +102,7 @@ class _AuthHomeState extends State<AuthHome> {
                 style: TextStyle(
                   color: Colors.black54,
                   fontSize: 20,
-                  fontFamily: 'North Regular',
+//                  fontFamily: 'North Regular',
                 ),
               ),
             )
@@ -210,34 +187,62 @@ class _AuthHomeState extends State<AuthHome> {
 
   AuthMethods authMethods = new AuthMethods();
   Preferences helperFunctions = new Preferences();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn googleSignIn = new GoogleSignIn();
 
-  void signInWithGoogle(BuildContext context) {
-    authMethods.signInWithGoogle().then((val) async {
-      if (val != null) {
-        String username = authMethods.googleSignIn.currentUser.displayName
-            .replaceAll(" ", "");
-        String email = authMethods.googleSignIn.currentUser.email;
-        String profilePicURL =
-            "https://www.searchpng.com/wp-content/uploads/2019/02/Deafult-Profile-Pitcher.png";
-        FirebaseUser user = await FirebaseAuth.instance.currentUser();
-        String uid = user.uid;
-        Preferences.saveUserNameSharedPreference(username.replaceAll(" ", ""));
-        Preferences.saveUserLoggedInSharedPreference(true);
-        print(username.replaceAll(" ", ""));
-        Preferences.saveIsGoogleUser(true);
+  void signInWithGoogle(BuildContext context) async {
+    try {
+      final GoogleSignInAccount googleSignInAccount =
+          await googleSignIn.signIn();
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount.authentication;
+      final AuthCredential authCredential = GoogleAuthProvider.getCredential(
+          idToken: googleSignInAuthentication.idToken,
+          accessToken: googleSignInAuthentication.accessToken);
+      final AuthResult authResult =
+          await _auth.signInWithCredential(authCredential);
+      final FirebaseUser user = authResult.user;
+      assert(!user.isAnonymous);
+      assert(await user.getIdToken() != null);
+
+    final FirebaseUser currentUser = await _auth.currentUser();
+    assert(user.uid == currentUser.uid);
+
+      //Defining terms to update in database.
+      String username = user.displayName.replaceAll(" ", "");
+      String email = user.email;
+      String profilePicURL =
+          "https://www.searchpng.com/wp-content/uploads/2019/02/Deafult-Profile-Pitcher.png";
+      String uid = user.uid;
+
+    if(user !=null && authResult.additionalUserInfo.isNewUser)
+      {
         Map<String, String> userInfoMap = {
           //Making MAP for firebase
           "username": username,
           "email": email,
           "searchKey": username.substring(0, 1).toUpperCase(),
-          "photoUrl": profilePicURL,
+          "photoURL": profilePicURL,
           "uid": uid
         };
-        databaseMethods.uploadUserInfo(userInfoMap, uid);
+
+        await databaseMethods.uploadUserInfo(userInfoMap, uid);
+        Preferences.saveUserNameSharedPreference(username);
+        Preferences.saveUserLoggedInSharedPreference(true);
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => ChatRoom()));
-      } else {}
-    });
+      }
+    else if(user !=null && !authResult.additionalUserInfo.isNewUser)
+      {
+        print("Already Exists");
+        Preferences.saveUserNameSharedPreference(username);
+        Preferences.saveUserLoggedInSharedPreference(true);
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => ChatRoom()));
+      }
+    } catch (e) {
+    print(e.toString());
+    }
   }
 
   @override

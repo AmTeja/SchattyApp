@@ -183,8 +183,8 @@ class _SignInState extends State<SignIn> {
               )),
           child: Center(
             child: Container(
-              width: 370,
-              height: 620,
+              width: MediaQuery.of(context).size.width * 0.85,
+              height: MediaQuery.of(context).size.height * 0.75,
               decoration: BoxDecoration(
                 boxShadow: [
                   new BoxShadow(
@@ -204,21 +204,19 @@ class _SignInState extends State<SignIn> {
                 ),
               ),
               padding: EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: ListView(
                 children: [
-                  Flexible(
-                    child: Container(
-                      padding: EdgeInsets.only(bottom: 40, top: 20),
-                      child: Text(
-                        "Welcome back.",
-                        style: TextStyle(color: Colors.white, fontSize: 40),
-                      ),
+                  Container(
+                    alignment: Alignment.center,
+                    padding: EdgeInsets.only(bottom: 40, top: 20),
+                    child: Text(
+                      "Welcome back.",
+                      style: TextStyle(color: Colors.white, fontSize: 40),
                     ),
                   ),
+
                   showAlert(),
-                  SizedBox(height: 20,),
+                  SizedBox(height: 70,),
                   Form(
                     key: formKey,
                     child: Column(
@@ -311,9 +309,6 @@ class _SignInState extends State<SignIn> {
                     elevation: 4,
                     child: Text("Sign in"),
                         ),
-                        SizedBox(
-                          height: 40,
-                        )
                       ],
                     ),
                   ),

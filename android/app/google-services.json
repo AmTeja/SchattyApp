@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "879205408677-r5fv28d9374nah41dissldnngpv1873u.apps.googleusercontent.com",
+          "client_id": "879205408677-ia96nh609acmvflkn5m02hc9k2rd6h37.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.schattyapp.schatty",
-            "certificate_hash": "166665ac76c5e8a9c1abc9d1aee122c99c5825ae"
+            "certificate_hash": "d7e7c40966006f16b60d022d03617bdbed21d277"
           }
         },
         {

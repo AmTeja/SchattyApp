@@ -36,9 +36,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   final TextEditingController messageTEC = TextEditingController();
   final TextEditingController captionTEC = TextEditingController();
-
-  DatabaseMethods databaseMethods = new DatabaseMethods();
+  final DatabaseMethods databaseMethods = new DatabaseMethods();
   final AuthMethods authMethods = new AuthMethods();
+
+  final _picker = ImagePicker();
 
   Stream chatMessageStream;
 
@@ -79,7 +80,6 @@ class _ChatScreenState extends State<ChatScreen> {
     FirebaseUser user = await firebaseAuth.currentUser();
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
     sentFrom = user.uid;
-    print(sentTo);
     setState(() {
     });
   }
@@ -193,7 +193,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: <Widget>[
           IconButton(
             onPressed: () {
-              getImage();
+              getImage(context);
             },
             icon: Icon(
               Icons.camera_alt,
@@ -239,7 +239,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   sendMessage() async {
     if (messageTEC.text.isNotEmpty) {
-      print(sentTo);
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
@@ -263,7 +262,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   sendImage(BuildContext context) async {
     try {
-      Navigator.pop(context);
+//      Navigator.pop(context);
       imageUploadProvider.setToLoading();
       final String fileName =
           'userImages/' + uid.toString() + '/${DateTime
@@ -299,32 +298,44 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
-  Future getImage() async {
+  Future getImage(BuildContext context) async {
     try {
-      var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
-      File edited;
-      if (tempPic != null) {
-        edited = await ImageCropper.cropImage(sourcePath: tempPic.path,
-            compressQuality: 70,
-            cropStyle: CropStyle.rectangle,
-            compressFormat: ImageCompressFormat.jpg,
-            androidUiSettings: AndroidUiSettings(
-                toolbarColor: Colors.blue,
-                statusBarColor: Colors.blue,
-                activeControlsWidgetColor: Colors.blue
-            )
-        );
-      }
-      await Future.delayed(Duration(seconds: 2, milliseconds: 500));
-      if (edited != null) {
-        setState(() {
-          newImage = edited;
-        });
-        sendImage(context);
-      }
+      PickedFile tempPickedFile = await _picker.getImage(source: ImageSource.gallery);
+      File tempPic;
+      setState(() {
+         tempPic = File(tempPickedFile.path);
+         cropImage(File(tempPickedFile.path), context);
+      });
+//      await Future.delayed(Duration(seconds: 2, milliseconds: 500));
     }
     catch (e) {
       print("GetImageError: $e");
+    }
+  }
+
+  cropImage(File tempPic, BuildContext context) async
+  {
+    File edited;
+    if (tempPic != null) {
+      edited = await ImageCropper.cropImage(sourcePath: tempPic.path,
+          compressQuality: 70,
+//          cropStyle: CropStyle.rectangle,
+          compressFormat: ImageCompressFormat.jpg,
+          androidUiSettings: AndroidUiSettings(
+//              toolbarColor: Colors.blue,
+//              statusBarColor: Colors.blue,
+//              activeControlsWidgetColor: Colors.blue
+          )
+      ).whenComplete(() {
+        print("Completed!");
+      });
+    }
+    if (edited != null) {
+      newImage = edited;
+      sendImage(context);
+    }
+    else{
+      print("null");
     }
   }
 

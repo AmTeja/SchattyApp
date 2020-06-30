@@ -28,6 +28,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   NavigationService navigationService = new NavigationService();
   DarkThemeProvider themeChangeProvider = new DarkThemeProvider();
+//  ImageChangeProvider imageChangeProvider = new ImageChangeProvider();
   bool isUserLoggedIn = false;
 
   @override

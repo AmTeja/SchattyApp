@@ -19,24 +19,22 @@ class DatabaseMethods {
     });
   }
 
-  updateToken(String token) async {
+  updateToken(String token, String userName) async {
     final AuthMethods authMethods = new AuthMethods();
     try {
       String uid = await authMethods.getUserUID();
+      print(uid);
       Map<String, String> tokenMap = {
         "token": token,
+        "uid": uid,
+        "username": userName,
       };
-      await Firestore.instance
-          .collection("users")
-          .where("uid", isEqualTo: uid)
-          .getDocuments()
-          .then((docs) async {
         await Firestore.instance
-            .document("users/${docs.documents[0].documentID}")
-            .updateData(tokenMap);
-      });
+              .collection("tokens")
+              .document(uid).setData(tokenMap);
+
     } catch (e) {
-      print(e);
+      print("ERROR Updating Token: $e");
     }
   }
 
@@ -78,13 +76,14 @@ class DatabaseMethods {
     });
   }
 
-  updateProfilePicture(String picUrl) async {
+  updateProfilePicture(String picUrl, String userName) async {
     var userInfo = User();
     userInfo.profileImageUrl = picUrl;
 //    print(userInfo.profileImageUrl);
     Map<String, String> imageMap = {'photoURL': userInfo.profileImageUrl};
 
     await Preferences.saveUserImageURL(picUrl);
+
     await FirebaseAuth.instance.currentUser().then((user) async {
       await Firestore.instance
           .collection('/users')
@@ -110,7 +109,7 @@ class DatabaseMethods {
     await FirebaseAuth.instance.currentUser().then((user) {
       uid = user.uid;
     });
-
+    print(uid);
     await Firestore.instance.collection('users')
         .where('uid', isEqualTo: uid)
         .getDocuments()

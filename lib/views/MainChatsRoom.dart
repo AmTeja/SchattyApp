@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -62,7 +61,7 @@ class _ChatRoomState extends State<ChatRoom> {
     uploadToken();
     configureFirebaseListeners();
     getUserInfo();
-//    setupEncrpytion();
+//    setupEncrpyti1on();
   }
 
   @override
@@ -79,20 +78,6 @@ class _ChatRoomState extends State<ChatRoom> {
               elevation: 3,
             ),
             body: Container(
-//                decoration: BoxDecoration(
-//                    gradient: LinearGradient(colors: [
-//                      Color.fromARGB(255, 0, 0, 0),
-//                      Color.fromARGB(100, 39, 38, 38)
-//                    ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-////                    image: DecorationImage(
-////                        colorFilter: ColorFilter.mode(
-////                            Colors.black.withOpacity(0.2),
-////                            BlendMode.darken),
-////                        image: ExactAssetImage(
-////                          "assets/images/background.png",
-////                        ),
-////                        fit: BoxFit.cover)
-//                ),
               child: chatRoomList(),
             ),
             floatingActionButton: FloatingActionButton(
@@ -110,19 +95,14 @@ class _ChatRoomState extends State<ChatRoom> {
             backgroundColor: Colors.black, body: loadingScreen("Hold on"));
   }
 
-  configureAdMob() {
-    FirebaseAdMob.instance
-        .initialize(appId: "ca-app-pub-1304691467262814~7353905593");
-  }
-
   configureFirebaseListeners() {
     firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print('onMessage: $message');
       },
       onLaunch: (Map<String, dynamic> message) async {
-        print('onLaunch: $message');
-        await sendToChatScreen(message);
+//        print('onLaunch: $message');
+//        await sendToChatScreen(message);
       },
       onResume: (Map<String, dynamic> message) async {
         print('OnResume: $message');
@@ -137,6 +117,7 @@ class _ChatRoomState extends State<ChatRoom> {
     String sentUser = await data["sentUser"];
     String toUser = await data["toUser"];
     String roomID1 = getChatRoomID(sentUser, toUser);
+    String roomID2 = getChatRoomID(toUser, sentUser);
     try {
       await Firestore.instance
           .collection("ChatRoom")
@@ -144,8 +125,17 @@ class _ChatRoomState extends State<ChatRoom> {
           .getDocuments()
           .then((docs) async {
         chatRoomID = await docs.documents[0].data["chatRoomId"];
-        print(chatRoomID);
       });
+      if(chatRoomID == null)
+        {
+          await Firestore.instance
+              .collection("ChatRoom")
+              .where("chatRoomId", isEqualTo: roomID2)
+              .getDocuments()
+              .then((docs) async {
+            chatRoomID = await docs.documents[0].data["chatRoomId"];
+          });
+        }
       String username =
       chatRoomID.replaceAll("_", "").replaceAll(Constants.ownerName, "");
       await Navigator.push(
@@ -153,7 +143,7 @@ class _ChatRoomState extends State<ChatRoom> {
           MaterialPageRoute(
               builder: (newContext) => ChatScreen(chatRoomID, username)));
     } catch (e) {
-      print(e);
+      print("Sending To Chat ERROR: $e");
     }
   }
 
@@ -161,7 +151,7 @@ class _ChatRoomState extends State<ChatRoom> {
     String token;
     token = await firebaseMessaging.getToken();
     print(token);
-    databaseMethods.updateToken(token);
+    databaseMethods.updateToken(token, Constants.ownerName);
   }
 
   getChatRoomID(String a, String b) {
@@ -200,7 +190,6 @@ class _ChatRoomState extends State<ChatRoom> {
       Map<String, dynamic> keyMap = {
         "privateKey": encryptionService.keyPair.privateKey,
       };
-
       await Firestore.instance
           .collection('users')
           .where('uid', isEqualTo: uid)
@@ -223,9 +212,6 @@ class _ChatRoomState extends State<ChatRoom> {
   }
 
   logOut(BuildContext context) async {
-//    bool isGoogleUser = false;
-//
-//    isGoogleUser = await HelperFunctions.getIsGoogleUser();
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
     if (user.providerId != "Google") {
       authMethods.signOut();
@@ -287,9 +273,6 @@ class _ChatRoomState extends State<ChatRoom> {
                 )
               ],
             ),
-//            decoration: BoxDecoration(
-//              color: Colors.black,
-//            ),
           ),
           ListTile(
             onTap: () {
@@ -353,7 +336,7 @@ class _ChatRoomState extends State<ChatRoom> {
               showAboutDialog(
                 context: context,
                 applicationName: "Schatty",
-                applicationVersion: '0.1 (Beta)',
+                applicationVersion: '0.2 (Beta)',
                 applicationIcon: SchattyIcon(),
                 children: [
                   SizedBox(
@@ -451,72 +434,6 @@ class ChatRoomTile extends StatelessWidget {
     } else {
       targetUrl = urls[0];
     }
-//    return GestureDetector(
-//      onTap: () {
-//        Navigator.push(
-//            context,
-//            MaterialPageRoute(
-//                builder: (context) => ChatScreen(chatRoomId, userName)));
-//      },
-//      onLongPress: () {
-//        Navigator.push(context,
-//            MaterialPageRoute(builder: (context) => TargetUserInfo(userName)));
-//      },
-//      child: Container(
-//        decoration: BoxDecoration(
-////          borderRadius: BorderRadius.circular(23),
-//          color: Color.fromARGB(40, 0, 0, 0),
-//          border: Border(
-//              bottom: BorderSide(
-//                  color: Color.fromARGB(255, 141, 133, 133), width: 0.1)),
-//        ),
-//        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-//        margin: EdgeInsets.symmetric(vertical: 1),
-//        child: Row(
-//          mainAxisAlignment: MainAxisAlignment.start,
-//          crossAxisAlignment: CrossAxisAlignment.center,
-//          children: [
-//            targetUrl == null
-//                ? Container(
-//              //Letter in the circle Container
-//              height: 60,
-//              width: 60,
-//              alignment: Alignment.center,
-//              decoration: BoxDecoration(
-//                color: Colors.black,
-//                borderRadius: BorderRadius.circular(40),
-//              ),
-//              child: Text(
-//                "${userName.substring(0, 1).toUpperCase()}",
-//                style: TextStyle(
-//                  color: Colors.white,
-//                  fontSize: 18,
-//                ),
-//              ),
-//            )
-//                : ClipOval(
-//              child: CachedNetworkImage(
-//                imageUrl: targetUrl,
-//                height: 60,
-//                width: 60,
-//                fit: BoxFit.cover,
-//              ),
-//            ),
-//            SizedBox(
-//              width: 12,
-//            ),
-//            Text(
-//              userName,
-//              style: TextStyle(
-//                fontSize: 20,
-//                color: Colors.white,
-//              ),
-//            ),
-//          ],
-//        ),
-//      ),
-//    );
-
     return Slidable(
       key: Key("slidable"),
       controller: slidableController,
@@ -530,7 +447,7 @@ class ChatRoomTile extends StatelessWidget {
         },
         child: Container(
 //        color: Colors.white,
-          height: 90,
+          height: 110,
           alignment: Alignment.center,
           child: ListTile(
             leading: InkWell(
@@ -545,6 +462,8 @@ class ChatRoomTile extends StatelessWidget {
                 child: Container(
                   child: targetUrl != null ? ClipOval(
                     child: CachedNetworkImage(
+                      height: 75,
+                      width: 75,
                       imageUrl: targetUrl,
                       fit: BoxFit.cover,
                     ),
