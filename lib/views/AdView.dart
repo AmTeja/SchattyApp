@@ -20,8 +20,16 @@ class _ViewAdState extends State<ViewAd> {
 
   @override
   Widget build(BuildContext context) {
+
+    MobileAdTargetingInfo targetingInfo = new MobileAdTargetingInfo(
+      nonPersonalizedAds: true,
+      childDirected: false,
+      keywords: ['Flutter', 'Chatting','Games','Amazon'],
+    );
+
     InterstitialAd newInterstitialAd = InterstitialAd(
         adUnitId: "ca-app-pub-1304691467262814/9808678544",
+        targetingInfo: targetingInfo,
         listener: (MobileAdEvent event) {
           print("Interstitial AD Event: $event");
         }

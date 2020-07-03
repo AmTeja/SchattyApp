@@ -25,7 +25,6 @@ class DatabaseMethods {
     final AuthMethods authMethods = new AuthMethods();
     try {
       String uid = await authMethods.getUserUID();
-      print(uid);
       Map<String, String> tokenMap = {
         "token": token,
         "uid": uid,
@@ -111,7 +110,6 @@ class DatabaseMethods {
         .getDocuments()
         .then((docs) async {
       dName = await docs.documents[0].data["displayName"];
-      print(dName);
     }).catchError((error) {
       print("ERROR GETTING DNAME: $error");
     });
@@ -151,7 +149,6 @@ class DatabaseMethods {
     await FirebaseAuth.instance.currentUser().then((user) {
       uid = user.uid;
     });
-    print(uid);
     await Firestore.instance
         .collection('users')
         .where('uid', isEqualTo: uid)
@@ -209,7 +206,6 @@ class DatabaseMethods {
           .getDocuments()
           .then((docs) async {
         uid = docs.documents[0].data["uid"];
-        print(docs.documents[0].data["uid"]);
       });
       return uid;
     } catch (e) {

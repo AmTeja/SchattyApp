@@ -171,6 +171,7 @@ class _SignUpState extends State<SignUp> {
 
   @override
   Widget build(BuildContext context) {
+    final focus = FocusNode();
     return Scaffold(
       backgroundColor: Colors.black,
       body: isLoading
@@ -254,11 +255,18 @@ class _SignUpState extends State<SignUp> {
                                     BorderRadius.circular(40),
                                     borderSide:
                                     BorderSide(color: Colors.white),
-                                  ))),
+                                  )),
+                              autofocus: true,
+                              textInputAction: TextInputAction.next,
+                              onFieldSubmitted: (v) {
+                                FocusScope.of(context).nextFocus();
+                              },
+                              ),
                           SizedBox(
                             height: 20,
                           ),
                           TextFormField(
+
                             validator: EmailValidator.validate,
                             controller: emailTEC,
                             style: simpleTextStyle(),
@@ -273,6 +281,10 @@ class _SignUpState extends State<SignUp> {
                                   borderRadius: BorderRadius.circular(40),
                                   borderSide: BorderSide(),
                                 )),
+                            textInputAction: TextInputAction.next,
+                            onFieldSubmitted: (v) {
+                              FocusScope.of(context).nextFocus();
+                            },
                           ),
                           SizedBox(
                             height: 20,
@@ -304,11 +316,16 @@ class _SignUpState extends State<SignUp> {
                                   borderRadius: BorderRadius.circular(40),
                                   borderSide: BorderSide(),
                                 )),
+                            textInputAction: TextInputAction.next,
+                            onFieldSubmitted: (v) {
+                              FocusScope.of(context).requestFocus(focus);
+                            },
                           ),
                           SizedBox(
                             height: 20,
                           ),
                           TextFormField(
+                            focusNode: focus,
                             obscureText: hidePassword,
                             validator: (val) {
                               return passwordTEC.text.isNotEmpty

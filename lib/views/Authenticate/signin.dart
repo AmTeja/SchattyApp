@@ -164,6 +164,7 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
+    final focus = FocusNode();
     return Scaffold(
       backgroundColor: Colors.black,
       //appBar: appBarMain(context),
@@ -237,11 +238,17 @@ class _SignInState extends State<SignIn> {
                                 borderRadius: BorderRadius.circular(40),
 //                                  borderSide: BorderSide(color: Colors.blue)
                               )),
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (v) {
+                              FocusScope.of(context).requestFocus(focus);
+                          },
+                          autofocus: true,
                         ),
                         SizedBox(
                           height: 20,
                         ),
                         TextFormField(
+                          focusNode: focus,
                             obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
