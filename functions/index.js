@@ -5,11 +5,7 @@ admin.initializeApp();
 
 exports.sendNotification = functions.region('asia-east2').firestore
        .document('/ChatRoom/{ChatRoomId}/chats/{chatId}').onCreate((snap, context) => {
-           console.log('-----------FunctionStart-------------')
-
            const doc = snap.data()
-           console.log(doc)
-
            const idFrom = doc.sentFrom
            const idTo = doc.sendTo
            const contentMessage = doc.message
@@ -24,9 +20,7 @@ exports.sendNotification = functions.region('asia-east2').firestore
                     querySnapshot.forEach(userTo => {
                     const toUsername = userTo.data().username
                     const toToken = userTo.data().token
-                        console.log('Found User to: ' + toUsername)
                         if(toToken && userTo.data().sendTo !== idFrom){
-                            console.log('Token is: ' + userTo.data().token)
                             admin
                                 .firestore()
                                 .collection('tokens')
@@ -35,7 +29,6 @@ exports.sendNotification = functions.region('asia-east2').firestore
                                 .then(querySnapshot2 => {
                                     querySnapshot2.forEach(userFrom => {
                                         const fromUsername = userFrom.data().username
-                                        console.log('Found User from: ' + fromUsername)
                                         const payload = {
                                             notification: {
                                                 title: fromUsername,

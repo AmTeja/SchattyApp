@@ -8,6 +8,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ChangePassword.dart';
 
@@ -27,7 +28,13 @@ class _EditProfileState extends State<EditProfile> {
 
   bool isLoading = false;
 
+  ImagePicker picker = ImagePicker();
+
   DatabaseMethods databaseMethods = new DatabaseMethods();
+
+  final formKey = GlobalKey<FormState>();
+
+  String displayName;
 
   @override
   void initState() {
@@ -55,7 +62,7 @@ class _EditProfileState extends State<EditProfile> {
         ),
       ),
       body: Center(
-        child: Column(
+        child: ListView(
           children: <Widget>[
             Container(
               padding: EdgeInsets.only(top: 70),
@@ -64,14 +71,6 @@ class _EditProfileState extends State<EditProfile> {
                 radius: 125,
                 backgroundImage: AssetImage("assets/images/username.png"),
                 child: ClipOval(
-//                        child: CachedNetworkImage(
-//                          height: 250,
-//                          width: 250,
-//                          fit: BoxFit.cover,
-//                          imageUrl: profilePicURL,
-//                          placeholder: (context, url) =>
-//                              new CircularProgressIndicator(),
-//                        ),
                   child: profilePicURL != null
                       ? CachedNetworkImage(
                           imageUrl: profilePicURL,
@@ -97,8 +96,36 @@ class _EditProfileState extends State<EditProfile> {
             SizedBox(
               height: 30,
             ),
+            Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  displayName == null
+                      ? Text(
+                          "Display Name: ${widget.username}",
+                          style: TextStyle(
+                            fontSize: 26,
+                          ),
+                        )
+                      : Text(
+                          "Display Name: $displayName",
+                          style: TextStyle(
+                            fontSize: 26,
+                          ),
+                        ),
+                  IconButton(
+                    icon: Icon(Icons.edit),
+                    onPressed: () {
+                      showAlert(context);
+                    },
+                  )
+                ],
+              ),
+              padding: EdgeInsets.symmetric(vertical: 10),
+            ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 120),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 120, vertical: 10),
               child: MaterialButton(
                 padding: EdgeInsets.symmetric(vertical: 10),
                 onPressed: () {
@@ -130,7 +157,7 @@ class _EditProfileState extends State<EditProfile> {
             ),
             Padding(
               padding:
-                  const EdgeInsets.symmetric(horizontal: 120, vertical: 20),
+              const EdgeInsets.symmetric(horizontal: 120, vertical: 10),
               child: MaterialButton(
                 padding: EdgeInsets.symmetric(vertical: 10),
                 onPressed: () {
@@ -168,8 +195,64 @@ class _EditProfileState extends State<EditProfile> {
         context, MaterialPageRoute(builder: (context) => ChangePassword()));
   }
 
+  showAlert(BuildContext context) {
+    TextEditingController nameTEC = new TextEditingController();
+
+    return showDialog(context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Edit Display Name"),
+            content: Container(
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width * 65,
+              child: Form(
+                key: formKey,
+                child: TextFormField(
+                  validator: NameValidator.validate,
+                  controller: nameTEC,
+                  decoration: InputDecoration(
+                    contentPadding: EdgeInsets.only(
+                        left: 15, top: 20, bottom: 20, right: 15),
+                    hintText: 'Name',
+                    filled: true,
+                    hintStyle: TextStyle(color: Colors.grey[400]),
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              FlatButton(
+                child: Text("Cancel"),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              FlatButton(
+                child: Text("Save"),
+                onPressed: () {
+                  if (formKey.currentState.validate()) {
+                    setDisplayName(nameTEC.text);
+                    Navigator.pop(context);
+                  }
+                },
+              )
+            ],
+          );
+        });
+  }
+
+  setDisplayName(String newName) {
+    displayName = newName;
+    setState(() {
+
+    });
+    databaseMethods.updateDisplayName(displayName);
+  }
+
   Future getImage() async {
-    var tempPic = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var tempPic = await picker.getImage(source: ImageSource.gallery);
     File cropped;
     if (tempPic != null) {
       cropped = await ImageCropper.cropImage(
@@ -210,7 +293,8 @@ class _EditProfileState extends State<EditProfile> {
         .getDownloadURL(); //download url of the image uploaded
     String url = downloadUrl.toString();
     await Preferences.saveUserImageURL(url);
-    databaseMethods.updateProfilePicture(downloadUrl.toString(), Constants.ownerName);
+    databaseMethods.updateProfilePicture(
+        downloadUrl.toString(), Constants.ownerName);
     setState(() {
       profilePicURL = url;
     });

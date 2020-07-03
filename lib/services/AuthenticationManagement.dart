@@ -79,7 +79,7 @@ class EmailValidator {
   }
 }
 
-class NameValidator {
+class UserNameValidator {
   static String validate(String value) {
     if (value.isEmpty) {
       return "Username cannot be empty";
@@ -93,6 +93,21 @@ class NameValidator {
     return RegExp(r"^[a-zA-Z0-9_]+([_]?[a-zA-Z0-9])*$").hasMatch(value)
         ? null
         : "Username can contain only alphanumeric and underscore";
+  }
+}
+
+class NameValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return "Name cannot be empty";
+    }
+    if (value.length < 5) {
+      return "Name must be at least 5 chars long";
+    }
+    if (value.length > 20) {
+      return "Name must be less than 20 chars long";
+    }
+    return null;
   }
 }
 

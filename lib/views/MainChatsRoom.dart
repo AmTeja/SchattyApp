@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -73,7 +72,7 @@ class _ChatRoomState extends State<ChatRoom> {
             drawer: Theme(data: Theme.of(context), child: mainDrawer(context)),
             appBar: AppBar(
               title: Text(
-                "SCHATTY",
+                "Schatty",
 //              style: GoogleFonts.odibeeSans(fontSize: 28),
               ),
               elevation: 3,
@@ -117,8 +116,10 @@ class _ChatRoomState extends State<ChatRoom> {
     var data = message["data"];
     String sentUser = await data["sentUser"];
     String toUser = await data["toUser"];
-    String roomID1 = getChatRoomID(sentUser, toUser);
-    String roomID2 = getChatRoomID(toUser, sentUser);
+    String roomID1 =
+        getChatRoomID(sentUser.toLowerCase(), toUser.toLowerCase());
+    String roomID2 =
+        getChatRoomID(toUser.toLowerCase(), sentUser.toLowerCase());
     try {
       await Firestore.instance
           .collection("ChatRoom")
@@ -127,9 +128,8 @@ class _ChatRoomState extends State<ChatRoom> {
           .then((docs) async {
         chatRoomID = await docs.documents[0].data["chatRoomId"];
       });
-      if(chatRoomID == null)
-        {
-          await Firestore.instance
+      if (chatRoomID == null) {
+        await Firestore.instance
               .collection("ChatRoom")
               .where("chatRoomId", isEqualTo: roomID2)
               .getDocuments()
@@ -409,6 +409,7 @@ class _ChatRoomState extends State<ChatRoom> {
                 snapshot.data.documents[index].data["chatRoomId"],
                 snapshot.data.documents[index].data["photoURLS"],
                 snapshot.data.documents[index].data["users"],
+                snapshot.data.documents[index].data["displayNames"],
               );
             })
             : suchEmpty(context);
@@ -422,19 +423,25 @@ class ChatRoomTile extends StatelessWidget {
   final String chatRoomId;
   final urls;
   final users;
+  final displayNames;
 
-  ChatRoomTile(this.userName, this.chatRoomId, this.urls, this.users);
+  ChatRoomTile(this.userName, this.chatRoomId, this.urls, this.users,
+      this.displayNames);
 
   final SlidableController slidableController = SlidableController();
 
   @override
   Widget build(BuildContext context) {
     String targetUrl;
+    String targetDName;
     if (users[1] == userName) {
       targetUrl = urls[1];
+      targetDName = displayNames[1];
     } else {
       targetUrl = urls[0];
+      targetDName = displayNames[0];
     }
+
     return Slidable(
       key: Key("slidable"),
       controller: slidableController,
@@ -451,6 +458,14 @@ class ChatRoomTile extends StatelessWidget {
           height: 110,
           alignment: Alignment.center,
           child: ListTile(
+            trailing: Container(
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(43),
+              ),
+            ),
             leading: InkWell(
               onTap: () {
                 Navigator.push(context,
@@ -473,10 +488,12 @@ class ChatRoomTile extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
             ),
-            title: Text('$userName',
+            title: targetDName == null ? Text('$userName',
               style: TextStyle(
                 fontSize: 20,
-              ),),
+              ),) : Text('$targetDName', style: TextStyle(
+              fontSize: 20,
+            ),),
           ),
         ),
       ),

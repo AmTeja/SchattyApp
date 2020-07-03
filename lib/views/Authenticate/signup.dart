@@ -54,6 +54,7 @@ class _SignUpState extends State<SignUp> {
             Map<String, String> userInfoMap = {
               //Making MAP for firebase
               "username": userNameTEC.text,
+              "displayName": userNameTEC.text,
               "email": emailTEC.text,
               "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
               "photoUrl": profilePicURL,
@@ -237,18 +238,18 @@ class _SignUpState extends State<SignUp> {
                       child: Column(
                         children: [
                           TextFormField(
-                              validator: NameValidator.validate,
-                              controller: userNameTEC,
-                              style: simpleTextStyle(),
-                              decoration: new InputDecoration(
-                                  contentPadding:
-                                  EdgeInsets.only(left: 15),
-                                  labelText: "Username",
-                                  labelStyle: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.white70,
-                                  ),
-                                  border: new OutlineInputBorder(
+                              validator: UserNameValidator.validate,
+                                    controller: userNameTEC,
+                                    style: simpleTextStyle(),
+                                    decoration: new InputDecoration(
+                                        contentPadding:
+                                            EdgeInsets.only(left: 15),
+                                        labelText: "Username",
+                                        labelStyle: TextStyle(
+                                          fontSize: 18,
+                                          color: Colors.white70,
+                                        ),
+                                        border: new OutlineInputBorder(
                                     borderRadius:
                                     BorderRadius.circular(40),
                                     borderSide:

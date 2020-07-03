@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
@@ -59,16 +60,45 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void initState() {
-//    lastAccessedTime = DateTime.now();
+    super.initState();
     Preferences.getUserNameSharedPreference();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
         chatMessageStream = val;
       });
     });
-    super.initState();
     scrollController = ScrollController();
     setSentTo();
+    setRead();
+  }
+
+  setRead() async {
+    var chatId;
+    CollectionReference ref;
+    await Firestore.instance
+        .collection('ChatRoom')
+        .where("chatRoomId", isEqualTo: widget.chatRoomID)
+        .getDocuments()
+        .then((docs) async {
+      ref = Firestore.instance
+          .collection('ChatRoom')
+          .document(docs.documents[0].documentID)
+          .collection('chats');
+    });
+
+    QuerySnapshot querySnapshot = await ref
+        .where('sendTo', isEqualTo: sentTo)
+        .where('isSeen', isEqualTo: false)
+        .getDocuments();
+    querySnapshot.documents.forEach((msgDoc) {
+      msgDoc.reference.updateData({'isSeen': true});
+    });
+  }
+
+  void share(BuildContext context, String url) {
+    final RenderBox box = context.findRenderObject();
+    Share.share(url,
+        sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
   }
 
   getUID() async {
@@ -76,6 +106,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   setSentTo() async {
+//    print(widget.userName);
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     FirebaseUser user = await firebaseAuth.currentUser();
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
@@ -116,6 +147,18 @@ class _ChatScreenState extends State<ChatScreen> {
               },
             )
                 : SizedBox(),
+            isSelected
+                ? IconButton(
+              icon: Icon(Icons.share),
+              onPressed: () {
+                share(context, selectedText);
+                setState(() {
+                  isSelected = false;
+                  selectedText = "";
+                });
+              },
+            )
+                : SizedBox(),
             IconButton(
               icon: Icon(Icons.info),
               onPressed: () {
@@ -133,13 +176,6 @@ class _ChatScreenState extends State<ChatScreen> {
             children: <Widget>[
               Flexible(
                 child: Container(
-//                  decoration: BoxDecoration(
-//                    image: DecorationImage(
-//                      image: AssetImage('assets/images/background.png'),
-//                      fit: BoxFit.cover,
-//                    ),
-//                    color: Color.fromARGB(10, 255, 255, 255)
-//                  ),
                   child: StreamBuilder(
                       stream: chatMessageStream,
                       builder: (context, snapshot) {
@@ -159,7 +195,9 @@ class _ChatScreenState extends State<ChatScreen> {
                                   snapshot
                                       .data.documents[index].data["time"],
                                   snapshot
-                                      .data.documents[index].data["url"]);
+                                      .data.documents[index].data["url"],
+                                  snapshot.data.documents[index]
+                                      .data["isSeen"]);
                             })
                             : Container();
                       }),
@@ -219,8 +257,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 });
               },
               decoration: InputDecoration(
-                contentPadding: EdgeInsets.only(
-                    left: 15, top: 20, bottom: 20, right: 15),
+                contentPadding:
+                EdgeInsets.only(left: 15, top: 20, bottom: 20, right: 15),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(30)),
                 ),
@@ -244,14 +282,14 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   showSheet() {
-    showModalBottomSheet(context: context,
+    showModalBottomSheet(
+        context: context,
         elevation: 3,
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.only(
               topRight: Radius.circular(30),
               topLeft: Radius.circular(30),
-            )
-        ),
+            )),
         builder: (context) {
           return _buildBottomNavigationMenu();
         });
@@ -274,13 +312,13 @@ class _ChatScreenState extends State<ChatScreen> {
         ListTile(
           leading: Icon(Icons.attach_file),
           title: Text("Image from Url"),
-          onTap: () => ShowAlertDialog(context),
+          onTap: () => showAlertDialog(context),
         )
       ],
     );
   }
 
-  ShowAlertDialog(BuildContext context) {
+  showAlertDialog(BuildContext context) {
     TextEditingController urlTEC = new TextEditingController();
     TextEditingController captionTEC = new TextEditingController();
 
@@ -312,7 +350,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         hintStyle: TextStyle(color: Colors.grey[400]),
                       ),
                     ),
-                    SizedBox(height: 10,),
+                    SizedBox(
+                      height: 10,
+                    ),
                     TextField(
                       controller: captionTEC,
                       decoration: InputDecoration(
@@ -340,18 +380,17 @@ class _ChatScreenState extends State<ChatScreen> {
                   if (formKey.currentState.validate()) {
                     sendImageFromUrl(urlTEC.text, captionTEC.text);
                     Navigator.pop(context);
-                  }
-                  else {}
+                  } else {}
                 },
               )
             ],
           );
-        }
-    );
+        });
   }
 
   sendMessage() async {
     if (messageTEC.text.isNotEmpty) {
+//      print(sentTo);
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
@@ -361,15 +400,11 @@ class _ChatScreenState extends State<ChatScreen> {
         "sendTo": sentTo,
         "sentFrom": sentFrom,
         "url": "",
+        "isSeen": false,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
       messageTEC.text = "";
-      Map<String, dynamic> timeMap = {
-        "lastTime": DateTime
-            .now()
-            .millisecondsSinceEpoch,
-      };
-      databaseMethods.updateChatRoomTime(widget.chatRoomID, timeMap);
+      databaseMethods.updateChatRoomTime(widget.chatRoomID);
       scrollController.animateTo(scrollController.position.minScrollExtent,
           duration: Duration(milliseconds: 600), curve: Curves.easeInOut);
     }
@@ -404,6 +439,8 @@ class _ChatScreenState extends State<ChatScreen> {
         "sentFrom": sentFrom,
         "url": url
       };
+
+      databaseMethods.updateChatRoomTime(widget.chatRoomID);
       databaseMethods.addMessage(widget.chatRoomID, imageMap);
       imageUploadProvider.setToIdle();
     } catch (e) {
@@ -425,6 +462,7 @@ class _ChatScreenState extends State<ChatScreen> {
         "sentFrom": sentFrom,
         "url": url
       };
+      databaseMethods.updateChatRoomTime(widget.chatRoomID);
       databaseMethods.addMessage(widget.chatRoomID, imageMap);
       imageUploadProvider.setToIdle();
     } catch (e) {
@@ -434,11 +472,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future getImage(BuildContext context, ImageSource source) async {
     try {
-      PickedFile tempPickedFile =
-      await _picker.getImage(source: source);
-      File tempPic;
+      PickedFile tempPickedFile = await _picker.getImage(source: source);
       setState(() {
-        tempPic = File(tempPickedFile.path);
         cropImage(File(tempPickedFile.path), context);
       });
 //      await Future.delayed(Duration(seconds: 2, milliseconds: 500));
@@ -456,12 +491,12 @@ class _ChatScreenState extends State<ChatScreen> {
 //          cropStyle: CropStyle.rectangle,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
+            toolbarTitle: "Crop",
 //              toolbarColor: Colors.blue,
 //              statusBarColor: Colors.blue,
 //              activeControlsWidgetColor: Colors.blue
-          ))
-          .whenComplete(() {
-        print("Completed!");
+          )).whenComplete(() {
+//        print("Completed!");
       });
     }
     if (edited != null) {
@@ -498,10 +533,15 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool newDay = true;
 
-  buildMessage(String message, bool isMe, int time, String imageUrl) {
+  buildMessage(String message, bool isMe, int time, String imageUrl,
+      bool read) {
+    bool imageMessage = false;
     var timeInDM =
     DateFormat('dd:M:y').format(DateTime.fromMillisecondsSinceEpoch(time));
     newDay = compareTime(timeInDM);
+    if (!(imageUrl == null || imageUrl == "")) {
+      imageMessage = true;
+    }
     final Widget msg = SafeArea(
         child: Container(
           padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
@@ -509,11 +549,11 @@ class _ChatScreenState extends State<ChatScreen> {
           width: MediaQuery
               .of(context)
               .size
-              .width,
+              .width * 0.8,
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
           child: GestureDetector(
             onTap: () {
-              if ((imageUrl == null || imageUrl == "")) {
+              if (!imageMessage) {
                 setState(() {
                   isSelected = !isSelected;
                   selectedText = message;
@@ -521,7 +561,9 @@ class _ChatScreenState extends State<ChatScreen> {
               }
             },
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: !imageMessage
+                  ? EdgeInsets.symmetric(horizontal: 24, vertical: 16)
+                  : EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               constraints: BoxConstraints(
                 maxWidth: MediaQuery
                     .of(context)
@@ -531,32 +573,39 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: BoxDecoration(
                   gradient: LinearGradient(
                       colors: isMe
-                          ? ([const Color(0xffff758c), const Color(0xffff7eb3)])
-                          : ([Color(0xff93a5cf), const Color(0xff93a5cf)])),
+                          ? (!imageMessage ? ([
+                        const Color(0xffff758c),
+                        const Color(0xffff7eb3)
+                      ]) : [Color(0xffc8435f), Color(0xffc94d83)])
+                          : (!imageMessage ? ([
+                        Color(0xff93a5cf),
+                        const Color(0xff93a5cf)
+                      ]) : [Color(0xff64769e), Color(0xff64769e)])),
                   borderRadius: isMe
                       ? BorderRadius.only(
-                      topLeft: Radius.circular(23),
-                      topRight: Radius.circular(23),
-                      bottomLeft: Radius.circular(23))
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                      bottomLeft: Radius.circular(18))
                       : BorderRadius.only(
-                      topLeft: Radius.circular(23),
-                      topRight: Radius.circular(23),
-                      bottomRight: Radius.circular(23))),
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                      bottomRight: Radius.circular(18))),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
                   Flexible(
-                    child: (imageUrl == null || imageUrl == "")
+                    child: (!imageMessage)
                         ? Text(message,
                         style: TextStyle(
                           color: Colors.white70,
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ))
                         : Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      //                        crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         InkWell(
@@ -565,11 +614,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        viewImage(imageUrl, context, message),
+                                        viewImage(
+                                            imageUrl, context, message, time),
                                   ));
                             },
-                            child: CachedImage(
-                              url: imageUrl,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(23)
+                              ),
+                              child: Hero(
+                                tag: time,
+                                child: CachedImage(
+                                  url: imageUrl,
+                                ),
+                              ),
                             )),
                         message != ""
                             ? Container(
@@ -587,7 +645,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ],
                     ),
                   ),
-                  imageUrl == null
+                  !imageMessage
                       ? Container(
                     padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
                     child: Text(
@@ -596,10 +654,18 @@ class _ChatScreenState extends State<ChatScreen> {
                           DateTime.fromMillisecondsSinceEpoch(time))
                           : DateFormat('kk:mm dd/M').format(
                           DateTime.fromMillisecondsSinceEpoch(time)),
-//                      textAlign: TextAlign.right,
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
                     ),
                   )
                       : Container(),
+                  !imageMessage && read && isMe ? Container(
+                    padding: EdgeInsets.symmetric(horizontal: 5),
+                    child: Icon(Icons.check,
+//                    color: Color(0xff51cec0),
+                      size: 15,),
+                  ) : Container(),
                 ],
               ),
             ),
@@ -608,13 +674,8 @@ class _ChatScreenState extends State<ChatScreen> {
     return msg;
   }
 
-  void share(BuildContext context, String url) {
-    final RenderBox box = context.findRenderObject();
-    Share.share(url,
-        sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
-  }
-
-  Widget viewImage(String url, BuildContext context, String message) {
+  Widget viewImage(String url, BuildContext context, String message,
+      Object tag) {
     return Scaffold(
       appBar: AppBar(
         title: Text(message),
@@ -638,9 +699,12 @@ class _ChatScreenState extends State<ChatScreen> {
                 .of(context)
                 .size
                 .width,
-            child: CachedNetworkImage(
-              imageUrl: url,
-              fit: BoxFit.contain,
+            child: Hero(
+              tag: tag,
+              child: CachedNetworkImage(
+                imageUrl: url,
+                fit: BoxFit.contain,
+              ),
             )),
       ),
     );
@@ -689,22 +753,11 @@ class _ChatScreenState extends State<ChatScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
-//                        focusedBorder: UnderlineInputBorder(
-//                          borderSide: BorderSide(
-//                            color: Colors.white,
-//                          )
-//                        ),
-//                        enabledBorder: UnderlineInputBorder(
-//                         borderSide: BorderSide(
-//                           color: Colors.white,
-//                         )
-//                        ),
                         )),
                   ),
                   IconButton(
                     onPressed: () {
                       sendImage(context);
-//                      Navigator.pop(context);
                     },
                     icon: Icon(Icons.send),
                     color: Colors.blue,

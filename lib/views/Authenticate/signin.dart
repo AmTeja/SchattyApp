@@ -222,18 +222,18 @@ class _SignInState extends State<SignIn> {
                     child: Column(
                       children: [
                         TextFormField(
-                            validator: NameValidator.validate,
-                          controller: userNameTEC,
-                          style: simpleTextStyle(),
-                          decoration: new InputDecoration(
-                              contentPadding: EdgeInsets.only(
-                                  left: 15, top: 20, bottom: 20),
-                              labelText: "Username",
-                              labelStyle: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white60,
-                              ),
-                              border: new OutlineInputBorder(
+                            validator: UserNameValidator.validate,
+                                controller: userNameTEC,
+                                style: simpleTextStyle(),
+                                decoration: new InputDecoration(
+                                    contentPadding: EdgeInsets.only(
+                                        left: 15, top: 20, bottom: 20),
+                                    labelText: "Username",
+                                    labelStyle: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white60,
+                                    ),
+                                    border: new OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(40),
 //                                  borderSide: BorderSide(color: Colors.blue)
                               )),

@@ -42,27 +42,29 @@ Widget SchattyIcon() {
 }
 
 Widget loadingScreen(String text) {
-  return Container(
-    child: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Flexible(
-            child: Text(
-              text,
-              style: TextStyle(color: Colors.white, fontSize: 40),
+  return Scaffold(
+    body: Center(
+      child: Container(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Text(
+                text,
+                style: TextStyle(fontSize: 40),
+              ),
             ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-            child: LinearProgressIndicator(
-              backgroundColor: Colors.black,
+            SizedBox(
+              height: 20,
             ),
-          )
-        ],
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+              child: LinearProgressIndicator(
+                backgroundColor: Colors.black,
+              ),
+            )
+          ],
+        ),
       ),
     ),
   );

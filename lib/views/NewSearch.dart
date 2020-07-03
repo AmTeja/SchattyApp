@@ -5,6 +5,7 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/helper/targetURL.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/services/SearchService.dart';
+import 'package:schatty/widgets/widget.dart';
 
 import 'MainChatScreenInstance.dart';
 
@@ -17,6 +18,9 @@ class _NewSearchState extends State<NewSearch> {
   var queryResultSet = [];
   var tempSearchStore = [];
   bool foundNone = false;
+  bool isLoading = false;
+
+  DatabaseMethods databaseMethods = new DatabaseMethods();
 
   initiateSearch(String value) {
     if (value.length == 0) {
@@ -59,18 +63,19 @@ class _NewSearchState extends State<NewSearch> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Schatty",
-        ),
-      ),
-      body: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
-        child: ListView(
-          children: <Widget>[
+    return !isLoading
+        ? Scaffold(
+            appBar: AppBar(
+              title: Text(
+                "Schatty",
+              ),
+            ),
+            body: GestureDetector(
+              onTap: () {
+                FocusScope.of(context).unfocus();
+              },
+              child: ListView(
+                children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(
                   top: 20, bottom: 20, left: 30, right: 30),
@@ -94,17 +99,17 @@ class _NewSearchState extends State<NewSearch> {
             !foundNone
                 ? ListView(
                     padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-                    primary: false,
-                    shrinkWrap: true,
-                    children: tempSearchStore.map((element) {
-                      return buildResultCard(element);
-                    }).toList(),
-                  )
+              primary: false,
+              shrinkWrap: true,
+              children: tempSearchStore.map((element) {
+                return buildResultCard(element);
+              }).toList(),
+            )
                 : showEmptyList()
           ],
         ),
       ),
-    );
+    ) : loadingScreen("Loading");
   }
 
   Widget showEmptyList() {
@@ -131,24 +136,50 @@ class _NewSearchState extends State<NewSearch> {
 
   createChatInstance(String userName) async {
     final GetPhotoURL targetURL = new GetPhotoURL();
-    if (userName != Constants.ownerName) {
-      String chatRoomID = getChatRoomID(userName, Constants.ownerName);
-      String targetUserURL = await targetURL.fetchTargetURL(userName);
-      String currentUserURL = await Preferences.getUserImageURL();
-      List<String> users = [Constants.ownerName, userName];
-      List<String> photos = [currentUserURL, targetUserURL];
-      Map<String, dynamic> chatRoomMap = {
-        "users": users,
-        "chatRoomId": chatRoomID,
-        "photoURLS": photos,
-        "lastTime": DateTime.now().millisecondsSinceEpoch,
-      };
+    setState(() {
+      isLoading = true;
+    });
+    try {
+      if (userName != Constants.ownerName) {
+        String chatRoomID = getChatRoomID(
+            userName.toLowerCase(), Constants.ownerName.toLowerCase());
+//      print("${userName.toLowerCase()}, ${Constants.ownerName.toLowerCase()}");
+        String targetUserURL = await targetURL.fetchTargetURL(userName);
+        String currentUserURL = await Preferences.getUserImageURL();
+        String ownerDName = await databaseMethods.getDName(Constants.ownerName);
+        String targetDName = await databaseMethods.getDName(userName);
+        print("$ownerDName, $targetDName");
+        List<String> dNames = [ownerDName, targetDName];
+        List<String> users = [
+          Constants.ownerName.toLowerCase(),
+          userName.toLowerCase()
+        ];
+        List<String> photos = [currentUserURL, targetUserURL];
+//      print(chatRoomID);
+        Map<String, dynamic> chatRoomMap = {
+          "users": users,
+          "chatRoomId": chatRoomID,
+          "photoURLS": photos,
+          "displayNames": dNames,
+          "lastTime": DateTime
+              .now()
+              .millisecondsSinceEpoch,
+        };
 
-      DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => ChatScreen(chatRoomID, userName)));
+        DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ChatScreen(chatRoomID, userName)));
+      }
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+      });
+      print('Error Creating ChatInstance: $error');
     }
   }
 

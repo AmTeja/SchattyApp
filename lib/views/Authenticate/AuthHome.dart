@@ -23,7 +23,6 @@ class _AuthHomeState extends State<AuthHome> {
 
   @override
   Widget build(BuildContext context) {
-    bool darkTheme = darkThemeProvider.darkTheme;
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(

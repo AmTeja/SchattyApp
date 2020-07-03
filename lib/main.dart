@@ -9,7 +9,6 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
-import 'package:schatty/views/Authenticate/StartScreen.dart';
 import 'package:schatty/views/MainChatsRoom.dart';
 
 void main() {

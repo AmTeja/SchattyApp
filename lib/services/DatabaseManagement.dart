@@ -5,6 +5,8 @@ import 'package:schatty/model/user.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 
 class DatabaseMethods {
+  FirebaseAuth auth = FirebaseAuth.instance;
+
   getUserByUserName(String username) async {
     await Firestore.instance
         .collection("users")
@@ -29,10 +31,10 @@ class DatabaseMethods {
         "uid": uid,
         "username": userName,
       };
-        await Firestore.instance
-              .collection("tokens")
-              .document(uid).setData(tokenMap);
-
+      await Firestore.instance
+          .collection("tokens")
+          .document(uid)
+          .setData(tokenMap);
     } catch (e) {
       print("ERROR Updating Token: $e");
     }
@@ -68,12 +70,52 @@ class DatabaseMethods {
   }
 
   addMessage(String chatRoomID, messageMap) {
-    Firestore.instance.collection("ChatRoom")
+    Firestore.instance
+        .collection("ChatRoom")
         .document(chatRoomID)
         .collection("chats")
-        .add(messageMap).catchError((e) {
+        .add(messageMap)
+        .catchError((e) {
       print(e.toString());
     });
+  }
+
+  updateDisplayName(String displayName) async {
+    try {
+      Map<String, dynamic> dNMap = {
+        "displayName": displayName,
+      };
+      FirebaseUser user = await auth.currentUser();
+      String uid = user.uid;
+      Firestore.instance
+          .collection('users')
+          .where("uid", isEqualTo: uid)
+          .getDocuments()
+          .then((docs) async {
+        Firestore.instance
+            .document('users/${docs.documents[0].documentID}')
+            .updateData(dNMap);
+      });
+    } catch (error) {
+      print("ERROR UPDATING DNAME: $error");
+    }
+  }
+
+  getDName(String userName) async {
+    String dName;
+    String uid;
+    uid = await getUIDByUsername(userName);
+    await Firestore.instance
+        .collection('users')
+        .where("uid", isEqualTo: uid)
+        .getDocuments()
+        .then((docs) async {
+      dName = await docs.documents[0].data["displayName"];
+      print(dName);
+    }).catchError((error) {
+      print("ERROR GETTING DNAME: $error");
+    });
+    return dName;
   }
 
   updateProfilePicture(String picUrl, String userName) async {
@@ -110,7 +152,8 @@ class DatabaseMethods {
       uid = user.uid;
     });
     print(uid);
-    await Firestore.instance.collection('users')
+    await Firestore.instance
+        .collection('users')
         .where('uid', isEqualTo: uid)
         .getDocuments()
         .then((value) async {
@@ -123,7 +166,10 @@ class DatabaseMethods {
     return url;
   }
 
-  updateChatRoomTime(chatRoomID, timeMap) async {
+  updateChatRoomTime(String chatRoomID) async {
+    Map<String, dynamic> timeMap = {
+      "lastTime": DateTime.now().millisecondsSinceEpoch,
+    };
     await Firestore.instance
         .collection("ChatRoom")
         .document(chatRoomID)
@@ -134,15 +180,15 @@ class DatabaseMethods {
   }
 
   getMessage(String chatRoomID) async {
-    return Firestore.instance.collection("ChatRoom")
+    return Firestore.instance
+        .collection("ChatRoom")
         .document(chatRoomID)
         .collection("chats")
         .orderBy("time", descending: true)
         .snapshots();
   }
 
-  getChatRooms(String userName) async
-  {
+  getChatRooms(String userName) async {
     try {
       return Firestore.instance
           .collection("ChatRoom")
@@ -154,13 +200,14 @@ class DatabaseMethods {
     }
   }
 
-  getUIDByUsername(String username) async
-  {
+  getUIDByUsername(String username) async {
     String uid;
     try {
-      await Firestore.instance.collection("users").where(
-          "username", isEqualTo: username)
-          .getDocuments().then((docs) async {
+      await Firestore.instance
+          .collection("users")
+          .where("username", isEqualTo: username)
+          .getDocuments()
+          .then((docs) async {
         uid = docs.documents[0].data["uid"];
         print(docs.documents[0].data["uid"]);
       });
@@ -169,5 +216,4 @@ class DatabaseMethods {
       print(e);
     }
   }
-
 }
