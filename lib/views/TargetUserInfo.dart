@@ -109,7 +109,7 @@ class _TargetUserInfoState extends State<TargetUserInfo> {
               child: Column(
                 children: [
                   Text(
-                    "Display Nanme",
+                    "Display Name",
                     style: TextStyle(fontSize: 26),
                   ),
                   Padding(

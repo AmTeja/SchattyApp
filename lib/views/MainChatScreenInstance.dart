@@ -19,6 +19,7 @@ import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/TargetUserInfo.dart';
+import 'package:schatty/widgets/widget.dart';
 import 'package:share/share.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -54,6 +55,8 @@ class _ChatScreenState extends State<ChatScreen> {
   String url;
   String selectedText;
 
+  bool onScreen;
+
   File newImage;
 
   ScrollController scrollController;
@@ -61,6 +64,7 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    onScreen = true;
     Preferences.getUserNameSharedPreference();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
@@ -69,11 +73,9 @@ class _ChatScreenState extends State<ChatScreen> {
     });
     scrollController = ScrollController();
     setSentTo();
-    setRead();
   }
 
-  setRead() async {
-    var chatId;
+  setSeen() async {
     CollectionReference ref;
     await Firestore.instance
         .collection('ChatRoom')
@@ -87,7 +89,8 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     QuerySnapshot querySnapshot = await ref
-        .where('sendTo', isEqualTo: sentTo)
+        .where('sendTo', isEqualTo: sentFrom)
+        .where('sentFrom', isEqualTo: sentTo)
         .where('isSeen', isEqualTo: false)
         .getDocuments();
     querySnapshot.documents.forEach((msgDoc) {
@@ -106,22 +109,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   setSentTo() async {
-//    print(widget.userName);
     FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     FirebaseUser user = await firebaseAuth.currentUser();
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
     sentFrom = user.uid;
+    setSeen();
     setState(() {});
   }
-
-//  Future<String> getDataFromFuture(String message) async {
-//    print("Data Future");
-//    keyPair = await futureKeyPair;
-//    String decrypted;
-//    decrypted = decrypt(message, keyPair.privateKey);
-//    print(decrypted);
-//    return decrypted;
-//  }
 
   @override
   Widget build(BuildContext context) {
@@ -394,17 +388,16 @@ class _ChatScreenState extends State<ChatScreen> {
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        "time": DateTime.now().millisecondsSinceEpoch,
         "sendTo": sentTo,
         "sentFrom": sentFrom,
         "url": "",
         "isSeen": false,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
-      messageTEC.text = "";
+      databaseMethods.updateLastMessage(messageTEC.text, widget.chatRoomID);
       databaseMethods.updateChatRoomTime(widget.chatRoomID);
+      messageTEC.text = "";
       scrollController.animateTo(scrollController.position.minScrollExtent,
           duration: Duration(milliseconds: 600), curve: Curves.easeInOut);
     }
@@ -437,9 +430,11 @@ class _ChatScreenState extends State<ChatScreen> {
             .millisecondsSinceEpoch,
         "sendTo": sentTo,
         "sentFrom": sentFrom,
-        "url": url
+        "url": url,
+        "seen": false,
       };
 
+      databaseMethods.updateLastMessage("Image", widget.chatRoomID);
       databaseMethods.updateChatRoomTime(widget.chatRoomID);
       databaseMethods.addMessage(widget.chatRoomID, imageMap);
       imageUploadProvider.setToIdle();
@@ -507,29 +502,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  compareTime(String timeInDM) {
-    var time = timeInDM.split(':');
-    int sentDay = int.parse(time[0]);
-    int sentMonth = int.parse(time[1]);
-    int sentYear = int.parse(time[2]);
 
-    var currentTime = DateFormat('dd:M:y').format(DateTime.now()).split(':');
-    int currentDay = int.parse(currentTime[0]);
-    int currentMonth = int.parse(currentTime[1]);
-    int currentYear = int.parse(currentTime[2]);
-
-    if (currentYear >= sentYear) {
-      if (currentMonth >= sentMonth) {
-        if (currentDay > sentDay) {
-          return true;
-        }
-        if (currentDay == sentDay) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
 
   bool newDay = true;
 

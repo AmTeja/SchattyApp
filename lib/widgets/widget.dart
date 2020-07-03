@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 Widget appBarMain(BuildContext context) {
   return AppBar();
@@ -18,6 +19,30 @@ InputDecoration textFieldInputDecoration(String hintText) {
           borderSide: BorderSide(
         color: Colors.black,
       )));
+}
+
+compareTime(String timeInDM) {
+  var time = timeInDM.split(':');
+  int sentDay = int.parse(time[0]);
+  int sentMonth = int.parse(time[1]);
+  int sentYear = int.parse(time[2]);
+
+  var currentTime = DateFormat('dd:M:y').format(DateTime.now()).split(':');
+  int currentDay = int.parse(currentTime[0]);
+  int currentMonth = int.parse(currentTime[1]);
+  int currentYear = int.parse(currentTime[2]);
+
+  if (currentYear >= sentYear) {
+    if (currentMonth >= sentMonth) {
+      if (currentDay > sentDay) {
+        return true;
+      }
+      if (currentDay == sentDay) {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 TextStyle simpleTextStyle() {
