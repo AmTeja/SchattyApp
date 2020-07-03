@@ -16,12 +16,14 @@ import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/services/encryptionservice.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
+import 'package:schatty/views/ChatTile.dart';
 import 'package:schatty/views/MainChatScreenInstance.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/views/SettingsView.dart';
 import 'package:schatty/views/editProfile.dart';
 import 'package:schatty/widgets/widget.dart';
 
+import 'CrashPage.dart';
 import 'TargetUserInfo.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -93,139 +95,6 @@ class _ChatRoomState extends State<ChatRoom> {
           )
         : Scaffold(
             backgroundColor: Colors.black, body: loadingScreen("Hold on"));
-  }
-
-  configureFirebaseListeners() {
-    firebaseMessaging.configure(
-      onMessage: (Map<String, dynamic> message) async {
-        print('onMessage: $message');
-      },
-      onLaunch: (Map<String, dynamic> message) async {
-//        print('onLaunch: $message');
-//        await sendToChatScreen(message);
-      },
-      onResume: (Map<String, dynamic> message) async {
-        print('OnResume: $message');
-        await sendToChatScreen(message);
-      },
-    );
-  }
-
-  sendToChatScreen(Map<String, dynamic> message) async {
-    String chatRoomID;
-    var data = message["data"];
-    String sentUser = await data["sentUser"];
-    String toUser = await data["toUser"];
-    String roomID1 =
-        getChatRoomID(sentUser.toLowerCase(), toUser.toLowerCase());
-    String roomID2 =
-        getChatRoomID(toUser.toLowerCase(), sentUser.toLowerCase());
-    try {
-      await Firestore.instance
-          .collection("ChatRoom")
-          .where("chatRoomId", isEqualTo: roomID1)
-          .getDocuments()
-          .then((docs) async {
-        chatRoomID = await docs.documents[0].data["chatRoomId"];
-      });
-      if (chatRoomID == null) {
-        await Firestore.instance
-              .collection("ChatRoom")
-              .where("chatRoomId", isEqualTo: roomID2)
-              .getDocuments()
-              .then((docs) async {
-            chatRoomID = await docs.documents[0].data["chatRoomId"];
-          });
-        }
-      String username =
-      chatRoomID.replaceAll("_", "").replaceAll(Constants.ownerName, "");
-      await Navigator.push(
-          newContext,
-          MaterialPageRoute(
-              builder: (newContext) => ChatScreen(chatRoomID, username)));
-    } catch (e) {
-      print("Sending To Chat ERROR: $e");
-    }
-  }
-
-  uploadToken() async {
-    String token;
-    token = await firebaseMessaging.getToken();
-    print(token);
-    databaseMethods.updateToken(token, Constants.ownerName);
-  }
-
-  getChatRoomID(String a, String b) {
-    if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
-      return "$b\_$a";
-    } else {
-      return "$a\_$b";
-    }
-  }
-
-  getUserInfo() async {
-    Constants.ownerName = await Preferences.getUserNameSharedPreference();
-    try {
-      databaseMethods.getChatRooms(Constants.ownerName).then((val) {
-        setState(() {
-          chatRoomsStream = val;
-        });
-      });
-      await firebaseAuth.currentUser().then((docs) {
-        uid = docs.uid;
-      });
-      url = await databaseMethods.getProfileUrl();
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      print("getUserInfo: $e");
-    }
-  }
-
-  setupEncryption() async {
-    try {
-      print("Encryption Setting up");
-      encryptionService.futureKeyPair = encryptionService.getKeyPair();
-      encryptionService.keyPair = await encryptionService.futureKeyPair;
-      Map<String, dynamic> keyMap = {
-        "privateKey": encryptionService.keyPair.privateKey,
-      };
-      await Firestore.instance
-          .collection('users')
-          .where('uid', isEqualTo: uid)
-          .getDocuments()
-          .then((docs) async {
-        await Firestore.instance
-            .document('/users/${docs.documents[0].documentID}')
-            .updateData(keyMap);
-      });
-
-      var privateString = await encryptionService
-          .getPrivatekeyInPlain(encryptionService.keyPair);
-      var publicString = await encryptionService
-          .getPublicKeyInPlain(encryptionService.keyPair);
-      print("Private: $privateString");
-      print("Public: $publicString");
-    } catch (e) {
-      print("Encryption Error: $e");
-    }
-  }
-
-  logOut(BuildContext context) async {
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    if (user.providerId != "Google") {
-      authMethods.signOut();
-      print("not google :)");
-    } else {
-      authMethods.signOutGoogle();
-    }
-    Preferences.saveUserLoggedInSharedPreference(false);
-    Preferences.saveUserNameSharedPreference(null);
-    Preferences.saveUserEmailSharedPreference(null);
-    Preferences.saveUserImageURL(null);
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
 
   Widget mainDrawer(BuildContext context) {
@@ -356,7 +225,21 @@ class _ChatRoomState extends State<ChatRoom> {
               style: TextStyle(fontSize: 20),
             ),
             trailing: Icon(Icons.info),
-          )
+          ),
+//          ListTile(
+//            onTap: () {
+//              Navigator.push(
+//                  context,
+//                  MaterialPageRoute(
+//                      builder: (context) =>
+//                          CrashPage()));
+//            },
+//            title: Text("Crash",
+//                style: TextStyle(
+//                  fontSize: 20,
+//                )),
+//            trailing: Icon(Icons.error_outline),
+//          ),
         ],
       ),
     );
@@ -403,118 +286,152 @@ class _ChatRoomState extends State<ChatRoom> {
             itemBuilder: (context, index) {
               return ChatRoomTile(
                 snapshot.data.documents[index].data["chatRoomId"]
-                    .toString()
-                    .replaceAll("_", "")
-                    .replaceAll(Constants.ownerName, ""),
-                snapshot.data.documents[index].data["chatRoomId"],
-                snapshot.data.documents[index].data["photoURLS"],
-                snapshot.data.documents[index].data["users"],
-                snapshot.data.documents[index].data["displayNames"],
-              );
-            })
+                        .toString()
+                        .replaceAll("_", "")
+                        .replaceAll(Constants.ownerName, ""),
+                    snapshot.data.documents[index].data["chatRoomId"],
+                    snapshot.data.documents[index].data["photoURLS"],
+                    snapshot.data.documents[index].data["users"],
+                    snapshot.data.documents[index].data["displayNames"],
+                    snapshot.data.documents[index].data["lastMessage"],
+                    snapshot.data.documents[index].data["lastTime"],
+                  );
+                })
             : suchEmpty(context);
       },
     );
   }
-}
 
-class ChatRoomTile extends StatelessWidget {
-  final String userName;
-  final String chatRoomId;
-  final urls;
-  final users;
-  final displayNames;
-
-  ChatRoomTile(this.userName, this.chatRoomId, this.urls, this.users,
-      this.displayNames);
-
-  final SlidableController slidableController = SlidableController();
-
-  @override
-  Widget build(BuildContext context) {
-    String targetUrl;
-    String targetDName;
-    if (users[1] == userName) {
-      targetUrl = urls[1];
-      targetDName = displayNames[1];
-    } else {
-      targetUrl = urls[0];
-      targetDName = displayNames[0];
-    }
-
-    return Slidable(
-      key: Key("slidable"),
-      controller: slidableController,
-      actionPane: SlidableDrawerActionPane(),
-      actionExtentRatio: 0.25,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(context, MaterialPageRoute(
-              builder: (context) => ChatScreen(chatRoomId, userName))
-          );
-        },
-        child: Container(
-//        color: Colors.white,
-          height: 110,
-          alignment: Alignment.center,
-          child: ListTile(
-            trailing: Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(43),
-              ),
-            ),
-            leading: InkWell(
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(
-                        builder: (context) => TargetUserInfo(userName)));
-              },
-              child: CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.indigoAccent,
-                child: Container(
-                  child: targetUrl != null ? ClipOval(
-                    child: CachedNetworkImage(
-                      height: 75,
-                      width: 75,
-                      imageUrl: targetUrl,
-                      fit: BoxFit.cover,
-                    ),
-                  ) : Text("${userName.substring(0, 1).toUpperCase()}",),
-                ),
-                foregroundColor: Colors.white,
-              ),
-            ),
-            title: targetDName == null ? Text('$userName',
-              style: TextStyle(
-                fontSize: 20,
-              ),) : Text('$targetDName', style: TextStyle(
-              fontSize: 20,
-            ),),
-          ),
-        ),
-      ),
-      secondaryActions: <Widget>[
-        IconSlideAction(
-          caption: 'Archive',
-          color: Colors.black45,
-          icon: Icons.archive,
-          onTap: () {},
-        ),
-        IconSlideAction(
-          caption: 'Info',
-          color: Color(0xff509ece),
-          icon: Icons.info,
-          onTap: () {
-            Navigator.push(context,
-                MaterialPageRoute(
-                    builder: (context) => TargetUserInfo(userName)));
-          },
-        ),
-      ],
+  configureFirebaseListeners() {
+    firebaseMessaging.configure(
+      onMessage: (Map<String, dynamic> message) async {
+        print('onMessage: $message');
+      },
+      onLaunch: (Map<String, dynamic> message) async {
+//        print('onLaunch: $message');
+//        await sendToChatScreen(message);
+      },
+      onResume: (Map<String, dynamic> message) async {
+        print('OnResume: $message');
+        await sendToChatScreen(message);
+      },
     );
+  }
+
+  sendToChatScreen(Map<String, dynamic> message) async {
+    String chatRoomID;
+    var data = message["data"];
+    String sentUser = await data["sentUser"];
+    String toUser = await data["toUser"];
+    String roomID1 =
+        getChatRoomID(sentUser.toLowerCase(), toUser.toLowerCase());
+    String roomID2 =
+        getChatRoomID(toUser.toLowerCase(), sentUser.toLowerCase());
+    try {
+      await Firestore.instance
+          .collection("ChatRoom")
+          .where("chatRoomId", isEqualTo: roomID1)
+          .getDocuments()
+          .then((docs) async {
+        chatRoomID = await docs.documents[0].data["chatRoomId"];
+      });
+      if (chatRoomID == null) {
+        await Firestore.instance
+            .collection("ChatRoom")
+            .where("chatRoomId", isEqualTo: roomID2)
+            .getDocuments()
+            .then((docs) async {
+          chatRoomID = await docs.documents[0].data["chatRoomId"];
+        });
+      }
+      String username =
+          chatRoomID.replaceAll("_", "").replaceAll(Constants.ownerName, "");
+      await Navigator.push(
+          newContext,
+          MaterialPageRoute(
+              builder: (newContext) => ChatScreen(chatRoomID, username)));
+    } catch (e) {
+      print("Sending To Chat ERROR: $e");
+    }
+  }
+
+  uploadToken() async {
+    String token;
+    token = await firebaseMessaging.getToken();
+    print(token);
+    databaseMethods.updateToken(token, Constants.ownerName);
+  }
+
+  getChatRoomID(String a, String b) {
+    if (a.substring(0, 1).codeUnitAt(0) > b.substring(0, 1).codeUnitAt(0)) {
+      return "$b\_$a";
+    } else {
+      return "$a\_$b";
+    }
+  }
+
+  getUserInfo() async {
+    Constants.ownerName = await Preferences.getUserNameSharedPreference();
+    try {
+      databaseMethods.getChatRooms(Constants.ownerName).then((val) {
+        setState(() {
+          chatRoomsStream = val;
+        });
+      });
+      await firebaseAuth.currentUser().then((docs) {
+        uid = docs.uid;
+      });
+      url = await databaseMethods.getProfileUrl();
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("getUserInfo: $e");
+    }
+  }
+
+  setupEncryption() async {
+    try {
+      print("Encryption Setting up");
+      encryptionService.futureKeyPair = encryptionService.getKeyPair();
+      encryptionService.keyPair = await encryptionService.futureKeyPair;
+      Map<String, dynamic> keyMap = {
+        "privateKey": encryptionService.keyPair.privateKey,
+      };
+      await Firestore.instance
+          .collection('users')
+          .where('uid', isEqualTo: uid)
+          .getDocuments()
+          .then((docs) async {
+        await Firestore.instance
+            .document('/users/${docs.documents[0].documentID}')
+            .updateData(keyMap);
+      });
+
+      var privateString = await encryptionService
+          .getPrivatekeyInPlain(encryptionService.keyPair);
+      var publicString = await encryptionService
+          .getPublicKeyInPlain(encryptionService.keyPair);
+      print("Private: $privateString");
+      print("Public: $publicString");
+    } catch (e) {
+      print("Encryption Error: $e");
+    }
+  }
+
+  logOut(BuildContext context) async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    if (user.providerId != "Google") {
+      authMethods.signOut();
+      print("not google :)");
+    } else {
+      authMethods.signOutGoogle();
+    }
+    Preferences.saveUserLoggedInSharedPreference(false);
+    Preferences.saveUserNameSharedPreference(null);
+    Preferences.saveUserEmailSharedPreference(null);
+    Preferences.saveUserImageURL(null);
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
 }

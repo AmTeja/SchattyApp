@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "879205408677",
+    "firebase_url": "https://schaty-7b3c3.firebaseio.com",
+    "project_id": "schaty-7b3c3",
+    "storage_bucket": "schaty-7b3c3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:879205408677:android:5457ac3137943ca1ee924c",
+        "android_client_info": {
+          "package_name": "com.schattyapp.schatty"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "879205408677-v5s9c2em5hhch7ihmsudd261urirbtfi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.schattyapp.schatty",
+            "certificate_hash": "166665ac76c5e8a9c1abc9d1aee122c99c5825ae"
+          }
+        },
+        {
+          "client_id": "879205408677-0ftcf9og31ql8ugv557rq2icj97oqpe9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAnt0n3mSl8gEwp1omTtKjIMjhWOnmRTmc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "879205408677-0ftcf9og31ql8ugv557rq2icj97oqpe9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-1304691467262814~7353905593"
+    }
+  ],
+  "configuration_version": "1"
+}

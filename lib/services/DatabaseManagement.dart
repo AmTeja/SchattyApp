@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/model/user.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
@@ -212,4 +213,20 @@ class DatabaseMethods {
       print(e);
     }
   }
+
+  updateLastMessage(String message, String chatRoomId) async
+  {
+    List<String> messageMap = [message, Constants.ownerName.toLowerCase()];
+    Map<String, dynamic> lastMessageMap = {
+      "lastMessage": messageMap,
+    };
+    await Firestore.instance
+        .collection("ChatRoom")
+        .document(chatRoomId)
+        .updateData(lastMessageMap)
+        .catchError((onError) {
+      print("ChatRoomTime: $onError");
+    });
+  }
+
 }

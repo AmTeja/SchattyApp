@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:firebase_admob/firebase_admob.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,17 +13,25 @@ import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/MainChatsRoom.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  Crashlytics.instance.enableInDevMode = true;
+
+  FlutterError.onError = Crashlytics.instance.recordFlutterError;
   FirebaseAdMob.instance
       .initialize(appId: "ca-app-pub-1304691467262814~7353905593");
+
   LicenseRegistry.addLicense(() async* {
     final license = await rootBundle.loadString('google_fonts/OFL.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
-  runApp(MyApp());
-  //  SystemChrome.setEnabledSystemUIOverlays([]);
+
+  runZoned<Future<void>>(() async {
+    runApp(MyApp());
+  }, onError: Crashlytics.instance.recordError);
 }
+//  SystemChrome.setEnabledSystemUIOverlays([]);
 
 class MyApp extends StatefulWidget {
   @override
