@@ -10,6 +10,8 @@
 .svn/
 .secrets.tar
 .google-services.json
+.firebase.json
+.functions/
 
 # IntelliJ related
 *.iml
