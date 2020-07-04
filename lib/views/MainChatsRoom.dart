@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:path/path.dart';
 import 'package:schatty/enums/globalcolors.dart';
 import 'package:schatty/helper/NavigationService.dart';
@@ -22,9 +21,6 @@ import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/views/SettingsView.dart';
 import 'package:schatty/views/editProfile.dart';
 import 'package:schatty/widgets/widget.dart';
-
-import 'CrashPage.dart';
-import 'TargetUserInfo.dart';
 
 class ChatRoom extends StatefulWidget {
   @override
@@ -359,7 +355,7 @@ class _ChatRoomState extends State<ChatRoom> {
     String token;
     token = await firebaseMessaging.getToken();
     print(token);
-    databaseMethods.updateToken(token, Constants.ownerName);
+    databaseMethods.updateToken(token, Constants.ownerName.toLowerCase());
   }
 
   getChatRoomID(String a, String b) {
@@ -373,7 +369,7 @@ class _ChatRoomState extends State<ChatRoom> {
   getUserInfo() async {
     Constants.ownerName = await Preferences.getUserNameSharedPreference();
     try {
-      databaseMethods.getChatRooms(Constants.ownerName).then((val) {
+      databaseMethods.getChatRooms(Constants.ownerName.toLowerCase()).then((val) {
         setState(() {
           chatRoomsStream = val;
         });
@@ -390,34 +386,34 @@ class _ChatRoomState extends State<ChatRoom> {
     }
   }
 
-  setupEncryption() async {
-    try {
-      print("Encryption Setting up");
-      encryptionService.futureKeyPair = encryptionService.getKeyPair();
-      encryptionService.keyPair = await encryptionService.futureKeyPair;
-      Map<String, dynamic> keyMap = {
-        "privateKey": encryptionService.keyPair.privateKey,
-      };
-      await Firestore.instance
-          .collection('users')
-          .where('uid', isEqualTo: uid)
-          .getDocuments()
-          .then((docs) async {
-        await Firestore.instance
-            .document('/users/${docs.documents[0].documentID}')
-            .updateData(keyMap);
-      });
-
-      var privateString = await encryptionService
-          .getPrivatekeyInPlain(encryptionService.keyPair);
-      var publicString = await encryptionService
-          .getPublicKeyInPlain(encryptionService.keyPair);
-      print("Private: $privateString");
-      print("Public: $publicString");
-    } catch (e) {
-      print("Encryption Error: $e");
-    }
-  }
+//  setupEncryption() async {
+//    try {
+//      print("Encryption Setting up");
+//      encryptionService.futureKeyPair = encryptionService.getKeyPair();
+//      encryptionService.keyPair = await encryptionService.futureKeyPair;
+//      Map<String, dynamic> keyMap = {
+//        "privateKey": encryptionService.keyPair.privateKey,
+//      };
+//      await Firestore.instance
+//          .collection('users')
+//          .where('uid', isEqualTo: uid)
+//          .getDocuments()
+//          .then((docs) async {
+//        await Firestore.instance
+//            .document('/users/${docs.documents[0].documentID}')
+//            .updateData(keyMap);
+//      });
+//
+//      var privateString = await encryptionService
+//          .getPrivatekeyInPlain(encryptionService.keyPair);
+//      var publicString = await encryptionService
+//          .getPublicKeyInPlain(encryptionService.keyPair);
+//      print("Private: $privateString");
+//      print("Public: $publicString");
+//    } catch (e) {
+//      print("Encryption Error: $e");
+//    }
+//  }
 
   logOut(BuildContext context) async {
     FirebaseUser user = await FirebaseAuth.instance.currentUser();
