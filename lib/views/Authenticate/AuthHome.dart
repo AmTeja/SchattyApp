@@ -7,8 +7,9 @@ import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/signin.dart';
 import 'package:schatty/views/Authenticate/signup.dart';
+import 'package:schatty/views/Feed/FeedPage.dart';
 
-import '../MainChatsRoom.dart';
+import '../Chatroom/MainChatsRoom.dart';
 
 
 class AuthHome extends StatefulWidget {
@@ -237,7 +238,7 @@ class _AuthHomeState extends State<AuthHome> {
         Preferences.saveUserNameSharedPreference(username);
         Preferences.saveUserLoggedInSharedPreference(true);
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => ChatRoom()));
+            context, MaterialPageRoute(builder: (context) => FeedPage()));
       }
     } catch (e) {
     print(e.toString());

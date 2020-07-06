@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -14,13 +13,11 @@ import 'package:provider/provider.dart';
 import 'package:schatty/enums/view_state.dart';
 import 'package:schatty/helper/cachednetworkimage.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/views/TargetUserInfo.dart';
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/TargetUserInfo.dart';
 import 'package:schatty/widgets/widget.dart';
-import 'package:share/share.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomID;
@@ -64,8 +61,8 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
+    print(widget.userName);
     onScreen = true;
-    Preferences.getUserNameSharedPreference();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
         chatMessageStream = val;
@@ -96,12 +93,6 @@ class _ChatScreenState extends State<ChatScreen> {
     querySnapshot.documents.forEach((msgDoc) {
       msgDoc.reference.updateData({'isSeen': true});
     });
-  }
-
-  void share(BuildContext context, String url) {
-    final RenderBox box = context.findRenderObject();
-    Share.share(url,
-        sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
   }
 
   getUID() async {
@@ -159,7 +150,8 @@ class _ChatScreenState extends State<ChatScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => TargetUserInfo(chatWith)));
+                      builder: (newcontext) => TargetUserInfo(widget.userName),
+                    ));
               },
             )
           ],
@@ -175,6 +167,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       builder: (context, snapshot) {
                         return snapshot.hasData
                             ? ListView.builder(
+                            cacheExtent: 50.0,
                             controller: scrollController,
                             reverse: true,
                             padding: EdgeInsets.only(top: 15),
@@ -645,42 +638,6 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ));
     return msg;
-  }
-
-  Widget viewImage(String url, BuildContext context, String message,
-      Object tag) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(message),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.share),
-            onPressed: () {
-              share(context, url);
-            },
-          )
-        ],
-      ),
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Container(
-            height: MediaQuery
-                .of(context)
-                .size
-                .height,
-            width: MediaQuery
-                .of(context)
-                .size
-                .width,
-            child: Hero(
-              tag: tag,
-              child: CachedNetworkImage(
-                imageUrl: url,
-                fit: BoxFit.contain,
-              ),
-            )),
-      ),
-    );
   }
 
   Widget composeImage() {

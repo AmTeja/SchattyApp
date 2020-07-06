@@ -144,15 +144,11 @@ class DatabaseMethods {
     });
   }
 
-  getProfileUrl() async {
+  getProfileUrl(String username) async {
     String url;
-    String uid;
-    await FirebaseAuth.instance.currentUser().then((user) {
-      uid = user.uid;
-    });
     await Firestore.instance
         .collection('users')
-        .where('uid', isEqualTo: uid)
+        .where('username', isEqualTo: username)
         .getDocuments()
         .then((value) async {
       url = await value.documents[0].data["photoURL"];

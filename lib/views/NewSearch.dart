@@ -7,7 +7,7 @@ import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/services/SearchService.dart';
 import 'package:schatty/widgets/widget.dart';
 
-import 'MainChatScreenInstance.dart';
+import 'Chatroom/MainChatScreenInstance.dart';
 
 class NewSearch extends StatefulWidget {
   @override
@@ -147,6 +147,8 @@ class _NewSearchState extends State<NewSearch> {
         String targetUserURL = await targetURL.fetchTargetURL(userName);
         String currentUserURL = await Preferences.getUserImageURL();
         String ownerDName = await databaseMethods.getDName(Constants.ownerName);
+        print(Constants.ownerName);
+        print(ownerDName);
         String targetDName = await databaseMethods.getDName(userName);
         print("$ownerDName, $targetDName");
         List<String> dNames = [ownerDName, targetDName];
@@ -155,15 +157,15 @@ class _NewSearchState extends State<NewSearch> {
           userName.toLowerCase()
         ];
         List<String> photos = [currentUserURL, targetUserURL];
+        List<String> lastMessage = ["", ""];
 //      print(chatRoomID);
         Map<String, dynamic> chatRoomMap = {
           "users": users,
           "chatRoomId": chatRoomID,
           "photoURLS": photos,
           "displayNames": dNames,
-          "lastTime": DateTime
-              .now()
-              .millisecondsSinceEpoch,
+          "lastTime": DateTime.now().millisecondsSinceEpoch,
+          "lastMessage": lastMessage
         };
 
         DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);

@@ -1,6 +1,6 @@
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
-import 'package:schatty/views/MainChatsRoom.dart';
+import 'package:schatty/views/Feed/FeedPage.dart';
 
 class ViewAd extends StatefulWidget {
   @override
@@ -42,10 +42,12 @@ class _ViewAdState extends State<ViewAd> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("ADDVERT HERE!",
-                  style: TextStyle(
-                    fontSize: 40,
-                  ),),
+                Text(
+              "ADVERT HERE!",
+              style: TextStyle(
+                fontSize: 40,
+              ),
+            ),
                 MaterialButton(
                   onPressed: () async {
                     newInterstitialAd.show(
@@ -53,8 +55,9 @@ class _ViewAdState extends State<ViewAd> {
                       anchorOffset: 0.0,
                       anchorType: AnchorType.bottom,
                     );
+                    await Future.delayed(Duration(seconds: 2));
                     Navigator.pushReplacement(context, MaterialPageRoute(
-                      builder: (context) => ChatRoom(),
+                      builder: (context) => FeedPage(),
                     ));
                   },
                   child: Text("Show AD"),

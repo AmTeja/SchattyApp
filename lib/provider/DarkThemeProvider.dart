@@ -6,7 +6,6 @@ class DarkThemeProvider with ChangeNotifier {
 
   bool get darkTheme {
     return _darkTheme;
-
   }
 
   set darkTheme(bool value) {

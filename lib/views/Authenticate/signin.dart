@@ -7,7 +7,7 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ForgotPasswordLayout.dart';
-import 'package:schatty/views/MainChatsRoom.dart';
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Feed/FeedPage.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SignIn extends StatefulWidget {
@@ -39,7 +39,9 @@ class _SignInState extends State<SignIn> {
   signIn() async {
     if (formKey.currentState.validate()) {
       try {
-        databaseMethods.getUserByUserName(userNameTEC.text).then((val) async {
+        databaseMethods
+            .getUserByUserName(userNameTEC.text.toLowerCase())
+            .then((val) async {
           if (val != null || val != 0) {
             setState(() {
               userNameExists = true;
@@ -49,7 +51,7 @@ class _SignInState extends State<SignIn> {
             try {
               await Firestore.instance
                   .collection("users")
-                  .where("username", isEqualTo: userNameTEC.text)
+                  .where("username", isEqualTo: userNameTEC.text.toLowerCase())
                   .getDocuments()
                   .then((value) async {
                 print(value.documents[0].data["email"]);
@@ -74,7 +76,7 @@ class _SignInState extends State<SignIn> {
                     Preferences.saveUserNameSharedPreference(
                         await snapshotUserInfo.documents[0].data["username"]);
                     Constants.ownerName =
-                        await snapshotUserInfo.documents[0].data["username"];
+                    await snapshotUserInfo.documents[0].data["username"];
                   });
                   setState(() {
                     isLoading = false;
@@ -84,7 +86,7 @@ class _SignInState extends State<SignIn> {
                   Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ChatRoom(),
+                        builder: (context) => FeedPage(),
                       ));
                 } else {
                   await firebaseUser.sendEmailVerification();
