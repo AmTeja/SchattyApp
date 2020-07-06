@@ -14,9 +14,11 @@ import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Feed/BuildContent.dart';
 import 'package:schatty/views/Feed/Post.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/MainChatsRoom.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/widget.dart';
+
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/MainChatsRoom.dart';
+
 import '../Authenticate/AuthHome.dart';
 import '../Settings/SettingsView.dart';
 import '../Settings/editProfile.dart';
@@ -204,37 +206,26 @@ class _FeedPageState extends State<FeedPage>
                                         ),
                                       ),
                                     ),
-                                    GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EditProfile(username, uid),
-                                            ));
-                                      },
-                                      child: Flexible(
-                                        flex: 1,
-                                        child: Container(
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 12.0,
-                                                vertical: 8.0),
-                                            child: CircleAvatar(
-                                              radius: 23,
-                                              child: ClipOval(
-                                                child: url != null
-                                                    ? CachedNetworkImage(
-                                                        width: 60,
-                                                        height: 60,
-                                                        imageUrl: url,
-                                                        fit: BoxFit.cover,
-                                                      )
-                                                    : Image.asset(
-                                                        "assets/images/username.png",
-                                                        fit: BoxFit.fill,
-                                                      ),
-                                              ),
+                                    Flexible(
+                                      flex: 1,
+                                      child: Container(
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12.0, vertical: 8.0),
+                                          child: CircleAvatar(
+                                            radius: 23,
+                                            child: ClipOval(
+                                              child: url != null
+                                                  ? CachedNetworkImage(
+                                                      width: 60,
+                                                      height: 60,
+                                                      imageUrl: url,
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : Image.asset(
+                                                      "assets/images/username.png",
+                                                      fit: BoxFit.fill,
+                                                    ),
                                             ),
                                           ),
                                         ),
