@@ -18,11 +18,13 @@ class _TargetUserInfoState extends State<TargetUserInfo> {
   String profileURL;
   String displayName;
   String userName;
+
+  bool dev = false;
+
   DatabaseMethods databaseMethods = new DatabaseMethods();
 
   getData() async {
     userName = widget.userName;
-    print(userName);
     await Firestore.instance
         .collection('users')
         .where('username', isEqualTo: userName.replaceAll(" ", "_"))
@@ -49,6 +51,7 @@ class _TargetUserInfoState extends State<TargetUserInfo> {
     return Scaffold(
       appBar: AppBar(
         title: Text(userName),
+        centerTitle: true,
       ),
 //      backgroundColor: Color.fromARGB(255, 14, 14, 14),
       body: Center(
@@ -122,10 +125,59 @@ class _TargetUserInfoState extends State<TargetUserInfo> {
                 ],
               ),
             )
-
           ],
         ),
       ),
     );
   }
+
+//  Widget newBody() {
+//    return Container(
+//      height: MediaQuery.of(context).size.height,
+//      padding: EdgeInsets.all(16),
+//      child: Column(
+//        mainAxisSize: MainAxisSize.min,
+//        crossAxisAlignment: CrossAxisAlignment.center,
+//        children: [
+//          Container(
+//            alignment: Alignment.center,
+//            padding: EdgeInsets.symmetric(vertical: 16,horizontal: 8),
+//            child: Row(
+//              children: [
+//                UserAvatar(profileURL, 70),
+//                Padding(
+//                  padding: const EdgeInsets.symmetric(horizontal: 32),
+//                  child: Text(userName,
+//                    style: TextStyle(
+//                        fontSize: 30
+//                    ),),
+//                ),
+//              ],
+//            ),
+//          ),
+////          Flex(
+////            direction: Axis.vertical,
+////            children: [
+////              Container(
+////                padding: EdgeInsets.all(16),
+////                height: 400,
+////                child: GridView.count(
+////                  crossAxisCount: 3,
+////                  crossAxisSpacing: 4.0,
+////                  mainAxisSpacing: 8.0,
+////                  children: [
+////                    Container(color: Colors.red,),
+////                    Container(color: Colors.red,),
+////                    Container(color: Colors.red,),
+////                    Container(color: Colors.red,),
+////                  ],
+////                ),
+////              ),
+////            ]
+////          )
+//        ],
+//      ),
+//    );
+//  }
+
 }

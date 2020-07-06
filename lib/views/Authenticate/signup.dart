@@ -53,7 +53,7 @@ class _SignUpState extends State<SignUp> {
           if (firebaseUser != null) {
             Map<String, String> userInfoMap = {
               //Making MAP for firebase
-              "username": userNameTEC.text,
+              "username": userNameTEC.text.toLowerCase(),
               "displayName": userNameTEC.text,
               "email": emailTEC.text,
               "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
@@ -64,6 +64,7 @@ class _SignUpState extends State<SignUp> {
             databaseMethods.uploadUserInfo(userInfoMap, uid);
             await firebaseUser.sendEmailVerification().then((value) => {
                   setState(() {
+                    error = null;
                     verificationSent = true;
                     isLoading = false;
                   })

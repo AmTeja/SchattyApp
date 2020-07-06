@@ -124,7 +124,147 @@ Scaffold(
 
 
 
+        SelectedTag<Scifi> {
 
+            refForScifi = Firebase.instance.collection('Posts').document("Scifi").collection('public');
+
+            Stream = refForScifi.snapshots();
+        }
+
+
+
+
+
+        Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                            padding: EdgeInsets.only(top: 20,left: 20,right: 10),
+                            child: Text("Discover",
+                            style: TextStyle(
+                              fontSize: 38,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "Segoe UI",
+                            ),)
+                        ),
+                        Flexible(
+                          flex:  3,
+                          child: Container(
+                            alignment: Alignment.center,
+                            width: 220,
+                            height: 40,
+                            child: TextField(
+                              textCapitalization: TextCapitalization.sentences,
+                              decoration: InputDecoration(
+                                suffixIcon: IconButton(
+                                  icon: Icon(Icons.search),
+                                  onPressed: (){
+
+                                  },
+                                )
+                              ),
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          flex: 1,
+                          child: Container(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                              child: CircleAvatar(
+                                radius: 23,
+                                child: ClipOval(
+                                  child: url != null
+                                      ? CachedNetworkImage(
+                                    width: 60,
+                                    height: 60,
+                                    imageUrl: url,
+                                    fit: BoxFit.cover,
+                                  )
+                                      : Image.asset(
+                                    "assets/images/username.png",
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 20),
+                      height: 40,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          showTag("Sci-Fi"),
+                          showTag("Tech"),
+                          showTag("Art"),
+                          showTag("Animals"),
+                          showTag("History"),
+                        ],
+                      ),
+                    ),
+
+
+StreamBuilder(
+            stream: postStream,
+            builder: (context, snapshot)
+                {
+                  return snapshot.hasData ? SmartRefresher(
+                    enablePullDown: true,
+                    enablePullUp: false,
+                    header: BezierCircleHeader(),
+                    controller: _refreshController,
+                    onRefresh: _onRefresh,
+                    onLoading: _onLoading,
+                    child: ListView.builder(
+                        itemCount: snapshot.data.documents.length,
+                        itemBuilder:(context, index){
+                          return BuildPost(
+                            isDark: isDark,
+                            url: snapshot.data.documents[index].data["url"],
+                            username: snapshot.data.documents[index].data["username"],
+                            topic: selectedTag,
+                          );
+                        },
+                    ),
+                  ) : Container(
+                    child: Center(
+                      child: Text("No Data"),
+                    ),
+                  );
+                }
+          )
+
+          Container(
+                    padding: EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(vertical: 16,horizontal: 8),
+                          child: Row(
+                            children: [
+                              UserAvatar(profileURL, 70),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 32),
+                                child: Text(userName,
+                                  style: TextStyle(
+                                      fontSize: 30
+                                  ),),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
 
 
 

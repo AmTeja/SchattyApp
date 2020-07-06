@@ -3,13 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/views/MainChatScreenInstance.dart';
-import 'package:schatty/views/TargetUserInfo.dart';
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/MainChatScreenInstance.dart';
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/TargetUserInfo.dart';
 import 'package:schatty/widgets/widget.dart';
 
-
 class ChatRoomTile extends StatelessWidget {
-  final String userName;
+  final String username;
   final String chatRoomId;
   final urls;
   final users;
@@ -17,7 +16,7 @@ class ChatRoomTile extends StatelessWidget {
   final lastMessageDetails;
   final lastTime;
 
-  ChatRoomTile(this.userName, this.chatRoomId, this.urls, this.users,
+  ChatRoomTile(this.username, this.chatRoomId, this.urls, this.users,
       this.displayNames, this.lastMessageDetails, this.lastTime);
 
   @override
@@ -33,7 +32,7 @@ class ChatRoomTile extends StatelessWidget {
     DateFormat('dd:M:y').format(DateTime.fromMillisecondsSinceEpoch(lastTime));
     newDay = compareTime(timeInDM);
 
-    if (users[1] == userName) {
+    if (users[1] == username) {
       targetUrl = urls[1];
       targetDName = displayNames[1];
     } else {
@@ -55,7 +54,7 @@ class ChatRoomTile extends StatelessWidget {
       child: InkWell(
         onTap: () {
           Navigator.push(context, MaterialPageRoute(
-              builder: (context) => ChatScreen(chatRoomId, userName))
+              builder: (context) => ChatScreen(chatRoomId, username))
           );
         },
         child: Container(
@@ -100,7 +99,7 @@ class ChatRoomTile extends StatelessWidget {
               onTap: () {
                 Navigator.push(context,
                     MaterialPageRoute(
-                        builder: (context) => TargetUserInfo(userName)));
+                        builder: (context) => TargetUserInfo(username)));
               },
               child: CircleAvatar(
                 radius: 30,
@@ -113,12 +112,12 @@ class ChatRoomTile extends StatelessWidget {
                       imageUrl: targetUrl,
                       fit: BoxFit.cover,
                     ),
-                  ) : Text("${userName.substring(0, 1).toUpperCase()}",),
+                  ) : Text("${username.substring(0, 1).toUpperCase()}",),
                 ),
                 foregroundColor: Colors.white,
               ),
             ),
-            title: targetDName == null ? Text('$userName',
+            title: targetDName == null ? Text('$username',
               style: TextStyle(
                 fontSize: 20,
               ),) : Text('$targetDName', style: TextStyle(
@@ -142,7 +141,7 @@ class ChatRoomTile extends StatelessWidget {
           onTap: () {
             Navigator.push(context,
                 MaterialPageRoute(
-                    builder: (context) => TargetUserInfo(userName)));
+                    builder: (context) => TargetUserInfo(username)));
           },
         ),
       ],

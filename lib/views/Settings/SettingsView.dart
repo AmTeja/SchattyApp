@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 
-import 'AdView.dart';
+import '../AdView.dart';
 
 class SettingsView extends StatefulWidget {
   @override
@@ -38,6 +38,7 @@ class _SettingsViewState extends State<SettingsView> {
                         value: themeChange.darkTheme,
                         onChanged: (value) {
                           themeChange.darkTheme = value;
+                          setState(() {});
                         },
                       ),
                     ],

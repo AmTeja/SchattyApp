@@ -48,7 +48,8 @@ class _EditProfileState extends State<EditProfile> {
   }
 
   assignURL() async {
-    profilePicURL = await databaseMethods.getProfileUrl();
+    profilePicURL =
+        await databaseMethods.getProfileUrl(Constants.ownerName.toLowerCase());
     setState(() {});
   }
 
@@ -265,10 +266,11 @@ class _EditProfileState extends State<EditProfile> {
           cropStyle: CropStyle.circle,
           compressFormat: ImageCompressFormat.jpg,
           androidUiSettings: AndroidUiSettings(
-            toolbarColor: Colors.blue,
+            toolbarColor: Color(0xff99d8d0),
             toolbarTitle: "Schatty",
-            statusBarColor: Colors.black,
-            backgroundColor: Colors.white,
+            toolbarWidgetColor: Colors.white,
+            backgroundColor: Colors.black,
+            activeControlsWidgetColor: Color(0xff99d8d0),
           ));
     }
     setState(() {
@@ -281,13 +283,12 @@ class _EditProfileState extends State<EditProfile> {
 
   uploadImage() async {
     var randomNum = Random(25);
-    final String fileName = 'profilepic/' +
-        widget.uid +
+    final String fileName = 'profilepic/' + widget.uid +
         '/${randomNum.nextInt(5000).toString()}.jpg'; //filename to be stored
-    final StorageReference storageReference =
-    FirebaseStorage.instance.ref().child(fileName); //ref to storage
-    StorageUploadTask task =
-    storageReference.putFile(newProfilePic); //task to upload file
+    final StorageReference storageReference = FirebaseStorage.instance.ref()
+        .child(fileName); //ref to storage
+    StorageUploadTask task = storageReference.putFile(
+        newProfilePic); //task to upload file
     StorageTaskSnapshot snapshotTask = await task.onComplete;
     var downloadUrl = await snapshotTask.ref
         .getDownloadURL(); //download url of the image uploaded

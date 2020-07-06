@@ -11,7 +11,8 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
-import 'package:schatty/views/MainChatsRoom.dart';
+import 'package:schatty/views/Feed/FeedPage.dart';
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/MainChatsRoom.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -88,7 +89,7 @@ class _MyAppState extends State<MyApp> {
             theme:
             GlobalColors.themeData(themeChangeProvider.darkTheme, context),
             home: isUserLoggedIn != null
-                ? (isUserLoggedIn ? ChatRoom() : AuthHome())
+                ? (isUserLoggedIn ? FeedPage() : AuthHome())
                 : AuthHome(),
           );
         },

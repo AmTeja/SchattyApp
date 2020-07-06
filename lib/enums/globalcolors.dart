@@ -4,7 +4,9 @@ class GlobalColors {
   static ThemeData themeData(bool isDarkTheme, BuildContext context) {
     return ThemeData(
       primarySwatch: Colors.blue,
-      primaryColor: isDarkTheme ? Color(0xff111111) : Color(0xff51cec0),
+//      primaryColor: isDarkTheme ? Color(0xff111111) : Color(0xff51cec0),
+
+      primaryColor: isDarkTheme ? Color(0xff111111) : Colors.white,
 
       backgroundColor: isDarkTheme ? Color(0xff111111) : Color(0xffeeefe1),
 

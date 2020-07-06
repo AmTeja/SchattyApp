@@ -1,5 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:share/share.dart';
 
 Widget appBarMain(BuildContext context) {
   return AppBar();
@@ -13,12 +15,12 @@ InputDecoration textFieldInputDecoration(String hintText) {
       ),
       focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-        color: Colors.blue,
-      )),
+            color: Colors.blue,
+          )),
       enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-        color: Colors.black,
-      )));
+            color: Colors.black,
+          )));
 }
 
 compareTime(String timeInDM) {
@@ -52,11 +54,39 @@ TextStyle simpleTextStyle() {
   );
 }
 
-TextStyle mediumTextStyle() {
-  return TextStyle(
-    color: Colors.white,
-    fontSize: 18,
+Widget viewImage(String url, BuildContext context, String message, Object tag) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(message),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.share),
+          onPressed: () {
+            share(context, url);
+          },
+        )
+      ],
+    ),
+    backgroundColor: Colors.black,
+    body: Center(
+      child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          child: Hero(
+            tag: tag,
+            child: CachedNetworkImage(
+              imageUrl: url,
+              fit: BoxFit.contain,
+            ),
+          )),
+    ),
   );
+}
+
+void share(BuildContext context, String url) {
+  final RenderBox box = context.findRenderObject();
+  Share.share(url,
+      sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
 }
 
 // ignore: non_constant_identifier_names
@@ -90,6 +120,26 @@ Widget loadingScreen(String text) {
             )
           ],
         ),
+      ),
+    ),
+  );
+}
+
+// ignore: non_constant_identifier_names
+Widget UserAvatar(String profileURL, double radius) {
+  return CircleAvatar(
+    radius: radius,
+    child: ClipOval(
+      child: profileURL != null
+          ? CachedNetworkImage(
+        width: radius * 2,
+        height: radius * 2,
+        imageUrl: profileURL,
+        fit: BoxFit.cover,
+      )
+          : Image.asset(
+        "assets/images/username.png",
+        fit: BoxFit.fill,
       ),
     ),
   );
