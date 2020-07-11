@@ -3,47 +3,59 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:schatty/helper/constants.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/MainChatScreenInstance.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/TargetUserInfo.dart';
+import 'package:schatty/views/Chatroom/MainChatScreenInstance.dart';
+import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ChatRoomTile extends StatelessWidget {
   final String username;
   final String chatRoomId;
   final urls;
-  final users;
   final displayNames;
   final lastMessageDetails;
   final lastTime;
+  final seenBy;
 
-  ChatRoomTile(this.username, this.chatRoomId, this.urls, this.users,
-      this.displayNames, this.lastMessageDetails, this.lastTime);
+  const ChatRoomTile(
+      {this.username,
+      this.chatRoomId,
+      this.urls,
+      this.displayNames,
+      this.lastMessageDetails,
+      this.lastTime,
+      this.seenBy});
 
   @override
   Widget build(BuildContext context) {
     String targetUrl;
     String targetDName;
-    String lastMessage = lastMessageDetails[0];
+    String lastMessage;
     String lastSentBy;
-    bool newMessage = false;
-    bool newDay = true;
 
-    var timeInDM =
-    DateFormat('dd:M:y').format(DateTime.fromMillisecondsSinceEpoch(lastTime));
+    bool newDay = true;
+    bool targetSeen = true;
+
+    if (lastMessageDetails != null) {
+      lastMessage = lastMessageDetails[0] ?? null;
+    }
+
+    var timeInDM = DateFormat('dd:M:y')
+        .format(DateTime.fromMillisecondsSinceEpoch(lastTime));
     newDay = compareTime(timeInDM);
 
-    if (users[1] == username) {
-      targetUrl = urls[1];
-      targetDName = displayNames[1];
-    } else {
-      targetUrl = urls[0];
-      targetDName = displayNames[0];
+    if (seenBy != null) {
+      targetSeen = seenBy[Constants.ownerName];
+    }
+
+    if (urls != null) targetUrl = urls[username];
+
+    if (displayNames != null) {
+      targetDName = displayNames[username];
     }
 
     if (lastMessageDetails[1] == Constants.ownerName.toLowerCase()) {
       lastSentBy = "You";
-    }
-    else {
+    } else {
       lastSentBy = lastMessageDetails[1];
     }
 
@@ -62,37 +74,34 @@ class ChatRoomTile extends StatelessWidget {
           height: 110,
           alignment: Alignment.center,
           child: ListTile(
-            trailing: newMessage ? Row(
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(43),
+            trailing: Container(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  targetSeen != null && !targetSeen ? Container(
+                    width: 15,
+                    height: 15,
+                    alignment: Alignment.bottomCenter,
+                    decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 126, 217, 241),
+                        borderRadius: BorderRadius.circular(23)
+                    ),
+                  ) : SizedBox(),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      !newDay
+                          ? DateFormat('kk:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(lastTime))
+                          : DateFormat('kk:mm dd/MM/yy').format(
+                          DateTime.fromMillisecondsSinceEpoch(lastTime)),
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    ),
                   ),
-                ),
-                Text(
-                  !newDay
-                      ? DateFormat('kk:mm').format(
-                      DateTime.fromMillisecondsSinceEpoch(lastTime))
-                      : DateFormat('kk:mm dd/M').format(
-                      DateTime.fromMillisecondsSinceEpoch(lastTime)),
-                  style: TextStyle(
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ) : Container(
-              child: Text(
-                !newDay
-                    ? DateFormat('kk:mm').format(
-                    DateTime.fromMillisecondsSinceEpoch(lastTime))
-                    : DateFormat('kk:mm dd/MM/yy').format(
-                    DateTime.fromMillisecondsSinceEpoch(lastTime)),
-                style: TextStyle(
-                  fontSize: 12,
-                ),
+                ],
               ),
             ),
             leading: InkWell(
@@ -117,13 +126,12 @@ class ChatRoomTile extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
             ),
-            title: targetDName == null ? Text('$username',
-              style: TextStyle(
-                fontSize: 20,
-              ),) : Text('$targetDName', style: TextStyle(
-              fontSize: 20,
-            ),),
-            subtitle: Text("$lastSentBy: $lastMessage"),
+            title: targetDName == null ? Text(
+              '$username', style: TextStyle(fontSize: 20,),)
+                : Text('$targetDName', style: TextStyle(fontSize: 20,),),
+
+            subtitle: lastMessage != null && lastMessage != "" ? Text(
+                "$lastSentBy: $lastMessage") : null,
           ),
         ),
       ),

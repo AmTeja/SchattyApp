@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
+import 'package:schatty/views/NewSearch.dart';
+import 'package:schatty/widgets/widget.dart';
 
 class TargetUserInfo extends StatefulWidget {
   final String userName;
@@ -13,15 +17,24 @@ class TargetUserInfo extends StatefulWidget {
   _TargetUserInfoState createState() => _TargetUserInfoState();
 }
 
-class _TargetUserInfoState extends State<TargetUserInfo> {
+class _TargetUserInfoState extends State<TargetUserInfo>
+    with TickerProviderStateMixin {
   String uid;
   String profileURL;
   String displayName;
   String userName;
+  String tagForStream;
 
-  bool dev = false;
+  List<String> tagList = ["Sci-F", "Memes", "Tech", "Art", "Animals"];
+
+  bool dev = true;
 
   DatabaseMethods databaseMethods = new DatabaseMethods();
+  NewSearch newSearch = new NewSearch();
+
+  Stream postStream;
+
+  TabController tabController;
 
   getData() async {
     userName = widget.userName;
@@ -43,6 +56,8 @@ class _TargetUserInfoState extends State<TargetUserInfo> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    setPostStream("Sci-Fi");
+    tabController = new TabController(length: 5, vsync: this);
     getData();
   }
 
@@ -54,18 +69,19 @@ class _TargetUserInfoState extends State<TargetUserInfo> {
         centerTitle: true,
       ),
 //      backgroundColor: Color.fromARGB(255, 14, 14, 14),
-      body: Center(
-        child: Column(
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.only(top: 70),
-              alignment: Alignment.topCenter,
-              child: CircleAvatar(
-                radius: 120,
-                child: ClipOval(
-                  child: profileURL != null
-                      ? CachedNetworkImage(
-                    imageUrl: profileURL,
+      body: !dev
+          ? Center(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.only(top: 70),
+                    alignment: Alignment.topCenter,
+                    child: CircleAvatar(
+                      radius: 120,
+                      child: ClipOval(
+                        child: profileURL != null
+                            ? CachedNetworkImage(
+                                imageUrl: profileURL,
                     imageBuilder: (context, imageProvider) =>
                         Container(
                           decoration: BoxDecoration(
@@ -121,63 +137,127 @@ class _TargetUserInfoState extends State<TargetUserInfo> {
                       displayName ?? userName,
                       style: TextStyle(fontSize: 26),
                     ),
-                  )
+                  ),
                 ],
               ),
             )
           ],
         ),
+      ) : newBody(),
+    );
+  }
+
+  Widget newBody() {
+    return Column(
+      children: [
+        Container(
+          alignment: Alignment.center,
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+          child: Row(
+            children: [
+              UserAvatar(profileURL, 70),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Text(userName,
+                  style: TextStyle(
+                      fontSize: 30
+                  ),),
+              ),
+            ],
+          ),
+        ),
+        Container(
+          margin: EdgeInsets.symmetric(vertical: 10),
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              showTag("Sci-Fi"),
+              showTag("Memes"),
+              showTag("Tech"),
+              showTag("Art"),
+              showTag("Animals"),
+              showTag("History"),
+              showTag("Educational"),
+            ],
+          ),
+        ),
+        Expanded(
+          child: returnPosts(),
+        )
+      ],
+    );
+  }
+
+  selectTag(String tag) {
+    setState(() {
+      tagForStream = tag;
+      setPostStream(tagForStream);
+    });
+  }
+
+
+  Widget showTag(String tag) {
+    return GestureDetector(
+      onTap: () {
+        selectTag(tag);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Container(
+          height: 30,
+          width: 80,
+          decoration: BoxDecoration(
+              color: tagForStream == tag ? Color(0xFF7ED9F1) : null,
+              borderRadius: BorderRadius.circular(23)),
+          child: Center(
+            child: Text(
+              tag,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+        ),
       ),
     );
   }
 
-//  Widget newBody() {
-//    return Container(
-//      height: MediaQuery.of(context).size.height,
-//      padding: EdgeInsets.all(16),
-//      child: Column(
-//        mainAxisSize: MainAxisSize.min,
-//        crossAxisAlignment: CrossAxisAlignment.center,
-//        children: [
-//          Container(
-//            alignment: Alignment.center,
-//            padding: EdgeInsets.symmetric(vertical: 16,horizontal: 8),
-//            child: Row(
-//              children: [
-//                UserAvatar(profileURL, 70),
-//                Padding(
-//                  padding: const EdgeInsets.symmetric(horizontal: 32),
-//                  child: Text(userName,
-//                    style: TextStyle(
-//                        fontSize: 30
-//                    ),),
-//                ),
-//              ],
-//            ),
-//          ),
-////          Flex(
-////            direction: Axis.vertical,
-////            children: [
-////              Container(
-////                padding: EdgeInsets.all(16),
-////                height: 400,
-////                child: GridView.count(
-////                  crossAxisCount: 3,
-////                  crossAxisSpacing: 4.0,
-////                  mainAxisSpacing: 8.0,
-////                  children: [
-////                    Container(color: Colors.red,),
-////                    Container(color: Colors.red,),
-////                    Container(color: Colors.red,),
-////                    Container(color: Colors.red,),
-////                  ],
-////                ),
-////              ),
-////            ]
-////          )
-//        ],
-//      ),
-//    );
-//  }
+  setPostStream(tag) {
+    postStream =
+        Firestore.instance.collection('Posts').document('Public').collection(
+            tag).snapshots();
+    if (mounted) {
+      setState(() {
 
+      });
+    }
+  }
+
+  returnPosts() {
+    return StreamBuilder(
+      stream: postStream,
+      builder: (BuildContext context, snapshot) {
+        return snapshot.hasData ? GridView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          itemCount: snapshot.data.documents.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3),
+          itemBuilder: (context, index) {
+            return snapshot.data.documents[index].data["username"] == userName
+                ? Card(
+              child: Column(
+                children: [
+                  Expanded(
+                      child: CachedNetworkImage
+                        (imageUrl: snapshot.data.documents[index].data['url'],
+                        fit: BoxFit.cover,)
+                  )
+                ],
+              ),
+            )
+                : SizedBox();
+          },
+        ) : Center(child: Container(child: Text("failed to load"),));
+      },
+    );
+  }
 }

@@ -57,8 +57,9 @@ class _SignUpState extends State<SignUp> {
               "displayName": userNameTEC.text,
               "email": emailTEC.text,
               "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
-              "photoUrl": profilePicURL,
-              "uid": firebaseUser.uid
+              "photoURL": profilePicURL,
+              "uid": firebaseUser.uid,
+              "usernameIndex": await makeIndex(),
             };
             String uid = firebaseUser.uid;
             databaseMethods.uploadUserInfo(userInfoMap, uid);
@@ -90,6 +91,18 @@ class _SignUpState extends State<SignUp> {
         isLoading = false;
       });
     }
+  }
+
+  makeIndex() {
+    List<String> splitList = userNameTEC.text.split(" ");
+    List<String> indexList = [];
+
+    for (int i = 0; i < splitList.length; i++) {
+      for (int y = 0; y < splitList[i].length + 1; y++) {
+        indexList.add(splitList[i].substring(0, y).toLowerCase());
+      }
+    }
+    return indexList;
   }
 
   Widget showErrorAlert() {
@@ -219,17 +232,18 @@ class _SignUpState extends State<SignUp> {
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 24),
                 child: ListView(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        "Join Us",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                        ),
+                  physics: NeverScrollableScrollPhysics(),
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            alignment: Alignment.topCenter,
+                            child: Text(
+                              "Join Us",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                              ),
                       ),
                     ),
                     showErrorAlert(),
@@ -240,29 +254,29 @@ class _SignUpState extends State<SignUp> {
                       child: Column(
                         children: [
                           TextFormField(
-                              validator: UserNameValidator.validate,
-                                    controller: userNameTEC,
-                                    style: simpleTextStyle(),
-                                    decoration: new InputDecoration(
-                                        contentPadding:
-                                            EdgeInsets.only(left: 15),
-                                        labelText: "Username",
-                                        labelStyle: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.white70,
-                                        ),
-                                        border: new OutlineInputBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(40),
-                                    borderSide:
-                                    BorderSide(color: Colors.white),
-                                  )),
-                              autofocus: true,
-                              textInputAction: TextInputAction.next,
-                              onFieldSubmitted: (v) {
-                                FocusScope.of(context).nextFocus();
-                              },
-                              ),
+                            validator: UserNameValidator.validate,
+                            controller: userNameTEC,
+                            style: simpleTextStyle(),
+                            decoration: new InputDecoration(
+                                contentPadding:
+                                EdgeInsets.only(left: 15),
+                                labelText: "Username",
+                                labelStyle: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white70,
+                                ),
+                                border: new OutlineInputBorder(
+                                  borderRadius:
+                                  BorderRadius.circular(40),
+                                  borderSide:
+                                  BorderSide(color: Colors.white),
+                                )),
+                            autofocus: true,
+                            textInputAction: TextInputAction.next,
+                            onFieldSubmitted: (v) {
+                              FocusScope.of(context).nextFocus();
+                            },
+                          ),
                           SizedBox(
                             height: 20,
                           ),
@@ -379,7 +393,7 @@ class _SignUpState extends State<SignUp> {
                       child: Text("Sign Up"),
                     ),
                     SizedBox(height: error != null ? 20 : 120,)
-                        ],
+                  ],
                       ),
               ),
             ),

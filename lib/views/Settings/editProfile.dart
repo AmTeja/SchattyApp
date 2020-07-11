@@ -42,14 +42,20 @@ class _EditProfileState extends State<EditProfile> {
     super.initState();
     isLoading = true;
     assignURL();
+    getDisplayName();
     setState(() {
       isLoading = false;
     });
   }
 
+  getDisplayName() async {
+    displayName = await databaseMethods.getDName(widget.username);
+    setState(() {});
+  }
+
   assignURL() async {
-    profilePicURL =
-        await databaseMethods.getProfileUrl(Constants.ownerName.toLowerCase());
+    profilePicURL = await databaseMethods
+        .getProfileUrlByName(Constants.ownerName.toLowerCase());
     setState(() {});
   }
 
@@ -249,7 +255,8 @@ class _EditProfileState extends State<EditProfile> {
     setState(() {
 
     });
-    databaseMethods.updateDisplayName(displayName);
+    databaseMethods.updateDisplayName(
+        displayName, widget.username.toLowerCase());
   }
 
   Future getImage() async {

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -16,8 +17,9 @@ import 'package:schatty/helper/constants.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/TargetUserInfo.dart';
 import 'package:schatty/widgets/widget.dart';
+
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/TargetUserInfo.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomID;
@@ -37,6 +39,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController captionTEC = TextEditingController();
   final DatabaseMethods databaseMethods = new DatabaseMethods();
   final AuthMethods authMethods = new AuthMethods();
+
+  final Firestore firestore = Firestore.instance;
 
   final _picker = ImagePicker();
 
@@ -61,7 +65,6 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   void initState() {
     super.initState();
-    print(widget.userName);
     onScreen = true;
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
@@ -84,7 +87,6 @@ class _ChatScreenState extends State<ChatScreen> {
           .document(docs.documents[0].documentID)
           .collection('chats');
     });
-
     QuerySnapshot querySnapshot = await ref
         .where('sendTo', isEqualTo: sentFrom)
         .where('sentFrom', isEqualTo: sentTo)
@@ -92,6 +94,17 @@ class _ChatScreenState extends State<ChatScreen> {
         .getDocuments();
     querySnapshot.documents.forEach((msgDoc) {
       msgDoc.reference.updateData({'isSeen': true});
+    });
+
+    await Firestore.instance
+        .collection('ChatRoom')
+        .where('chatRoomId', isEqualTo: widget.chatRoomID)
+        .getDocuments()
+        .then((docs) {
+      Firestore.instance
+          .collection('ChatRoom')
+          .document(docs.documents[0].documentID)
+          .updateData({"seenBy.${Constants.ownerName}": true});
     });
   }
 
@@ -105,7 +118,9 @@ class _ChatScreenState extends State<ChatScreen> {
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
     sentFrom = user.uid;
     setSeen();
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -157,7 +172,13 @@ class _ChatScreenState extends State<ChatScreen> {
           ],
         ),
         body: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
+          onTap: () {
+            FocusScope.of(context).unfocus();
+            isSelected = false;
+            selectedText = null;
+            setState(() {});
+            print('called ontap');
+          },
           child: Column(
             children: <Widget>[
               Flexible(
@@ -299,13 +320,13 @@ class _ChatScreenState extends State<ChatScreen> {
         ListTile(
           leading: Icon(Icons.attach_file),
           title: Text("Image from Url"),
-          onTap: () => showAlertDialog(context),
+          onTap: () => showUrlDialog(context),
         )
       ],
     );
   }
 
-  showAlertDialog(BuildContext context) {
+  showUrlDialog(BuildContext context) {
     TextEditingController urlTEC = new TextEditingController();
     TextEditingController captionTEC = new TextEditingController();
 
@@ -376,20 +397,24 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   sendMessage() async {
-    if (messageTEC.text.isNotEmpty) {
+    if (messageTEC.text.isNotEmpty && messageTEC.text
+        .trim()
+        .isNotEmpty) {
 //      print(sentTo);
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime.now().millisecondsSinceEpoch,
+        "time": DateTime
+            .now()
+            .millisecondsSinceEpoch,
         "sendTo": sentTo,
         "sentFrom": sentFrom,
         "url": "",
         "isSeen": false,
       };
       databaseMethods.addMessage(widget.chatRoomID, messageMap);
-      databaseMethods.updateLastMessage(messageTEC.text, widget.chatRoomID);
-      databaseMethods.updateChatRoomTime(widget.chatRoomID);
+      databaseMethods.updateLastMessage(
+          messageTEC.text, widget.chatRoomID, widget.userName);
       messageTEC.text = "";
       scrollController.animateTo(scrollController.position.minScrollExtent,
           duration: Duration(milliseconds: 600), curve: Curves.easeInOut);
@@ -427,8 +452,8 @@ class _ChatScreenState extends State<ChatScreen> {
         "seen": false,
       };
 
-      databaseMethods.updateLastMessage("Image", widget.chatRoomID);
-      databaseMethods.updateChatRoomTime(widget.chatRoomID);
+      databaseMethods.updateLastMessage(
+          "Image", widget.chatRoomID, widget.userName);
       databaseMethods.addMessage(widget.chatRoomID, imageMap);
       imageUploadProvider.setToIdle();
     } catch (e) {
@@ -495,8 +520,6 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-
-
   bool newDay = true;
 
   buildMessage(String message, bool isMe, int time, String imageUrl,
@@ -518,7 +541,8 @@ class _ChatScreenState extends State<ChatScreen> {
               .width * 0.8,
           alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
           child: GestureDetector(
-            onTap: () {
+            onLongPress: () {
+              HapticFeedback.mediumImpact();
               if (!imageMessage) {
                 setState(() {
                   isSelected = !isSelected;
@@ -539,14 +563,12 @@ class _ChatScreenState extends State<ChatScreen> {
               decoration: BoxDecoration(
                   gradient: LinearGradient(
                       colors: isMe
-                          ? (!imageMessage ? ([
-                        const Color(0xffff758c),
-                        const Color(0xffff7eb3)
-                      ]) : [Color(0xffc8435f), Color(0xffc94d83)])
-                          : (!imageMessage ? ([
-                        Color(0xff93a5cf),
-                        const Color(0xff93a5cf)
-                      ]) : [Color(0xff64769e), Color(0xff64769e)])),
+                          ? (!imageMessage
+                          ? ([const Color(0xffff758c), const Color(0xffff7eb3)])
+                          : [Color(0xffc8435f), Color(0xffc94d83)])
+                          : (!imageMessage
+                          ? ([Color(0xff93a5cf), const Color(0xff93a5cf)])
+                          : [Color(0xff64769e), Color(0xff64769e)])),
                   borderRadius: isMe
                       ? BorderRadius.only(
                       topLeft: Radius.circular(18),
@@ -586,8 +608,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             },
                             child: Container(
                               decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(23)
-                              ),
+                                  borderRadius: BorderRadius.circular(23)),
                               child: Hero(
                                 tag: time,
                                 child: CachedImage(
@@ -626,12 +647,16 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                   )
                       : Container(),
-                  !imageMessage && read && isMe ? Container(
+                  !imageMessage && read && isMe
+                      ? Container(
                     padding: EdgeInsets.symmetric(horizontal: 5),
-                    child: Icon(Icons.check,
+                    child: Icon(
+                      Icons.check,
 //                    color: Color(0xff51cec0),
-                      size: 15,),
-                  ) : Container(),
+                      size: 15,
+                    ),
+                  )
+                      : Container(),
                 ],
               ),
             ),

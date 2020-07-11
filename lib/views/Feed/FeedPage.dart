@@ -12,23 +12,22 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
+import 'package:schatty/views/Chatroom/MainChatsRoom.dart';
 import 'package:schatty/views/Feed/BuildContent.dart';
 import 'package:schatty/views/Feed/Post.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/widget.dart';
 
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/MainChatsRoom.dart';
-
 import '../Authenticate/AuthHome.dart';
 import '../Settings/SettingsView.dart';
 import '../Settings/editProfile.dart';
+
+PageController pageController;
 
 class FeedPage extends StatefulWidget {
   @override
   _FeedPageState createState() => _FeedPageState();
 }
-
-PageController pageController;
 
 class _FeedPageState extends State<FeedPage>
     with SingleTickerProviderStateMixin {
@@ -54,7 +53,8 @@ class _FeedPageState extends State<FeedPage>
   bool error = false;
 
   AnimationController _animationController;
-  RefreshController _refreshController =
+  final feedListController = ScrollController();
+  RefreshController _refreshController2 =
       RefreshController(initialRefresh: false);
 
   Animation<double> animation;
@@ -62,19 +62,26 @@ class _FeedPageState extends State<FeedPage>
 
   Stream postStream;
 
-  @override
-  void initState() {
-    super.initState();
-    error = false;
-    getThemePreference();
-    getUserInfo();
-    setupAnimations();
-    setTagStream(selectedTag);
-    pageController = new PageController(initialPage: 0, keepPage: true);
-  }
-
-  getThemePreference() async {
-    themeChangeProvider.darkTheme = await Preferences.getThemePreference();
+  Widget bottomNavBar(context, darkThemeData) {
+    return Consumer<DarkThemeProvider>(
+      builder: (BuildContext context, value, Widget child) {
+        return AnimatedBottomNavigationBar(
+          icons: [Icons.chat, Icons.home, Icons.trending_up],
+          backgroundColor:
+              darkThemeData.darkTheme ? Color(0xff373A36) : Color(0xFF7ED9F1),
+          activeIndex: _page,
+          activeColor: Colors.white,
+          splashColor: Color(0xFFFFFFFF),
+          notchAndCornersAnimation: animation,
+          splashSpeedInMilliseconds: 300,
+          gapLocation: GapLocation.end,
+          notchSmoothness: NotchSmoothness.smoothEdge,
+          leftCornerRadius: 0,
+          rightCornerRadius: 0,
+          onTap: (index) => setState(() => navigationTapped(index)),
+        );
+      },
+    );
   }
 
   @override
@@ -90,6 +97,7 @@ class _FeedPageState extends State<FeedPage>
             appBar: AppBar(
               title: Text("Schatty"),
               centerTitle: true,
+              actions: [],
             ),
             drawer: Theme(data: Theme.of(context), child: mainDrawer(context)),
             floatingActionButton: _page != 2
@@ -114,12 +122,12 @@ class _FeedPageState extends State<FeedPage>
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => PostContent(
-                                isDark: isDark,
-                                username: username,
-                                profileUrl: url,
-                              ),
-                            ));
+                                builder: (context) =>
+                                    PostContent(
+                                      isDark: isDark,
+                                      username: username,
+                                      profileUrl: url,
+                                    )));
                       }
                     },
                   )
@@ -133,7 +141,7 @@ class _FeedPageState extends State<FeedPage>
               pageSnapping: true,
               children: [
                 ChatRoom(),
-                newBody(),
+                newBody(darkTheme),
                 Container(
                   child: Center(
                     child: Text(
@@ -152,171 +160,47 @@ class _FeedPageState extends State<FeedPage>
     );
   }
 
-  Widget newBody() {
-    return !error
-        ? GestureDetector(
-            onTap: () {
-              FocusScope.of(context).unfocus();
-            },
-            child: StreamBuilder(
-                stream: postStream,
-                builder: (context, snapshot) {
-                  return snapshot.hasData
-                      ? SmartRefresher(
-                          enablePullDown: true,
-                          enablePullUp: false,
-                          header: BezierCircleHeader(),
-                          controller: _refreshController,
-                          onRefresh: _onRefresh,
-                          onLoading: _onLoading,
-                          child: SingleChildScrollView(
-                            physics: ScrollPhysics(),
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.max,
-                                  children: [
-                                    Container(
-                                        padding: EdgeInsets.only(
-                                            top: 20, left: 20, right: 10),
-                                        child: Text(
-                                          "Discover",
-                                          style: TextStyle(
-                                            fontSize: 38,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "Segoe UI",
-                                          ),
-                                        )),
-                                    Flexible(
-                                      flex: 3,
-                                      child: Container(
-                                        alignment: Alignment.center,
-                                        width: 220,
-                                        height: 40,
-                                        child: TextField(
-                                          textCapitalization:
-                                              TextCapitalization.sentences,
-                                          decoration: InputDecoration(
-                                              suffixIcon: IconButton(
-                                            icon: Icon(Icons.search),
-                                            onPressed: () {},
-                                          )),
-                                        ),
-                                      ),
-                                    ),
-                                    Flexible(
-                                      flex: 1,
-                                      child: Container(
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12.0, vertical: 8.0),
-                                          child: CircleAvatar(
-                                            radius: 23,
-                                            child: ClipOval(
-                                              child: url != null
-                                                  ? CachedNetworkImage(
-                                                      width: 60,
-                                                      height: 60,
-                                                      imageUrl: url,
-                                                      fit: BoxFit.cover,
-                                                    )
-                                                  : Image.asset(
-                                                      "assets/images/username.png",
-                                                      fit: BoxFit.fill,
-                                                    ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                ),
-                                Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  height: 40,
-                                  child: ListView(
-                                    scrollDirection: Axis.horizontal,
-                                    children: [
-                                      showTag("Sci-Fi"),
-                                      showTag("Tech"),
-                                      showTag("Art"),
-                                      showTag("Animals"),
-                                      showTag("History"),
-                                    ],
-                                  ),
-                                ),
-                                ListView.builder(
-                                  physics: NeverScrollableScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: snapshot.data.documents.length,
-                                  itemBuilder: (context, index) {
-                                    return snapshot.hasData
-                                        ? BuildPost(
-                                            isDark: isDark,
-                                            url: snapshot.data.documents[index]
-                                                .data["url"],
-                                            username: snapshot
-                                                .data
-                                                .documents[index]
-                                                .data["username"],
-                                            topic: selectedTag,
-                                            caption: snapshot
-                                                .data
-                                                .documents[index]
-                                                .data["caption"],
-                                          )
-                                        : Container(
-                                            child: Center(
-                                              child: Text("No Posts"),
-                                            ),
-                                          );
-                                  },
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      : Container(
-                          child: Center(
-                            child: Text("No Posts"),
-                          ),
-                        );
-                }),
-          )
-        : Container(
-            child: Center(
-              child: Text("Error"),
-            ),
-          );
+  getThemePreference() async {
+    themeChangeProvider.darkTheme = await Preferences.getThemePreference();
   }
 
-  Widget showTag(String tag) {
-    return GestureDetector(
-      onTap: () {
-        selectTag(tag);
-      },
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        child: Container(
-          height: 30,
-          width: 60,
-          decoration: BoxDecoration(
-              color: selectedTag == tag ? Color(0xFF7ED9F1) : null,
-              borderRadius: BorderRadius.circular(23)),
-          child: Center(
-            child: Text(
-              tag,
-              style: TextStyle(
-                  fontFamily: "Segoe UI",
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16),
-            ),
-          ),
-        ),
-      ),
-    );
+  getUserInfo() async {
+    print('Called');
+    await firebaseAuth.currentUser().then((docs) {
+      uid = docs.uid;
+    });
+    url = await databaseMethods
+        .getProfileUrlByName(Constants.ownerName.toLowerCase());
+    username = Constants.ownerName.toLowerCase();
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    error = false;
+    getThemePreference();
+    getUserInfo();
+    setupAnimations();
+    setTagStream(selectedTag);
+    pageController = new PageController(initialPage: 0, keepPage: true);
+  }
+
+  logOut(BuildContext context) async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    await databaseMethods.updateToken("", user.uid);
+    Preferences.saveUserLoggedInSharedPreference(false);
+    Preferences.saveUserNameSharedPreference(null);
+    Preferences.saveUserEmailSharedPreference(null);
+    Preferences.saveUserImageURL(null);
+    if (user.providerId != "Google") {
+      authMethods.signOut();
+      print("not google :)");
+    } else {
+      authMethods.signOutGoogle();
+    }
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
 
   Widget mainDrawer(BuildContext context) {
@@ -468,80 +352,155 @@ class _FeedPageState extends State<FeedPage>
     );
   }
 
-  Widget bottomNavBar(context, darkThemeData) {
-    return Consumer<DarkThemeProvider>(
-      builder: (BuildContext context, value, Widget child) {
-        return AnimatedBottomNavigationBar(
-          icons: [Icons.chat, Icons.home, Icons.trending_up],
-          backgroundColor:
-              darkThemeData.darkTheme ? Color(0xff373A36) : Color(0xFF7ED9F1),
-          activeIndex: _page,
-          activeColor: Colors.white,
-          splashColor: Color(0xFFFFFFFF),
-          notchAndCornersAnimation: animation,
-          splashSpeedInMilliseconds: 300,
-          gapLocation: GapLocation.end,
-          notchSmoothness: NotchSmoothness.smoothEdge,
-          leftCornerRadius: 0,
-          rightCornerRadius: 0,
-          onTap: (index) => setState(() => navigationTapped(index)),
-        );
+  void navigationTapped(int page) {
+    pageController.animateToPage(page,
+        duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
+  }
+
+  Widget newBody(darkTheme) {
+    return !error
+        ? GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus();
       },
+      child: StreamBuilder(
+          stream: postStream,
+          builder: (context, snapshot) {
+            return snapshot.hasData
+                ? SmartRefresher(
+              enablePullDown: true,
+              enablePullUp: false,
+              header: BezierCircleHeader(
+                circleColor: darkTheme.darkTheme
+                    ? Colors.white
+                    : Color(0xFF7ED9F1),
+              ),
+              controller: _refreshController2,
+              onRefresh: _onRefresh,
+              onLoading: _onLoading,
+              child: SingleChildScrollView(
+                physics: ScrollPhysics(),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+//                                  crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                            padding: EdgeInsets.only(
+                                top: 20, left: 20, right: 80),
+                            child: Text(
+                              "Discover",
+                              style: TextStyle(
+                                fontFamily: "Rosario",
+                                fontSize: 44,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )),
+                        Padding(
+                          padding:
+                          EdgeInsets.only(left: 120, top: 25),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.search,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        NewSearch(),
+                                  ));
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 20),
+                      height: 40,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          showTag("Sci-Fi"),
+                          showTag("Memes"),
+                          showTag("Tech"),
+                          showTag("Art"),
+                          showTag("Animals"),
+                          showTag("History"),
+                          showTag("Educational"),
+                        ],
+                      ),
+                    ),
+                    ListView.builder(
+                      physics: NeverScrollableScrollPhysics(),
+                      cacheExtent:
+                      snapshot.data.documents.length / 2,
+                      controller: feedListController,
+                      shrinkWrap: true,
+                      itemCount: snapshot.data.documents.length,
+                      itemBuilder: (context, index) {
+                        var ref = snapshot.data.documents[index];
+                        return snapshot.hasData
+                            ? BuildPost(
+                          time: snapshot.data.documents[index]
+                              .data['time'],
+                          isDark: isDark,
+                          url: snapshot.data.documents[index]
+                              .data["url"],
+                          username: snapshot
+                              .data
+                              .documents[index]
+                              .data["username"],
+                          topic: selectedTag,
+                          caption: snapshot
+                              .data
+                              .documents[index]
+                              .data["caption"],
+                          postUid: snapshot
+                              .data
+                              .documents[index]
+                              .data["postUid"] ??
+                              "null",
+                          likes: ref.data['likes'],
+                          nsfw: snapshot.data.documents[index]
+                              .data["NSFW"] ??
+                              false,
+                          title: snapshot.data
+                              .documents[index].data["title"],
+                        )
+                            : Container(
+                          child: Center(
+                            child: Text("No Posts"),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            )
+                : Container(
+              child: Center(
+                child: Text("No Posts"),
+              ),
+            );
+          }),
+    )
+        : Container(
+      child: Center(
+        child: Text("Error"),
+      ),
     );
   }
 
-  getUserInfo() async {
-    await firebaseAuth.currentUser().then((docs) {
-      uid = docs.uid;
+  void onPageChanged(int page) async {
+    isDark = await Preferences.getThemePreference();
+    setState(() {
+      this._page = page;
     });
-    url =
-        await databaseMethods.getProfileUrl(Constants.ownerName.toLowerCase());
-    username = Constants.ownerName.toLowerCase();
-    setState(() {});
-  }
-
-  setTagStream(String selectedTag) async {
-    try {
-      postStream = Firestore.instance
-          .collection("Posts")
-          .document('Public')
-          .collection(selectedTag)
-          .snapshots();
-      if (postStream == null) {
-        error = true;
-        print(error);
-        setState(() {});
-      }
-    } catch (e) {
-      print('PostStream Error: $e');
-    }
-  }
-
-  logOut(BuildContext context) async {
-    dispose();
-    FirebaseUser user = await FirebaseAuth.instance.currentUser();
-    if (user.providerId != "Google") {
-      authMethods.signOut();
-      print("not google :)");
-    } else {
-      authMethods.signOutGoogle();
-    }
-    databaseMethods.updateToken("", Constants.ownerName.toLowerCase());
-    Preferences.saveUserLoggedInSharedPreference(false);
-    Preferences.saveUserNameSharedPreference(null);
-    Preferences.saveUserEmailSharedPreference(null);
-    Preferences.saveUserImageURL(null);
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => AuthHome()));
-  }
-
-  void _onRefresh() async {
-    // monitor network fetch
-    setTagStream(selectedTag);
-    await Future.delayed(Duration(milliseconds: 1000));
-    setState(() {});
-    // if failed,use refreshFailed()
-    _refreshController.refreshCompleted();
   }
 
   void selectTag(String tag) {
@@ -551,24 +510,22 @@ class _FeedPageState extends State<FeedPage>
     });
   }
 
-  void _onLoading() async {
-    // monitor network fetch
-    await Future.delayed(Duration(milliseconds: 1000));
-    // if failed,use loadFailed(),if no data return,use LoadNodata()
-    setState(() {});
-    _refreshController.loadComplete();
-  }
-
-  void navigationTapped(int page) {
-    pageController.animateToPage(page,
-        duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
-  }
-
-  void onPageChanged(int page) async {
-    isDark = await Preferences.getThemePreference();
-    setState(() {
-      this._page = page;
-    });
+  setTagStream(String selectedTag) async {
+    try {
+      postStream = Firestore.instance
+          .collection("Posts")
+          .document('Public')
+          .collection(selectedTag)
+          .orderBy('time', descending: true)
+          .snapshots();
+      if (postStream == null) {
+        error = true;
+        print(error);
+        setState(() {});
+      }
+    } catch (e) {
+      print('PostStream Error: $e');
+    }
   }
 
   setupAnimations() {
@@ -589,5 +546,46 @@ class _FeedPageState extends State<FeedPage>
       end: 1,
     ).animate(curve);
     _animationController.forward();
+  }
+
+  Widget showTag(String tag) {
+    return GestureDetector(
+      onTap: () {
+        selectTag(tag);
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Container(
+          height: 30,
+          width: 80,
+          decoration: BoxDecoration(
+              color: selectedTag == tag ? Color(0xFF7ED9F1) : null,
+              borderRadius: BorderRadius.circular(23)),
+          child: Center(
+            child: Text(
+              tag,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onLoading() async {
+    // monitor network fetch
+    await Future.delayed(Duration(milliseconds: 1000));
+    // if failed,use loadFailed(),if no data return,use LoadNodata()
+    setState(() {});
+    _refreshController2.loadComplete();
+  }
+
+  void _onRefresh() async {
+    // monitor network fetch
+    setTagStream(selectedTag);
+    await Future.delayed(Duration(milliseconds: 1000));
+    setState(() {});
+    // if failed,use refreshFailed()
+    _refreshController2.refreshCompleted();
   }
 }

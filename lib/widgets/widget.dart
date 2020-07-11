@@ -136,6 +136,8 @@ Widget UserAvatar(String profileURL, double radius) {
         height: radius * 2,
         imageUrl: profileURL,
         fit: BoxFit.cover,
+        placeholder: (context, url) =>
+            Center(child: CircularProgressIndicator(),),
       )
           : Image.asset(
         "assets/images/username.png",

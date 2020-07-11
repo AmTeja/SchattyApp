@@ -12,7 +12,7 @@ class GetPhotoURL {
           .where('username', isEqualTo: username)
           .getDocuments()
           .then((docs) async {
-        targetUrl = docs.documents[0].data["photoURL"];
+        targetUrl = docs.documents[0].data["photoUrl"];
         return targetUrl;
       });
 //      return targetUrl;

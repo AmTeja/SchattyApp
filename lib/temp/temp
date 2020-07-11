@@ -266,6 +266,226 @@ StreamBuilder(
                     ),
                   ),
 
+                  Scaffold(
+                                  appBar: AppBar(
+                                    title: Text("Schatty"),
+                                    centerTitle: true,
+                                  ),
+                                  body: GestureDetector(
+                                    onTap: () {
+                                      FocusScope.of(context).unfocus();
+                                    },
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width,
+                                      color: Colors.transparent,
+                                      child: Center(
+                                        child: Container(
+                                          width: MediaQuery.of(context).size.width * 0.9,
+                                          height: MediaQuery.of(context).size.height * 0.85,
+                                          decoration: BoxDecoration(
+                                              color: !widget.isDark
+                                                  ? Color(0xFFE0DEDE)
+                                                  : Colors.blueGrey,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                    color: !widget.isDark
+                                                        ? Colors.white70
+                                                        : Colors.black12,
+                                                    spreadRadius: 3,
+                                                    blurRadius: 2)
+                                              ],
+                                              borderRadius: BorderRadius.circular(23)),
+                                          child: ListView(
+                                            children: [
+                                              Container(
+                                                //Close And Post
+                                                child: ListTile(
+                                                  title: SizedBox.shrink(),
+                                                  leading: IconButton(
+                                                    icon: Icon(
+                                                      Icons.close,
+                                                      size: 40,
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.pop(context);
+                                                    },
+                                                  ),
+                                                  trailing: InkWell(
+                                                    onTap: () {
+                                                      post(context);
+                                                    },
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.symmetric(
+                                                          horizontal: 16.0, vertical: 8.0),
+                                                      child: Text(
+                                                        "Post",
+                                                        style: TextStyle(
+                                                            fontSize: 24,
+                                                            fontWeight: FontWeight.bold,
+                                                            color: Colors.red),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                              Container(
+                                                  padding: EdgeInsets.all(10),
+                                                  height: 400,
+                                                  width: 400,
+                                                  child: selectedImage != null
+                                                      ? Image.file(
+                                                          selectedImage,
+                                                          fit: BoxFit.cover,
+                                                        )
+                                                      : Center(
+                                                          child: Container(
+                                                            height: 400,
+                                                            width: 400,
+                                                            decoration: BoxDecoration(
+                                                                color: Color(0xFFE0DEDE),
+                                                                border: Border(
+                                                                  top: BorderSide(
+                                                                      color: Colors.black),
+                                                                  bottom: BorderSide(
+                                                                      color: Colors.black),
+                                                                  left: BorderSide(
+                                                                      color: Colors.black),
+                                                                  right: BorderSide(
+                                                                      color: Colors.black),
+                                                                ),
+                                                                borderRadius:
+                                                                    BorderRadius.circular(23)),
+                                                            child: IconButton(
+                                                              icon: Icon(Icons.collections),
+                                                              onPressed: () {
+                                                                getImage();
+                                                              },
+                                                            ),
+                                                          ),
+                                                        )),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 18, vertical: 16),
+                                                child: TextField(
+                                                  maxLines: 2,
+                                                  controller: captionTEC,
+                                                  textCapitalization:
+                                                      TextCapitalization.sentences,
+                                                  style: TextStyle(color: Colors.black),
+                                                  decoration: InputDecoration(
+                                                      fillColor: Colors.white,
+                                                      filled: true,
+                                                      hintText: "Caption...",
+                                                      hintStyle: TextStyle(
+                                                          color: Colors.black54, fontSize: 18),
+                                                      focusColor: Colors.black,
+                                                      contentPadding: EdgeInsets.all(16),
+                                                      border: OutlineInputBorder(
+                                                        borderRadius: BorderRadius.circular(23),
+                                                      )),
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(horizontal: 30),
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "Tag Post: ",
+                                                      style: TextStyle(
+                                                        fontFamily: "Segoe UI",
+                                                        fontSize: 24,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    selectedTag == null
+                                                        ? IconButton(
+                                                            onPressed: () {
+                                                              selectTag(context);
+                                                            },
+                                                            icon: Icon(
+                                                              Icons.add_box,
+                                                              size: 30,
+                                                            ),
+                                                          )
+                                                        : GestureDetector(
+                                                            onTap: () {
+                                                              selectTag(context);
+                                                            },
+                                                            child: Text(
+                                                              selectedTag,
+                                                              style: TextStyle(
+                                                                fontFamily: "Segoe UI",
+                                                                fontSize: 24,
+                                                                fontWeight: FontWeight.bold,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Container(
+                                                padding: EdgeInsets.symmetric(
+                                                    horizontal: 30, vertical: 20),
+                                                child: Row(
+                                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "Post to: ",
+                                                      style: TextStyle(
+                                                        fontSize: 24,
+                                                        fontFamily: "Segoe UI",
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        _selectedPublic();
+                                                      },
+                                                      child: Text(
+                                                        "Public",
+                                                        style: TextStyle(
+                                                            fontSize: 24,
+                                                            fontFamily: "Segoe UI",
+                                                            fontWeight: selectedPublic
+                                                                ? FontWeight.bold
+                                                                : null,
+                                                            color: selectedPublic
+                                                                ? Colors.black
+                                                                : Colors.black12),
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 20,
+                                                    ),
+                                                    GestureDetector(
+                                                      onTap: () {
+                                                        _selectedPrivate();
+                                                      },
+                                                      child: Text(
+                                                        "Private",
+                                                        style: TextStyle(
+                                                            fontSize: 24,
+                                                            fontFamily: "Segoe UI",
+                                                            fontWeight: selectedPrivate
+                                                                ? FontWeight.bold
+                                                                : null,
+                                                            color: selectedPrivate
+                                                                ? Colors.black
+                                                                : Colors.black12),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                )
+
 
 
 

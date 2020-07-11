@@ -11,7 +11,7 @@ class DatabaseMethods {
   getUserByUserName(String username) async {
     await Firestore.instance
         .collection("users")
-        .where("username", isEqualTo: username)
+        .where("username", isEqualTo: username.toLowerCase())
         .getDocuments()
         .then((value) {
       if (value.documents.length <= 0) {
@@ -22,14 +22,13 @@ class DatabaseMethods {
     });
   }
 
-  updateToken(String token, String userName) async {
+  updateToken(String token, String uid) async {
     final AuthMethods authMethods = new AuthMethods();
     try {
-      String uid = await authMethods.getUserUID();
       Map<String, String> tokenMap = {
         "token": token,
         "uid": uid,
-        "username": userName,
+        "username": Constants.ownerName.toLowerCase(),
       };
       await Firestore.instance
           .collection("tokens")
@@ -59,13 +58,31 @@ class DatabaseMethods {
     });
   }
 
-  createChatRoom(String chatRoomID, chatRoomMap) {
+  createChatRoom(String chatRoomID, Map chatRoomMap) {
     Firestore.instance
         .collection("ChatRoom")
-        .document(chatRoomID)
-        .setData(chatRoomMap)
-        .catchError((e) {
-      print("CreateChatRoom: $e");
+        .where('chatRoomId', isEqualTo: chatRoomID)
+        .getDocuments()
+        .then((docs) {
+      if (docs.documents.length != 0) {
+        print("docs available");
+        Firestore.instance
+            .collection("ChatRoom")
+            .document(chatRoomID)
+            .updateData(chatRoomMap)
+            .catchError((e) {
+          print("CreateChatRoom: $e");
+        });
+      } else {
+        chatRoomMap["lastMessage"] = ["", ""];
+        Firestore.instance
+            .collection("ChatRoom")
+            .document(chatRoomID)
+            .setData(chatRoomMap)
+            .catchError((e) {
+          print("CreateChatRoom: $e");
+        });
+      }
     });
   }
 
@@ -80,22 +97,32 @@ class DatabaseMethods {
     });
   }
 
-  updateDisplayName(String displayName) async {
+  updateDisplayName(String displayName, String username) async {
     try {
       Map<String, dynamic> dNMap = {
         "displayName": displayName,
       };
+      Map<String, dynamic> dNMapForChat = {
+        "displayNames.$username": displayName
+      };
       FirebaseUser user = await auth.currentUser();
       String uid = user.uid;
-      Firestore.instance
-          .collection('users')
-          .where("uid", isEqualTo: uid)
+      await Firestore.instance
+          .collection('/users')
+          .where('uid', isEqualTo: user.uid)
           .getDocuments()
           .then((docs) async {
         Firestore.instance
-            .document('users/${docs.documents[0].documentID}')
-            .updateData(dNMap);
+            .document('/users/${docs.documents[0].documentID}')
+            .updateData(dNMap)
+            .whenComplete(() {})
+            .catchError((onError) {
+          print(onError);
+        }).catchError((onError) {
+          print(onError);
+        });
       });
+      updateChatRooms(dNMapForChat, username);
     } catch (error) {
       print("ERROR UPDATING DNAME: $error");
     }
@@ -117,15 +144,33 @@ class DatabaseMethods {
     return dName;
   }
 
+  updateChatRooms(Map map, String username) async {
+    try {
+      await Firestore.instance.collection('ChatRoom').where(
+          'users', arrayContains: username)
+          .getDocuments().then((docs) {
+        for (int i = 0; i < docs.documents.length; i++) {
+          Firestore.instance.collection('ChatRoom').document(
+              docs.documents[i].documentID)
+              .updateData(map);
+        }
+      });
+    } catch (err) {
+      print("Error updating chatroom maps: $err");
+    }
+  }
+
+
   updateProfilePicture(String picUrl, String userName) async {
     var userInfo = User();
     userInfo.profileImageUrl = picUrl;
-//    print(userInfo.profileImageUrl);
-    Map<String, String> imageMap = {'photoURL': userInfo.profileImageUrl};
 
+    Map<String, String> imageMap = {'photoURL': userInfo.profileImageUrl};
+    Map<String, dynamic> forChatroom = {'photoUrls.$userName': picUrl};
     await Preferences.saveUserImageURL(picUrl);
 
-    await FirebaseAuth.instance.currentUser().then((user) async {
+    await FirebaseAuth.instance.currentUser().then((user) async
+    {
       await Firestore.instance
           .collection('/users')
           .where('uid', isEqualTo: user.uid)
@@ -142,9 +187,10 @@ class DatabaseMethods {
         });
       });
     });
+    updateChatRooms(forChatroom, userName);
   }
 
-  getProfileUrl(String username) async {
+  getProfileUrlByName(String username) async {
     String url;
     await Firestore.instance
         .collection('users')
@@ -210,11 +256,16 @@ class DatabaseMethods {
     }
   }
 
-  updateLastMessage(String message, String chatRoomId) async
+  updateLastMessage(String message, String chatRoomId,
+      String targetUsername) async
   {
     List<String> messageMap = [message, Constants.ownerName.toLowerCase()];
     Map<String, dynamic> lastMessageMap = {
       "lastMessage": messageMap,
+      "seenBy.$targetUsername": false,
+      "lastTime": DateTime
+          .now()
+          .millisecondsSinceEpoch,
     };
     await Firestore.instance
         .collection("ChatRoom")

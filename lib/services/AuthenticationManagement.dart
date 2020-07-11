@@ -87,8 +87,8 @@ class UserNameValidator {
     if (value.length < 5) {
       return "Username must be at least 5 chars long";
     }
-    if (value.length > 20) {
-      return "Username must be less than 20 chars long";
+    if (value.length > 15) {
+      return "Username must be less than 15 chars long";
     }
     return RegExp(r"^[a-zA-Z0-9_]+([_]?[a-zA-Z0-9])*$").hasMatch(value)
         ? null

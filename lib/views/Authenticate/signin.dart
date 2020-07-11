@@ -7,8 +7,9 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ForgotPasswordLayout.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Feed/FeedPage.dart';
 import 'package:schatty/widgets/widget.dart';
+
+import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Feed/FeedPage.dart';
 
 class SignIn extends StatefulWidget {
   SignIn();
@@ -39,9 +40,7 @@ class _SignInState extends State<SignIn> {
   signIn() async {
     if (formKey.currentState.validate()) {
       try {
-        databaseMethods
-            .getUserByUserName(userNameTEC.text.toLowerCase())
-            .then((val) async {
+        databaseMethods.getUserByUserName(userNameTEC.text).then((val) async {
           if (val != null || val != 0) {
             setState(() {
               userNameExists = true;
@@ -104,10 +103,12 @@ class _SignInState extends State<SignIn> {
                   isLoading = false;
                 });
               } else {
-                setState(() {
-                  error = e.message;
-                  isLoading = false;
-                });
+                if (mounted) {
+                  setState(() {
+                    error = e.message;
+                    isLoading = false;
+                  });
+                }
               }
             }
           }
@@ -208,6 +209,7 @@ class _SignInState extends State<SignIn> {
               ),
               padding: EdgeInsets.symmetric(horizontal: 24),
               child: ListView(
+                physics: NeverScrollableScrollPhysics(),
                 children: [
                   Container(
                     alignment: Alignment.center,
@@ -217,7 +219,6 @@ class _SignInState extends State<SignIn> {
                       style: TextStyle(color: Colors.white, fontSize: 40),
                     ),
                   ),
-
                   showAlert(),
                   SizedBox(height: 70,),
                   Form(
@@ -225,24 +226,24 @@ class _SignInState extends State<SignIn> {
                     child: Column(
                       children: [
                         TextFormField(
-                            validator: UserNameValidator.validate,
-                                controller: userNameTEC,
-                                style: simpleTextStyle(),
-                                decoration: new InputDecoration(
-                                    contentPadding: EdgeInsets.only(
-                                        left: 15, top: 20, bottom: 20),
-                                    labelText: "Username",
-                                    labelStyle: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white60,
-                                    ),
-                                    border: new OutlineInputBorder(
+                          validator: UserNameValidator.validate,
+                          controller: userNameTEC,
+                          style: simpleTextStyle(),
+                          decoration: new InputDecoration(
+                              contentPadding: EdgeInsets.only(
+                                  left: 15, top: 20, bottom: 20),
+                              labelText: "Username",
+                              labelStyle: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white60,
+                              ),
+                              border: new OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(40),
 //                                  borderSide: BorderSide(color: Colors.blue)
                               )),
                           textInputAction: TextInputAction.next,
                           onFieldSubmitted: (v) {
-                              FocusScope.of(context).requestFocus(focus);
+                            FocusScope.of(context).requestFocus(focus);
                           },
                           autofocus: true,
                         ),
@@ -250,7 +251,7 @@ class _SignInState extends State<SignIn> {
                           height: 20,
                         ),
                         TextFormField(
-                          focusNode: focus,
+                            focusNode: focus,
                             obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
@@ -317,8 +318,8 @@ class _SignInState extends State<SignIn> {
                         borderRadius: BorderRadius.circular(40)),
                     elevation: 4,
                     child: Text("Sign in"),
-                        ),
-                      ],
+                  ),
+                ],
                     ),
                   ),
                 ),

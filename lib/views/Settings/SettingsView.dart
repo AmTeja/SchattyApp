@@ -50,30 +50,82 @@ class _SettingsViewState extends State<SettingsView> {
 //                            width: 0.1
                             )),
                   )),
-              InkWell(
-                onTap: () {
-                  showAd(context);
-                },
-                child: Container(
-                  height: 100,
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "View an ad",
-                        style: TextStyle(
-                          fontSize: 30.0,
-                        ),
-                      )
-                    ],
-                  ),
-                  decoration: BoxDecoration(
-                      border: Border(
-                        bottom: BorderSide(),
-                      )),
-                ),
-              )
+//              InkWell(
+//                onTap: () {
+//                  showAd(context);
+//                },
+//                child: Container(
+//                  height: 100,
+//                  padding: EdgeInsets.symmetric(horizontal: 30),
+//                  child: Row(
+//                    mainAxisSize: MainAxisSize.min,
+//                    children: [
+//                      Text(
+//                        "View an ad",
+//                        style: TextStyle(
+//                          fontSize: 30.0,
+//                        ),
+//                      )
+//                    ],
+//                  ),
+//                  decoration: BoxDecoration(
+//                      border: Border(
+//                        bottom: BorderSide(),
+//                      )),
+//                ),
+//              ),
+//              InkWell(
+//                onTap: () {
+//                 Navigator.push(context, MaterialPageRoute(
+//                   builder: (context) => TestML(),
+//                 ));
+//                },
+//                child: Container(
+//                  height: 100,
+//                  padding: EdgeInsets.symmetric(horizontal: 30),
+//                  child: Row(
+//                    mainAxisSize: MainAxisSize.min,
+//                    children: [
+//                      Text(
+//                        "Test ML",
+//                        style: TextStyle(
+//                          fontSize: 30.0,
+//                        ),
+//                      )
+//                    ],
+//                  ),
+//                  decoration: BoxDecoration(
+//                      border: Border(
+//                        bottom: BorderSide(),
+//                      )),
+//                ),
+//              ),
+//              InkWell(
+//                onTap: () {
+//                 Navigator.push(context, MaterialPageRoute(
+//                   builder: (context) => FeedAd(),
+//                 ));
+//                },
+//                child: Container(
+//                  height: 100,
+//                  padding: EdgeInsets.symmetric(horizontal: 30),
+//                  child: Row(
+//                    mainAxisSize: MainAxisSize.min,
+//                    children: [
+//                      Text(
+//                        "Feed AD",
+//                        style: TextStyle(
+//                          fontSize: 30.0,
+//                        ),
+//                      )
+//                    ],
+//                  ),
+//                  decoration: BoxDecoration(
+//                      border: Border(
+//                        bottom: BorderSide(),
+//                      )),
+//                ),
+//              )
             ],
           ),
         ));
