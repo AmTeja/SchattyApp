@@ -287,8 +287,7 @@ class _BuildPostState extends State<BuildPost> {
 
   setLikeAndDislike() async
   {
-    if (await widget.likes[widget
-        .dislikes("${Constants.ownerName}")] == "${Constants.ownerName}") {
+    if (await widget.likes[("${Constants.ownerName}")] == "${Constants.ownerName}") {
       isLiked = true;
     }
     else {

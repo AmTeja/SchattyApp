@@ -98,9 +98,9 @@ class _SignUpState extends State<SignUp> {
     try {
       print('Called');
       List<String> indexList = [];
-      for (int i = 0; i < Constants.ownerName.length; i++) {
-        for (int y = 0; y < Constants.ownerName.length + 1; y++) {
-          indexList.add(Constants.ownerName.substring(0, y).toLowerCase());
+      for (int i = 0; i < userNameTEC.text.length; i++) {
+        for (int y = 0; y < userNameTEC.text.length + 1; y++) {
+          indexList.add(userNameTEC.text.substring(0, y).toLowerCase());
         }
       }
       return indexList;

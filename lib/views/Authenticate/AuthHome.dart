@@ -231,7 +231,8 @@ class _AuthHomeState extends State<AuthHome> {
           "email": email,
           "searchKey": username.substring(0, 1).toUpperCase(),
           "photoURL": profilePicURL,
-          "uid": uid
+          "uid": uid,
+          "usernameIndex" : await makeIndex(username),
         };
 
         await databaseMethods.uploadUserInfo(userInfoMap, uid);
@@ -250,6 +251,21 @@ class _AuthHomeState extends State<AuthHome> {
       }
     } catch (e) {
     print(e.toString());
+    }
+  }
+
+  makeIndex(String username) {
+    try {
+      print('Called');
+      List<String> indexList = [];
+      for (int i = 0; i < username.length; i++) {
+        for (int y = 0; y < username.length + 1; y++) {
+          indexList.add(username.substring(0, y).toLowerCase());
+        }
+      }
+      return indexList;
+    } catch (e) {
+      print('Error making index: $e');
     }
   }
 

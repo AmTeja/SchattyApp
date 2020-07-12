@@ -17,7 +17,6 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/services/encryptionservice.dart';
 import 'package:schatty/views/Chatroom/MainChatScreenInstance.dart';
 import 'package:schatty/widgets/InAppNotification.dart';
 import 'package:schatty/widgets/widget.dart';
@@ -52,7 +51,6 @@ class _ChatRoomState extends State<ChatRoom>
   DatabaseMethods databaseMethods = new DatabaseMethods();
   NavigationService navigationService = new NavigationService();
   FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
-  EncryptionService encryptionService = new EncryptionService();
   DarkThemeProvider darkThemeProvider = new DarkThemeProvider();
   GlobalColors gc = new GlobalColors();
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
@@ -301,35 +299,6 @@ class _ChatRoomState extends State<ChatRoom>
       });
     } catch (e) {
       print("getUserInfo: $e");
-    }
-  }
-
-  setupEncryption() async {
-    try {
-      print("Encryption Setting up");
-      encryptionService.futureKeyPair = encryptionService.getKeyPair();
-      encryptionService.keyPair = await encryptionService.futureKeyPair;
-      Map<String, dynamic> keyMap = {
-        "privateKey": encryptionService.keyPair.privateKey,
-      };
-      await Firestore.instance
-          .collection('users')
-          .where('uid', isEqualTo: uid)
-          .getDocuments()
-          .then((docs) async {
-        await Firestore.instance
-            .document('/users/${docs.documents[0].documentID}')
-            .updateData(keyMap);
-      });
-
-      var privateString = await encryptionService
-          .getPrivatekeyInPlain(encryptionService.keyPair);
-      var publicString = await encryptionService
-          .getPublicKeyInPlain(encryptionService.keyPair);
-      print("Private: $privateString");
-      print("Public: $publicString");
-    } catch (e) {
-      print("Encryption Error: $e");
     }
   }
 

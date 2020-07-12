@@ -69,7 +69,7 @@ class _FeedPageState extends State<FeedPage>
     return Consumer<DarkThemeProvider>(
       builder: (BuildContext context, value, Widget child) {
         return AnimatedBottomNavigationBar(
-          icons: [Icons.chat, Icons.home, Icons.trending_up],
+          icons: [Icons.chat, Icons.home],
           backgroundColor:
               darkThemeData.darkTheme ? Color(0xff373A36) : Color(0xFF7ED9F1),
           activeIndex: _page,
@@ -77,7 +77,7 @@ class _FeedPageState extends State<FeedPage>
           splashColor: Color(0xFFFFFFFF),
           notchAndCornersAnimation: animation,
           splashSpeedInMilliseconds: 300,
-          gapLocation: GapLocation.end,
+          gapLocation: GapLocation.center,
           notchSmoothness: NotchSmoothness.smoothEdge,
           leftCornerRadius: 0,
           rightCornerRadius: 0,
@@ -136,7 +136,7 @@ class _FeedPageState extends State<FeedPage>
                   )
                 : null,
             floatingActionButtonLocation:
-                FloatingActionButtonLocation.endDocked,
+                FloatingActionButtonLocation.centerDocked,
             bottomNavigationBar: bottomNavBar(context, darkTheme),
             body: PageView(
               controller: pageController,
@@ -145,16 +145,16 @@ class _FeedPageState extends State<FeedPage>
               children: [
                 ChatRoom(),
                 newBody(darkTheme),
-                Container(
-                  child: Center(
-                    child: Text(
-                      "Will Trend Soon!",
-                      style: TextStyle(
-                        fontSize: 40,
-                      ),
-                    ),
-                  ),
-                )
+//                Container(
+//                  child: Center(
+//                    child: Text(
+//                      "Will Trend Soon!",
+//                      style: TextStyle(
+//                        fontSize: 40,
+//                      ),
+//                    ),
+//                  ),
+//                )
               ],
             ),
           );
