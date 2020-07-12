@@ -99,6 +99,7 @@ Widget viewPost(docs, topic) {
       caption: docs.data["caption"],
       postUid: docs.data["postUid"] ?? "null",
       likes: docs.data['likes'],
+      dislikes: docs.data['dislikes'],
       nsfw: docs.data["NSFW"] ?? false,
       title: docs.data["title"],
     ),
@@ -106,7 +107,6 @@ Widget viewPost(docs, topic) {
 }
 
 void share(BuildContext context, String message, bool isImage) {
-  final RenderBox box = context.findRenderObject();
   ShareExtend.share(message, "text");
 }
 

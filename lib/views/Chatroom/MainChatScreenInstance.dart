@@ -14,15 +14,12 @@ import 'package:intl/intl.dart';
 import 'package:link_text/link_text.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/enums/view_state.dart';
-import 'package:schatty/helper/cachednetworkimage.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/views/Chatroom/MainChatsRoom.dart';
+import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
 import 'package:schatty/widgets/widget.dart';
-
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/TargetUserInfo.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomID;

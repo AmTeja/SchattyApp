@@ -54,6 +54,10 @@ class _BuildPostState extends State<BuildPost> {
   String profileUrl;
   CollectionReference selectedTagRef;
 
+  var likesLength;
+  var dislikesLength;
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -72,6 +76,7 @@ class _BuildPostState extends State<BuildPost> {
         .collection(widget.topic);
     return Consumer<DarkThemeProvider>(
       builder: (BuildContext context, value, Widget child) {
+
         return widget.url != "Advert"
             ? Container(
                 decoration: BoxDecoration(color: Colors.transparent),
@@ -205,6 +210,9 @@ class _BuildPostState extends State<BuildPost> {
 
   // ignore: non_constant_identifier_names
   Widget Footer() {
+    likesLength = widget.likes.length;
+    dislikesLength = widget.likes.length;
+
     double splashRadius = 25.0;
     return Container(
 //      height: 80,
@@ -227,8 +235,7 @@ class _BuildPostState extends State<BuildPost> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("${(widget.likes.length - 1) -
-                      (widget.dislikes.length - 1)}",
+                  Text("${likesLength - dislikesLength}",
                     style: TextStyle(
                         fontSize: 20
                     ),),
@@ -298,15 +305,18 @@ class _BuildPostState extends State<BuildPost> {
 
   _liked() {
     bool newVal = true;
+    bool temp = isDisliked;
     if (isLiked) {
       newVal = false;
     } else {
       newVal = true;
       isDisliked = !newVal;
     }
-    print(newVal);
-    updateLike(newVal, isLiked);
-    updateDislike(!newVal, isDisliked);
+    updateLike(newVal);
+    if(temp)
+      {
+        updateDislike(!newVal);
+      }
     if (mounted) {
       setState(() {
         isLiked = newVal;
@@ -314,84 +324,36 @@ class _BuildPostState extends State<BuildPost> {
     }
   }
 
+  _disliked() {
+    bool temp = isLiked;
+    bool newVal = true;
+    if (isDisliked) {
+      newVal = false;
+    } else {
+      newVal = true;
+      isLiked = !newVal;
+    }
+    updateDislike(newVal);
+    if(temp)
+    {
+      updateLike(!newVal);
+    }
+    if (mounted) {
+      setState(() {
+        isDisliked = newVal;
+      });
+    }
+  }
+
+
+
   _selected(val, context) {
     if (val == "Report") {
       reportPost();
     }
   }
 
-  showReportDialog() {
-    TextEditingController reportTEC = new TextEditingController();
-    var checkBox;
-    return showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text("Report"),
-            content: Container(
-              width: MediaQuery
-                  .of(context)
-                  .size
-                  .width * 0.70,
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height * 0.2,
-              child: Column(
-                children: [
-                  CheckboxListTile(
-                    onChanged: (val) => _changed,
-                    value: checkBox,
-                    title: Text("Hate speech"),
-                    subtitle: Text("Sexual content"),
-                    tristate: true,
-                  ),
-//                  TextFormField(
-//                    autofocus: true,
-//                    style: TextStyle(
-//                        fontSize: 20
-//                    ),
-//                    decoration: InputDecoration(
-//                        contentPadding: EdgeInsets.all(16),
-//                        border: OutlineInputBorder(
-//                            borderRadius: BorderRadius.circular(23)
-//                        )
-//                    ),
-//                    textCapitalization: TextCapitalization.sentences,
-//                    controller: reportTEC,
-//                    maxLines: 3,
-//                    maxLength: 150,
-//                  ),
-                ],
-              ),
-            ),
-            actions: [
-              FlatButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                    alignment: Alignment.center,
-                    child: Text("Cancel")),
-              ),
-              FlatButton(
-                onPressed: () {
-                  reportPost();
-                  Navigator.pop(context);
-                },
-                child: Container(
-                    alignment: Alignment.center,
-                    child: Text("Add")),
-              )
-            ],
-          );
-        }
-    );
-  }
 
-  _changed() {
-
-  }
 
   reportPost() async
   {
@@ -422,17 +384,16 @@ class _BuildPostState extends State<BuildPost> {
   var likesList;
   var dislikesList;
 
-  updateLike(bool newVal, bool liked) async
+  updateLike(bool newVal) async
   {
     await selectedTagRef
         .where('postUid', isEqualTo: widget.postUid)
         .getDocuments().then((docs) async {
       likesList = await docs.documents[0].data["likes"];
-      if (newVal && liked) {
+      if (newVal ) {
         likesList.add("${Constants.ownerName.toLowerCase()}");
       }
       else {
-        if (liked)
           likesList.removeAt(
               likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
       }
@@ -470,22 +431,6 @@ class _BuildPostState extends State<BuildPost> {
     });
   }
 
-  _disliked() {
-    bool newVal = true;
-    if (isDisliked) {
-      newVal = false;
-    } else {
-      newVal = true;
-      isLiked = !newVal;
-    }
-    updateDislike(newVal);
-    updateLike(!newVal, isLiked);
-    if (mounted) {
-      setState(() {
-        isDisliked = newVal;
-      });
-    }
-  }
 
   getUserProfileUrl() async {
     profileUrl = await databaseMethods.getProfileUrlByName(widget.username);

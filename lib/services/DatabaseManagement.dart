@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/model/user.dart';
-import 'package:schatty/services/AuthenticationManagement.dart';
 
 class DatabaseMethods {
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -23,7 +22,6 @@ class DatabaseMethods {
   }
 
   updateToken(String token, String uid) async {
-    final AuthMethods authMethods = new AuthMethods();
     try {
       Map<String, String> tokenMap = {
         "token": token,
@@ -106,7 +104,6 @@ class DatabaseMethods {
         "displayNames.$username": displayName
       };
       FirebaseUser user = await auth.currentUser();
-      String uid = user.uid;
       await Firestore.instance
           .collection('/users')
           .where('uid', isEqualTo: user.uid)

@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/targetURL.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/services/SearchService.dart';
 import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
@@ -130,8 +129,7 @@ class _NewSearchState extends State<NewSearch> {
                         itemCount: snapshot.data.documents.length,
                         itemBuilder: (context, index) {
                           return ListTile(
-                            title: type != "User" ? Text(snapshot
-                                .data.documents[index].data['title']) :
+                            title: type != "User" ? returnTitlePreview(snapshot.data.documents[index]) :
                             Text(snapshot.data.documents[index]
                                 .data['username']),
                           );
@@ -140,7 +138,7 @@ class _NewSearchState extends State<NewSearch> {
                   }
                 },
               )
-                  : searchString != null && searchString != "" ?
+                  : searchString != null && searchString != "" ? //Future builder for username
               FutureBuilder(
                 future: searchService.searchByName(searchString),
                 builder: (context, snapshot) {
@@ -153,7 +151,6 @@ class _NewSearchState extends State<NewSearch> {
                       return ListView.builder(
                         itemCount: snapshot.data.documents.length,
                         itemBuilder: (context, index) {
-                          print('Called');
                           return Container(
                             padding: EdgeInsets.all(16.0),
                                                 child: GestureDetector(
@@ -243,10 +240,56 @@ class _NewSearchState extends State<NewSearch> {
     }
   }
 
+  returnTitlePreview(docs)
+  {
+    return GestureDetector(
+      onTap: () {
+        if(type != "User")
+          {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      viewPost(docs,
+                          type),
+                ));
+          }
+      },
+      child: Container(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: 120,
+              width: 120,
+              child: docs.data["NSFW"] ? Center(child: Text("NSFW", style: TextStyle(fontSize: 30),),) :CachedNetworkImage(
+                imageUrl: docs.data['url'],
+                fit: BoxFit.cover,
+              ),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(23),
+                border: Border(
+                  top: BorderSide(color: Colors.black),
+                  bottom: BorderSide(color: Colors.black),
+                  right: BorderSide(color: Colors.black),
+                  left: BorderSide(color: Colors.black),
+                )
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(20),
+                height: 120,
+                width: 200,
+                child: Text("${docs.data['title']} by ${docs.data['username']}", style: TextStyle(fontSize: 22),)),
+          ],
+        ),
+      ),
+    );
+  }
 
   createChatInstance(String userName) async {
     final String username = userName.toLowerCase();
-    final GetPhotoURL targetURL = new GetPhotoURL();
     setState(() {
       isLoading = true;
     });

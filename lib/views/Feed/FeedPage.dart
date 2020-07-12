@@ -47,10 +47,13 @@ class _FeedPageState extends State<FeedPage>
   String url;
   String selectedTag = "Sci-Fi";
   String username;
+  String streamOrder = "time";
+  String sortingMethod = "New";
 
   bool isDark = false;
   bool dev = true;
   bool error = false;
+  bool descendingOrder = true;
 
   AnimationController _animationController;
   final feedListController = ScrollController();
@@ -182,7 +185,7 @@ class _FeedPageState extends State<FeedPage>
     getThemePreference();
     getUserInfo();
     setupAnimations();
-    setTagStream(selectedTag);
+    setTagStream(selectedTag, descendingOrder);
     pageController = new PageController(initialPage: 0, keepPage: true);
   }
 
@@ -382,40 +385,42 @@ class _FeedPageState extends State<FeedPage>
                 physics: ScrollPhysics(),
                 child: Column(
                   children: [
+                    Container(
+                      alignment: Alignment.center,
+                        padding: EdgeInsets.symmetric(vertical: 9.0),
+                        child: Text(
+                          "Discover",
+                          style: TextStyle(
+                            fontSize: 50,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-//                                  crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisSize: MainAxisSize.max,
                       children: [
+                        Text("Sort by: "),
                         Container(
-                            padding: EdgeInsets.only(
-                                top: 20, left: 20, right: 80),
-                            child: Text(
-                              "Discover",
-                              style: TextStyle(
-                                fontFamily: "Rosario",
-                                fontSize: 44,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )),
-                        Padding(
-                          padding:
-                          EdgeInsets.only(left: 120, top: 25),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.search,
-                              size: 30,
-                            ),
-                            onPressed: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        NewSearch(),
-                                  ));
-                            },
+                          margin: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                          child: DropdownButton(
+                            value: sortingMethod,
+                            onChanged: (val) => _sort(val),
+                            items: [
+                              DropdownMenuItem(child: Text("New"), value: "New",),
+                              DropdownMenuItem(child: Text("Likes"),value: "Likes"),
+                              DropdownMenuItem(child: Text("Dislikes"),value: "Dislikes"),
+                            ],
                           ),
                         ),
+                        IconButton(
+                          icon: Icon(Icons.search),
+                          onPressed: (){
+                            Navigator.push(context, MaterialPageRoute(
+                                builder: (context) => NewSearch(),
+                            ));
+                          },
+                        )
                       ],
                     ),
                     Container(
@@ -496,6 +501,31 @@ class _FeedPageState extends State<FeedPage>
     );
   }
 
+  _sort(value)
+  {
+    print('Called sort');
+    sortingMethod = value;
+    if(sortingMethod == "New")
+      {
+        streamOrder = 'time';
+        descendingOrder = true;
+      }
+    else if(sortingMethod == "Likes")
+      {
+        streamOrder = 'likes';
+        descendingOrder = true;
+      }
+    else if(sortingMethod == "Dislikes")
+      {
+        streamOrder = 'dislikes';
+        descendingOrder = true;
+      }
+    setTagStream(selectedTag,descendingOrder);
+    setState(() {
+
+    });
+  }
+
   void onPageChanged(int page) async {
     isDark = await Preferences.getThemePreference();
     setState(() {
@@ -506,17 +536,17 @@ class _FeedPageState extends State<FeedPage>
   void selectTag(String tag) {
     setState(() {
       selectedTag = tag;
-      setTagStream(selectedTag);
+      setTagStream(selectedTag, descendingOrder);
     });
   }
 
-  setTagStream(String selectedTag) async {
+  setTagStream(String selectedTag, bool descending) async {
     try {
       postStream = Firestore.instance
           .collection("Posts")
           .document('Public')
           .collection(selectedTag)
-          .orderBy('time', descending: true)
+          .orderBy(streamOrder, descending: descending)
           .snapshots();
       if (postStream == null) {
         error = true;
@@ -582,7 +612,7 @@ class _FeedPageState extends State<FeedPage>
 
   void _onRefresh() async {
     // monitor network fetch
-    setTagStream(selectedTag);
+    setTagStream(selectedTag, descendingOrder);
     await Future.delayed(Duration(milliseconds: 1000));
     setState(() {});
     // if failed,use refreshFailed()

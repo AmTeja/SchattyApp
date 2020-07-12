@@ -7,9 +7,8 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ForgotPasswordLayout.dart';
+import 'package:schatty/views/Feed/FeedPage.dart';
 import 'package:schatty/widgets/widget.dart';
-
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Feed/FeedPage.dart';
 
 class SignIn extends StatefulWidget {
   SignIn();

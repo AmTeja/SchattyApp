@@ -307,6 +307,7 @@ class _PostContentState extends State<PostContent> {
     );
   }
 
+  // ignore: non_constant_identifier_names
   Widget CaptionField() {
     return Container(
       width: MediaQuery
@@ -333,6 +334,7 @@ class _PostContentState extends State<PostContent> {
     );
   }
 
+  // ignore: non_constant_identifier_names
   Widget TitleField() {
     return Container(
       width: MediaQuery
@@ -359,31 +361,6 @@ class _PostContentState extends State<PostContent> {
     );
   }
 
-  _selectedPublic() {
-    bool newVal = true;
-    if (selectedPublic) {
-      newVal = false;
-    } else {
-      newVal = true;
-      selectedPrivate = !newVal;
-    }
-    setState(() {
-      selectedPublic = newVal;
-    });
-  }
-
-  _selectedPrivate() {
-    bool newVal = true;
-    if (selectedPrivate) {
-      newVal = false;
-    } else {
-      newVal = true;
-      selectedPublic = !newVal;
-    }
-    setState(() {
-      selectedPrivate = newVal;
-    });
-  }
 
   getVideo() async {
     try {
@@ -519,7 +496,6 @@ class _PostContentState extends State<PostContent> {
 
   showUrlDialog(BuildContext context) {
     TextEditingController urlTEC = new TextEditingController();
-    TextEditingController captionTEC = new TextEditingController();
 
     final formKey = GlobalKey<FormState>();
     return showDialog(
