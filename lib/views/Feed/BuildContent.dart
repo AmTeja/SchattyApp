@@ -18,25 +18,27 @@ class BuildPost extends StatefulWidget {
   final username;
   final topic;
   final caption;
-  final isDark;
   final postUid;
   final likes;
+  final dislikes;
   final time;
   final nsfw;
   final title;
+  final loop;
 
   // ignore: non_constant_identifier_names
   const BuildPost({
     @required this.url,
     @required this.username,
     @required this.topic,
-    @required this.isDark,
     @required this.time,
     @required this.caption,
     @required this.postUid,
     @required this.likes,
     @required this.nsfw,
     @required this.title,
+    this.loop,
+    this.dislikes,
   });
 
   @override
@@ -56,6 +58,7 @@ class _BuildPostState extends State<BuildPost> {
   void initState() {
     // TODO: implement initState
     profileUrl = null;
+    setLikeAndDislike();
     super.initState();
 //    getUserProfileUrl();
   }
@@ -67,9 +70,6 @@ class _BuildPostState extends State<BuildPost> {
         .collection('Posts')
         .document('Public')
         .collection(widget.topic);
-    if (widget.url == "Advert") {
-      print('Called with ${widget.time}');
-    }
     return Consumer<DarkThemeProvider>(
       builder: (BuildContext context, value, Widget child) {
         return widget.url != "Advert"
@@ -84,19 +84,50 @@ class _BuildPostState extends State<BuildPost> {
                     Container(
                       margin: EdgeInsets.symmetric(horizontal: 30.0),
                       decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.transparent,
                           borderRadius: BorderRadius.circular(23)),
-                      child: GestureDetector(
+                      child: widget.nsfw ? GestureDetector(
                         onTap: () {
                           Navigator.push(
                               context,
-                          MaterialPageRoute(
-                            builder: (context) => viewImage(widget.url, context,
-                                widget.caption, widget.caption),
-                          ));
-                    },
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(23),
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    viewImage(widget.url, context,
+                                        widget.caption, widget.caption),
+                              ));
+                        },
+                        child: Container(
+                          color: Colors.transparent,
+                          height: 300,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(
+                                    "NSFW", style: TextStyle(fontSize: 40,),),
+                                ),
+                                Text("May contain inappropriate content",
+                                  style: TextStyle(fontSize: 16,),),
+                                Text(
+                                    "Tap to view if you are above 18 years old",
+                                    style: TextStyle(fontSize: 16,)),
+                              ],
+                            ),
+                          ),),
+                      ) : GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    viewImage(widget.url, context,
+                                        widget.caption, widget.caption),
+                              ));
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(23),
                       child: Hero(
                         tag: widget.caption,
                         child: CachedNetworkImage(
@@ -118,11 +149,13 @@ class _BuildPostState extends State<BuildPost> {
   Widget Header() {
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => TargetUserInfo(widget.username),
-            ));
+        if (widget.loop == true || widget.loop == null) {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => TargetUserInfo(widget.username),
+              ));
+        } else {}
       },
       child: Container(
         padding: EdgeInsets.all(8.0),
@@ -194,24 +227,27 @@ class _BuildPostState extends State<BuildPost> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: Icon(Icons.thumb_up),
-                    color: isLiked ? Color(0xffFF8F8F) : null,
-                    splashRadius: splashRadius,
-                    onPressed: () => _liked(),
-                  ),
-                  Text(
-                    widget.likes == 0 || widget.likes == null ? "" : "${widget
-                        .likes}",
+                  Text("${(widget.likes.length - 1) -
+                      (widget.dislikes.length - 1)}",
                     style: TextStyle(
                         fontSize: 20
                     ),),
-//                  IconButton(
-//                    icon: Icon(Icons.thumb_down),
-//                    color: isDisliked ? Color(0xffFF8F8F) : null,
-//                    splashRadius: splashRadius,
-//                    onPressed: () => _disliked(),
-//                  ),
+                  IconButton(
+                    icon: Icon(Icons.thumb_up),
+                    color: isLiked != null && isLiked
+                        ? Color(0xffFF8F8F)
+                        : null,
+                    splashRadius: splashRadius,
+                    onPressed: () => _liked(),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.thumb_down),
+                    color: isDisliked != null && isDisliked
+                        ? Color(0xffFF8F8F)
+                        : null,
+                    splashRadius: splashRadius,
+                    onPressed: () => _disliked(),
+                  ),
                   IconButton(
                     icon: Icon(Icons.comment),
                     splashRadius: splashRadius,
@@ -242,6 +278,24 @@ class _BuildPostState extends State<BuildPost> {
     );
   }
 
+  setLikeAndDislike() async
+  {
+    if (await widget.likes[widget
+        .dislikes("${Constants.ownerName}")] == "${Constants.ownerName}") {
+      isLiked = true;
+    }
+    else {
+      isLiked = false;
+    }
+    if (await widget.dislikes[widget
+        .dislikes("${Constants.ownerName}")] == "${Constants.ownerName}") {
+      isDisliked = true;
+    }
+    else {
+      isLiked = false;
+    }
+  }
+
   _liked() {
     bool newVal = true;
     if (isLiked) {
@@ -250,7 +304,9 @@ class _BuildPostState extends State<BuildPost> {
       newVal = true;
       isDisliked = !newVal;
     }
-    updateLike(newVal);
+    print(newVal);
+    updateLike(newVal, isLiked);
+    updateDislike(!newVal, isDisliked);
     if (mounted) {
       setState(() {
         isLiked = newVal;
@@ -363,25 +419,28 @@ class _BuildPostState extends State<BuildPost> {
     });
   }
 
-  int newLikeAmount;
-  int newDislikeAmount;
+  var likesList;
+  var dislikesList;
 
-  updateLike(bool newVal) async
+  updateLike(bool newVal, bool liked) async
   {
     await selectedTagRef
         .where('postUid', isEqualTo: widget.postUid)
         .getDocuments().then((docs) async {
-      newLikeAmount = await docs.documents[0].data["likes"];
-      if (newVal == true) {
-        newLikeAmount++;
-      } else {
-        newLikeAmount--;
+      likesList = await docs.documents[0].data["likes"];
+      if (newVal && liked) {
+        likesList.add("${Constants.ownerName.toLowerCase()}");
       }
-      Map<String, dynamic> likeMap = {
-        "likes": newLikeAmount,
+      else {
+        if (liked)
+          likesList.removeAt(
+              likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
+      }
+      Map<String, dynamic> likeListMap = {
+        'likes': likesList,
       };
       await selectedTagRef.document(docs.documents[0].documentID).updateData(
-          likeMap);
+          likeListMap);
     });
   }
 
@@ -390,17 +449,24 @@ class _BuildPostState extends State<BuildPost> {
     await selectedTagRef
         .where('postUid', isEqualTo: widget.postUid)
         .getDocuments().then((docs) async {
-      newDislikeAmount = await docs.documents[0].data["dislikes"];
-      if (newVal == true) {
-        newDislikeAmount--;
-      } else {
-        newDislikeAmount++;
+      dislikesList = await docs.documents[0].data["dislikes"];
+      if (newVal && isDisliked) {
+        dislikesList.add("${Constants.ownerName.toLowerCase()}");
       }
-      Map<String, dynamic> disLikeMap = {
-        "dislikes": newDislikeAmount,
+      else {
+        if (isLiked && !newVal) {
+          dislikesList.removeAt(
+              dislikesList.indexOf("${Constants.ownerName.toLowerCase()}"));
+        }
+        else {
+
+        }
+      }
+      Map<String, dynamic> dislikeListMap = {
+        'dislikes': dislikesList,
       };
       await selectedTagRef.document(docs.documents[0].documentID).updateData(
-          disLikeMap);
+          dislikeListMap);
     });
   }
 
@@ -412,12 +478,13 @@ class _BuildPostState extends State<BuildPost> {
       newVal = true;
       isLiked = !newVal;
     }
+    updateDislike(newVal);
+    updateLike(!newVal, isLiked);
     if (mounted) {
       setState(() {
         isDisliked = newVal;
       });
     }
-    updateDislike(newVal);
   }
 
   getUserProfileUrl() async {

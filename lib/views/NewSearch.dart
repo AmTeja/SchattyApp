@@ -156,45 +156,69 @@ class _NewSearchState extends State<NewSearch> {
                           print('Called');
                           return Container(
                             padding: EdgeInsets.all(16.0),
-                            child: ListTile(
-                              leading: GestureDetector(
-                                onTap: () =>
-                                    Navigator.push(context, MaterialPageRoute(
-                                        builder: (context) =>
-                                            TargetUserInfo(
-                                                snapshot.data.documents[index]
-                                                    .data['username']))),
-                                child: Container(
-                                  child: CircleAvatar(
-                                    radius: 40,
-                                    child: ClipOval(
-                                      child: CachedNetworkImage(
-                                        width: 60,
-                                        height: 60,
-                                        imageUrl: snapshot.data.documents[index]
-                                            .data['photoURL'],
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) =>
-                                            Center(
-                                              child: CircularProgressIndicator(),),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              title: Text(snapshot
-                                  .data.documents[index].data['username']),
-                              trailing: FlatButton(
-                                child: Text("Message"),
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(23)),
-                                color: Color.fromARGB(255, 126, 217, 241),
-                                onPressed: () {
-                                  createChatInstance(
-                                      snapshot.data.documents[index]
-                                          .data['username']);
-                                },
-                              ),
+                                                child: GestureDetector(
+                                                  onTap: () => Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              TargetUserInfo(snapshot
+                                                                      .data
+                                                                      .documents[
+                                                                          index]
+                                                                      .data[
+                                                                  'username']))),
+                                                  child: ListTile(
+                                                    leading: Container(
+                                                      child: CircleAvatar(
+                                                        radius: 40,
+                                                        child: ClipOval(
+                                                          child:
+                                                              CachedNetworkImage(
+                                                            width: 60,
+                                                            height: 60,
+                                                            imageUrl: snapshot
+                                                                    .data
+                                                                    .documents[
+                                                                        index]
+                                                                    .data[
+                                                                'photoURL'],
+                                                            fit: BoxFit.cover,
+                                                            placeholder:
+                                                                (context,
+                                                                        url) =>
+                                                                    Center(
+                                                              child:
+                                                                  CircularProgressIndicator(),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    title: Text(snapshot
+                                                        .data
+                                                        .documents[index]
+                                                        .data['username']),
+                                                    trailing: FlatButton(
+                                                      child: Text("Message"),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          23)),
+                                                      color: Color.fromARGB(
+                                                          255, 126, 217, 241),
+                                                      onPressed: () {
+                                                        createChatInstance(
+                                                            snapshot
+                                                                    .data
+                                                                    .documents[
+                                                                        index]
+                                                                    .data[
+                                                                'username']);
+                                                      },
+                                                    ),
+                                                  ),
                             ),
                           );
                         },

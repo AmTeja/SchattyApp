@@ -1,7 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:share/share.dart';
+import 'package:schatty/views/Feed/BuildContent.dart';
+import 'package:share_extend/share_extend.dart';
 
 Widget appBarMain(BuildContext context) {
   return AppBar();
@@ -15,12 +16,12 @@ InputDecoration textFieldInputDecoration(String hintText) {
       ),
       focusedBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.blue,
-          )),
+        color: Colors.blue,
+      )),
       enabledBorder: UnderlineInputBorder(
           borderSide: BorderSide(
-            color: Colors.black,
-          )));
+        color: Colors.black,
+      )));
 }
 
 compareTime(String timeInDM) {
@@ -62,7 +63,7 @@ Widget viewImage(String url, BuildContext context, String message, Object tag) {
         IconButton(
           icon: Icon(Icons.share),
           onPressed: () {
-            share(context, url);
+            share(context, url, true);
           },
         )
       ],
@@ -83,10 +84,30 @@ Widget viewImage(String url, BuildContext context, String message, Object tag) {
   );
 }
 
-void share(BuildContext context, String url) {
+Widget viewPost(docs, topic) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text("Schatty"),
+      centerTitle: true,
+    ),
+    body: BuildPost(
+      loop: false,
+      time: docs.data['time'],
+      url: docs.data["url"],
+      username: docs.data["username"],
+      topic: topic,
+      caption: docs.data["caption"],
+      postUid: docs.data["postUid"] ?? "null",
+      likes: docs.data['likes'],
+      nsfw: docs.data["NSFW"] ?? false,
+      title: docs.data["title"],
+    ),
+  );
+}
+
+void share(BuildContext context, String message, bool isImage) {
   final RenderBox box = context.findRenderObject();
-  Share.share(url,
-      sharePositionOrigin: box.localToGlobal(Offset.zero) & box.size);
+  ShareExtend.share(message, "text");
 }
 
 // ignore: non_constant_identifier_names
@@ -137,7 +158,9 @@ Widget UserAvatar(String profileURL, double radius) {
         imageUrl: profileURL,
         fit: BoxFit.cover,
         placeholder: (context, url) =>
-            Center(child: CircularProgressIndicator(),),
+            Center(
+              child: CircularProgressIndicator(),
+            ),
       )
           : Image.asset(
         "assets/images/username.png",

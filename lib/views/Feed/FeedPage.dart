@@ -436,20 +436,19 @@ class _FeedPageState extends State<FeedPage>
                     ),
                     ListView.builder(
                       physics: NeverScrollableScrollPhysics(),
-                      cacheExtent:
-                      snapshot.data.documents.length / 2,
-                      controller: feedListController,
-                      shrinkWrap: true,
-                      itemCount: snapshot.data.documents.length,
-                      itemBuilder: (context, index) {
-                        var ref = snapshot.data.documents[index];
-                        return snapshot.hasData
-                            ? BuildPost(
-                          time: snapshot.data.documents[index]
-                              .data['time'],
-                          isDark: isDark,
-                          url: snapshot.data.documents[index]
-                              .data["url"],
+                                  cacheExtent:
+                                      snapshot.data.documents.length / 2,
+                                  controller: feedListController,
+                                  shrinkWrap: true,
+                                  itemCount: snapshot.data.documents.length,
+                                  itemBuilder: (context, index) {
+                                    var ref = snapshot.data.documents[index];
+                                    return snapshot.hasData
+                                        ? BuildPost(
+                                            time: snapshot.data.documents[index]
+                                                .data['time'],
+                                            url: snapshot.data.documents[index]
+                                                .data["url"],
                           username: snapshot
                               .data
                               .documents[index]
@@ -465,6 +464,7 @@ class _FeedPageState extends State<FeedPage>
                               .data["postUid"] ??
                               "null",
                           likes: ref.data['likes'],
+                          dislikes: ref.data['dislikes'],
                           nsfw: snapshot.data.documents[index]
                               .data["NSFW"] ??
                               false,

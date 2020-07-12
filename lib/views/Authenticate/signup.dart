@@ -33,6 +33,7 @@ class _SignUpState extends State<SignUp> {
   bool hidePassword = true;
 
   signUp() async {
+    error = null;
     if (formKey.currentState.validate() &&
         (passwordTEC.text == rePasswordTEC.text)) {
       setState(() {
@@ -64,12 +65,12 @@ class _SignUpState extends State<SignUp> {
             String uid = firebaseUser.uid;
             databaseMethods.uploadUserInfo(userInfoMap, uid);
             await firebaseUser.sendEmailVerification().then((value) => {
-                  setState(() {
-                    error = null;
-                    verificationSent = true;
-                    isLoading = false;
-                  })
-                });
+              setState(() {
+                error = null;
+                verificationSent = true;
+                isLoading = false;
+              })
+            });
           }
         } else {
           setState(() {
@@ -80,9 +81,9 @@ class _SignUpState extends State<SignUp> {
         }
       } catch (e) {
         print(e);
+        error = await e.message;
         setState(() {
           isLoading = false;
-          error = e.message;
         });
       }
     } else {
@@ -94,15 +95,18 @@ class _SignUpState extends State<SignUp> {
   }
 
   makeIndex() {
-    List<String> splitList = userNameTEC.text.split(" ");
-    List<String> indexList = [];
-
-    for (int i = 0; i < splitList.length; i++) {
-      for (int y = 0; y < splitList[i].length + 1; y++) {
-        indexList.add(splitList[i].substring(0, y).toLowerCase());
+    try {
+      print('Called');
+      List<String> indexList = [];
+      for (int i = 0; i < Constants.ownerName.length; i++) {
+        for (int y = 0; y < Constants.ownerName.length + 1; y++) {
+          indexList.add(Constants.ownerName.substring(0, y).toLowerCase());
+        }
       }
+      return indexList;
+    } catch (e) {
+      print('Error making index: $e');
     }
-    return indexList;
   }
 
   Widget showErrorAlert() {

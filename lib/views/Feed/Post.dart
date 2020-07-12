@@ -607,7 +607,6 @@ class _PostContentState extends State<PostContent> {
   makeIndex() {
     List<String> splitList = titleTEC.text.split(" ");
     List<String> indexList = [];
-
     for (int i = 0; i < splitList.length; i++) {
       for (int y = 0; y < splitList[i].length + 1; y++) {
         indexList.add(splitList[i].substring(0, y).toLowerCase());
@@ -645,12 +644,10 @@ class _PostContentState extends State<PostContent> {
               "url": postUrl ?? urlFromImage,
               "username": widget.username,
               "caption": captionTEC.text,
-              "time": DateTime
-                  .now()
-                  .millisecondsSinceEpoch,
+              "time": DateTime.now().millisecondsSinceEpoch,
               "profileUrl": widget.profileUrl,
-              "likes": 0,
-              "dislikes": 0,
+              "likes": [""],
+              "dislikes": [""],
               "postUid": ranString,
               "NSFW": nsfw ?? false,
               "title": titleTEC.text,

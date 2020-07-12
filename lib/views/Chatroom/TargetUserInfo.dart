@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/widget.dart';
@@ -23,9 +24,7 @@ class _TargetUserInfoState extends State<TargetUserInfo>
   String profileURL;
   String displayName;
   String userName;
-  String tagForStream;
-
-  List<String> tagList = ["Sci-F", "Memes", "Tech", "Art", "Animals"];
+  String tagForStream = "Sci-Fi";
 
   bool dev = true;
 
@@ -56,7 +55,7 @@ class _TargetUserInfoState extends State<TargetUserInfo>
   void initState() {
     // TODO: implement initState
     super.initState();
-    setPostStream("Sci-Fi");
+    setPostStream(tagForStream);
     tabController = new TabController(length: 5, vsync: this);
     getData();
   }
@@ -69,123 +68,53 @@ class _TargetUserInfoState extends State<TargetUserInfo>
         centerTitle: true,
       ),
 //      backgroundColor: Color.fromARGB(255, 14, 14, 14),
-      body: !dev
-          ? Center(
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.only(top: 70),
-                    alignment: Alignment.topCenter,
-                    child: CircleAvatar(
-                      radius: 120,
-                      child: ClipOval(
-                        child: profileURL != null
-                            ? CachedNetworkImage(
-                                imageUrl: profileURL,
-                    imageBuilder: (context, imageProvider) =>
-                        Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: imageProvider,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                    placeholder: (context, url) =>
-                        CircularProgressIndicator(),
-                    errorWidget: (context, url, error) =>
-                        Icon(Icons.error),
-                  )
-                      : Image(
-                    image: AssetImage("assets/images/username.png"),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 40,
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 100),
-              child: Column(
-                children: [
-                  Text(
-                    "Username",
-                    style: TextStyle(fontSize: 26),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    child: Text(
-                      userName,
-                      style: TextStyle(fontSize: 26),
-                    ),
-                  )
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 100),
-              child: Column(
-                children: [
-                  Text(
-                    "Display Name",
-                    style: TextStyle(fontSize: 26),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    child: Text(
-                      displayName ?? userName,
-                      style: TextStyle(fontSize: 26),
-                    ),
-                  ),
-                ],
-              ),
-            )
-          ],
-        ),
-      ) : newBody(),
+      body: newBody(),
     );
   }
 
   Widget newBody() {
-    return Column(
-      children: [
-        Container(
-          alignment: Alignment.center,
-          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-          child: Row(
-            children: [
-              UserAvatar(profileURL, 70),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Text(userName,
-                  style: TextStyle(
-                      fontSize: 30
-                  ),),
-              ),
-            ],
+    return SingleChildScrollView(
+      physics: ScrollPhysics(),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            alignment: Alignment.center,
+            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+            child: Row(
+              children: [
+                UserAvatar(profileURL, 70),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    displayName ?? userName,
+                    style: TextStyle(fontSize: 30),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        Container(
-          margin: EdgeInsets.symmetric(vertical: 10),
-          height: 40,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            children: [
-              showTag("Sci-Fi"),
-              showTag("Memes"),
-              showTag("Tech"),
-              showTag("Art"),
-              showTag("Animals"),
-              showTag("History"),
-              showTag("Educational"),
-            ],
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 10),
+            height: 40,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              children: [
+                showTag("Sci-Fi"),
+                showTag("Memes"),
+                showTag("Tech"),
+                showTag("Art"),
+                showTag("Animals"),
+                showTag("History"),
+                showTag("Educational"),
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          child: returnPosts(),
-        )
-      ],
+          Flexible(
+            child: returnPosts(),
+          )
+        ],
+      ),
     );
   }
 
@@ -195,7 +124,6 @@ class _TargetUserInfoState extends State<TargetUserInfo>
       setPostStream(tagForStream);
     });
   }
-
 
   Widget showTag(String tag) {
     return GestureDetector(
@@ -224,7 +152,8 @@ class _TargetUserInfoState extends State<TargetUserInfo>
   setPostStream(tag) {
     postStream =
         Firestore.instance.collection('Posts').document('Public').collection(
-            tag).snapshots();
+            tag).where('username', isEqualTo: userName).orderBy(
+            'time', descending: true).getDocuments().asStream();
     if (mounted) {
       setState(() {
 
@@ -238,23 +167,58 @@ class _TargetUserInfoState extends State<TargetUserInfo>
       builder: (BuildContext context, snapshot) {
         return snapshot.hasData ? GridView.builder(
           physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
           itemCount: snapshot.data.documents.length,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3),
+              crossAxisCount: 2),
           itemBuilder: (context, index) {
             return snapshot.data.documents[index].data["username"] == userName
-                ? Card(
-              child: Column(
-                children: [
-                  Expanded(
-                      child: CachedNetworkImage
-                        (imageUrl: snapshot.data.documents[index].data['url'],
-                        fit: BoxFit.cover,)
-                  )
-                ],
+                ? snapshot.data.documents[index].data["NSFW"] == true
+                ? GestureDetector(
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          viewPost(snapshot.data.documents[index],
+                              tagForStream),
+                    ));
+              },
+              child: Container(
+                color: Colors.white,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("NSFW",
+                          style: TextStyle(fontSize: 40, color: Colors.black),),
+                      ),
+                    ],
+                  ),
+                ),),
+            )
+                : GestureDetector(
+              onTap: () {
+                Navigator.push(context, MaterialPageRoute(
+                  builder: (context) =>
+                      viewPost(snapshot.data.documents[index], tagForStream),
+                ));
+              },
+              child: Card(
+                child: Column(
+                  children: [
+                    Expanded(
+                        child: CachedNetworkImage
+                          (imageUrl: snapshot.data.documents[index].data['url'],
+                          fit: BoxFit.cover,)
+                    )
+                  ],
+                ),
               ),
             )
-                : SizedBox();
+                : SizedBox.shrink();
           },
         ) : Center(child: Container(child: Text("failed to load"),));
       },

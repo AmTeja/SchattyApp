@@ -27,7 +27,7 @@ void main() async {
       .initialize(appId: "ca-app-pub-1304691467262814~7353905593");
 
   LicenseRegistry.addLicense(() async* {
-    final license = await rootBundle.loadString('google_fonts/OFL.txt');
+    final license = await rootBundle.loadString('google_fonts/OFLRosario.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
 

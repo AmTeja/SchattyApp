@@ -12,7 +12,7 @@ class FeedAd extends StatelessWidget {
     final _nativeAdMob = NativeAdmob(
       adUnitID: FeedAd.adUnitAd,
       loading: Center(child: CircularProgressIndicator()),
-      error: Text("Failed to load"),
+      error: Center(child: Text("Failed to load")),
       controller: _controller,
       type: NativeAdmobType.full,
     );

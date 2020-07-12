@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -10,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:link_text/link_text.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/enums/view_state.dart';
 import 'package:schatty/helper/cachednetworkimage.dart';
@@ -17,6 +19,7 @@ import 'package:schatty/helper/constants.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
+import 'package:schatty/views/Chatroom/MainChatsRoom.dart';
 import 'package:schatty/widgets/widget.dart';
 
 import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/TargetUserInfo.dart';
@@ -55,8 +58,13 @@ class _ChatScreenState extends State<ChatScreen> {
   String sentFrom;
   String url;
   String selectedText;
+  String profileUrl;
+
+  int selectedTime;
 
   bool onScreen;
+  bool isSelectedOwner = false;
+  bool isImage = false;
 
   File newImage;
 
@@ -66,6 +74,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     onScreen = true;
+    getProfileUrl();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
         chatMessageStream = val;
@@ -75,54 +84,6 @@ class _ChatScreenState extends State<ChatScreen> {
     setSentTo();
   }
 
-  setSeen() async {
-    CollectionReference ref;
-    await Firestore.instance
-        .collection('ChatRoom')
-        .where("chatRoomId", isEqualTo: widget.chatRoomID)
-        .getDocuments()
-        .then((docs) async {
-      ref = Firestore.instance
-          .collection('ChatRoom')
-          .document(docs.documents[0].documentID)
-          .collection('chats');
-    });
-    QuerySnapshot querySnapshot = await ref
-        .where('sendTo', isEqualTo: sentFrom)
-        .where('sentFrom', isEqualTo: sentTo)
-        .where('isSeen', isEqualTo: false)
-        .getDocuments();
-    querySnapshot.documents.forEach((msgDoc) {
-      msgDoc.reference.updateData({'isSeen': true});
-    });
-
-    await Firestore.instance
-        .collection('ChatRoom')
-        .where('chatRoomId', isEqualTo: widget.chatRoomID)
-        .getDocuments()
-        .then((docs) {
-      Firestore.instance
-          .collection('ChatRoom')
-          .document(docs.documents[0].documentID)
-          .updateData({"seenBy.${Constants.ownerName}": true});
-    });
-  }
-
-  getUID() async {
-    uid = await databaseMethods.getUIDByUsername(Constants.ownerName);
-  }
-
-  setSentTo() async {
-    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-    FirebaseUser user = await firebaseAuth.currentUser();
-    sentTo = await databaseMethods.getUIDByUsername(widget.userName);
-    sentFrom = user.uid;
-    setSeen();
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     String chatWith = widget.userName;
@@ -130,34 +91,67 @@ class _ChatScreenState extends State<ChatScreen> {
     return Scaffold(
 //        backgroundColor: Color.fromARGB(255, 18, 18, 18),
         appBar: AppBar(
-          title: Text(chatWith),
+          title: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                child: profileUrl != null
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          height: 35,
+                          width: 35,
+                          imageUrl: profileUrl,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Text(
+                        "${chatWith.substring(0, 1).toUpperCase()}",
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(chatWith),
+              ),
+            ],
+          ),
           actions: <Widget>[
             isSelected
                 ? IconButton(
-              icon: Icon(Icons.content_copy),
-              onPressed: () {
-                Clipboard.setData(
-                  ClipboardData(text: selectedText),
-                );
-                setState(() {
-                  isSelected = false;
-                  selectedText = "";
-                  Fluttertoast.showToast(msg: "Copied Content!");
-                });
-              },
-            )
+                    icon: Icon(Icons.content_copy),
+                    onPressed: () {
+                      Clipboard.setData(
+                        ClipboardData(text: selectedText),
+                      );
+                      setState(() {
+                        isSelected = false;
+                        selectedText = "";
+                        Fluttertoast.showToast(msg: "Copied Content!");
+                      });
+                    },
+                  )
+                : SizedBox(),
+            isSelected
+                ? isSelectedOwner
+                    ? IconButton(
+                        icon: Icon(Icons.delete_forever),
+                        onPressed: () {
+                          deleteMessage(selectedText, selectedTime);
+                        },
+                      )
+                    : SizedBox()
                 : SizedBox(),
             isSelected
                 ? IconButton(
-              icon: Icon(Icons.share),
-              onPressed: () {
-                share(context, selectedText);
-                setState(() {
-                  isSelected = false;
-                  selectedText = "";
-                });
-              },
-            )
+                    icon: Icon(Icons.share),
+                    onPressed: () {
+                      share(context, selectedText, isImage);
+                      setState(() {
+                        isSelected = false;
+                        selectedText = "";
+                        isImage = null;
+                      });
+                    },
+                  )
                 : SizedBox(),
             IconButton(
               icon: Icon(Icons.info),
@@ -199,7 +193,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                       .data["message"],
                                   snapshot.data.documents[index]
                                       .data["sendBy"] ==
-                                      Constants.ownerName,
+                                      Constants.ownerName.toLowerCase(),
                                   snapshot
                                       .data.documents[index].data["time"],
                                   snapshot
@@ -230,6 +224,229 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  buildMessage(String message, bool isMe, int time, String imageUrl,
+      bool read) {
+    bool imageMessage = false;
+    var timeInDM =
+    DateFormat('dd:M:y').format(DateTime.fromMillisecondsSinceEpoch(time));
+    newDay = compareTime(timeInDM);
+    if (!(imageUrl == null || imageUrl == "")) {
+      imageMessage = true;
+    }
+    final Widget msg = SafeArea(
+        child: Container(
+          padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+          margin: EdgeInsets.symmetric(vertical: 8),
+          width: MediaQuery
+              .of(context)
+              .size
+              .width * 0.8,
+          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+          child: GestureDetector(
+            onLongPress: () {
+              HapticFeedback.mediumImpact();
+              if (!imageMessage) {
+                setState(() {
+                  isSelected = !isSelected;
+                  selectedText = message;
+                  selectedTime = time;
+                  isSelectedOwner = isMe;
+                  isImage = false;
+                });
+              } else {
+                setState(() {
+                  isSelected = !isSelected;
+                  selectedText = imageUrl;
+                  selectedTime = time;
+                  isSelectedOwner = isMe;
+                  isImage = true;
+                });
+              }
+            },
+            child: Container(
+              padding: !imageMessage
+                  ? EdgeInsets.symmetric(horizontal: 24, vertical: 16)
+                  : EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              constraints: BoxConstraints(
+                maxWidth: MediaQuery
+                    .of(context)
+                    .size
+                    .width * 0.8,
+              ),
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: isMe
+                          ? (!imageMessage
+                          ? ([const Color(0xffff758c), const Color(0xffff7eb3)])
+                          : [Color(0xffc8435f), Color(0xffc94d83)])
+                          : (!imageMessage
+                          ? ([Color(0xff93a5cf), const Color(0xff93a5cf)])
+                          : [Color(0xff64769e), Color(0xff64769e)])),
+                  borderRadius: isMe
+                      ? BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                      bottomLeft: Radius.circular(18))
+                      : BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                      bottomRight: Radius.circular(18))),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  Flexible(
+                    child: (!imageMessage)
+                        ? LinkText(
+                      text: message,
+                      textStyle: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                        : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      //                        crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        viewImage(
+                                            imageUrl, context, message, time),
+                                  ));
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(23)),
+                              child: Hero(
+                                tag: time,
+                                child: CachedNetworkImage(
+                                  imageUrl: imageUrl,
+                                  errorWidget: (context, msg, error) =>
+                                      Center(
+                                        child: Text(
+                                            "Error loading $msg: $error"),
+                                      ),
+                                ),
+                              ),
+                            )),
+                        message != ""
+                            ? Container(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Text(
+                            message,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        )
+                            : Container(),
+                      ],
+                    ),
+                  ),
+                  !imageMessage
+                      ? Container(
+                    padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
+                    child: Text(
+                      !newDay
+                          ? DateFormat('kk:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(time))
+                          : DateFormat('kk:mm dd/M').format(
+                          DateTime.fromMillisecondsSinceEpoch(time)),
+                      style: TextStyle(
+                        fontSize: 12,
+                      ),
+                    ),
+                  )
+                      : Container(),
+                  !imageMessage && read && isMe
+                      ? Container(
+                    padding: EdgeInsets.symmetric(horizontal: 5),
+                    child: Icon(
+                      Icons.check,
+//                    color: Color(0xff51cec0),
+                      size: 15,
+                    ),
+                  )
+                      : Container(),
+                ],
+              ),
+            ),
+          ),
+        ));
+    return msg;
+  }
+
+  Widget composeImage() {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(),
+      body: Center(
+        child: Column(
+          children: [
+            Expanded(
+              flex: 2,
+              child: Container(
+                decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: FileImage(newImage),
+                      fit: BoxFit.none,
+                    )),
+              ),
+            ),
+            Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  SizedBox(
+                    width: 20,
+                  ),
+                  Expanded(
+                    child: TextField(
+                        controller: captionTEC,
+                        textCapitalization: TextCapitalization.sentences,
+                        onSubmitted: sendImage(context),
+                        decoration: InputDecoration(
+                          hintText: "Caption",
+                          hintStyle: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 24,
+                          ),
+                          contentPadding:
+                          EdgeInsets.only(left: 15, top: 20, bottom: 20),
+                          fillColor: Colors.white70,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        )),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      sendImage(context);
+                    },
+                    icon: Icon(Icons.send),
+                    color: Colors.blue,
+                    iconSize: 25,
+                  )
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   buildMessageComposer() {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8),
@@ -246,23 +463,10 @@ class _ChatScreenState extends State<ChatScreen> {
             child: TextField(
               controller: messageTEC,
               textCapitalization: TextCapitalization.sentences,
-              onChanged: (value) {
-                setState(() {
-                  isComposing = true;
-                });
-              },
-              onEditingComplete: () {
-                setState(() {
-                  isComposing = false;
-                });
-              },
               enableSuggestions: true,
               textInputAction: TextInputAction.send,
               onSubmitted: (val) {
                 sendMessage();
-                setState(() {
-                  isComposing = false;
-                });
               },
               decoration: InputDecoration(
                 contentPadding:
@@ -281,6 +485,7 @@ class _ChatScreenState extends State<ChatScreen> {
             iconSize: 25,
             color: Color(0xff51cec0),
             onPressed: () {
+              HapticFeedback.lightImpact();
               sendMessage();
             },
           )
@@ -394,6 +599,56 @@ class _ChatScreenState extends State<ChatScreen> {
             ],
           );
         });
+  }
+
+  setSeen() async {
+    CollectionReference ref;
+    await Firestore.instance
+        .collection('ChatRoom')
+        .where("chatRoomId", isEqualTo: widget.chatRoomID)
+        .getDocuments()
+        .then((docs) async {
+      ref = Firestore.instance
+          .collection('ChatRoom')
+          .document(docs.documents[0].documentID)
+          .collection('chats');
+    });
+    QuerySnapshot querySnapshot = await ref
+        .where('sendTo', isEqualTo: sentFrom)
+        .where('sentFrom', isEqualTo: sentTo)
+        .where('isSeen', isEqualTo: false)
+        .getDocuments();
+    querySnapshot.documents.forEach((msgDoc) {
+      msgDoc.reference.updateData({'isSeen': true});
+    });
+
+    await Firestore.instance
+        .collection('ChatRoom')
+        .where('chatRoomId', isEqualTo: widget.chatRoomID)
+        .getDocuments()
+        .then((docs) {
+      Firestore.instance
+          .collection('ChatRoom')
+          .document(docs.documents[0].documentID)
+          .updateData({"seenBy.${Constants.ownerName}": true});
+    });
+  }
+
+  setSentTo() async {
+    FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+    FirebaseUser user = await firebaseAuth.currentUser();
+    sentTo = await databaseMethods.getUIDByUsername(widget.userName);
+    sentFrom = user.uid;
+    setSeen();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  getProfileUrl() async {
+    profileUrl = await databaseMethods
+        .getProfileUrlByName(widget.userName.toLowerCase());
+    setState(() {});
   }
 
   sendMessage() async {
@@ -522,208 +777,48 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool newDay = true;
 
-  buildMessage(String message, bool isMe, int time, String imageUrl,
-      bool read) {
-    bool imageMessage = false;
-    var timeInDM =
-    DateFormat('dd:M:y').format(DateTime.fromMillisecondsSinceEpoch(time));
-    newDay = compareTime(timeInDM);
-    if (!(imageUrl == null || imageUrl == "")) {
-      imageMessage = true;
+  deleteMessage(String message, int time) async {
+    try {
+      if (message != url) {
+        await Firestore.instance
+            .collection('ChatRoom')
+            .document(widget.chatRoomID)
+            .collection('chats')
+            .where('message', isEqualTo: message)
+            .where('time', isEqualTo: time)
+            .getDocuments()
+            .then((docs) async {
+          await Firestore.instance
+              .collection('ChatRoom')
+              .document(widget.chatRoomID)
+              .collection('chats')
+              .document(docs.documents[0].documentID)
+              .delete();
+        });
+      } else {
+        print('Its a url');
+        await Firestore.instance
+            .collection('ChatRoom')
+            .document(widget.chatRoomID)
+            .collection('chats')
+            .where('url', isEqualTo: message)
+            .where('time', isEqualTo: time)
+            .getDocuments()
+            .then((docs) async {
+          await Firestore.instance
+              .collection('ChatRoom')
+              .document(widget.chatRoomID)
+              .collection('chats')
+              .document(docs.documents[0].documentID)
+              .delete();
+        });
+      }
+      isSelected = false;
+      selectedTime = null;
+      selectedText = null;
+      if (mounted) setState(() {});
+    } catch (e) {
+      print("Error deleting message: $e");
     }
-    final Widget msg = SafeArea(
-        child: Container(
-          padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
-          margin: EdgeInsets.symmetric(vertical: 8),
-          width: MediaQuery
-              .of(context)
-              .size
-              .width * 0.8,
-          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-          child: GestureDetector(
-            onLongPress: () {
-              HapticFeedback.mediumImpact();
-              if (!imageMessage) {
-                setState(() {
-                  isSelected = !isSelected;
-                  selectedText = message;
-                });
-              }
-            },
-            child: Container(
-              padding: !imageMessage
-                  ? EdgeInsets.symmetric(horizontal: 24, vertical: 16)
-                  : EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.8,
-              ),
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: isMe
-                          ? (!imageMessage
-                          ? ([const Color(0xffff758c), const Color(0xffff7eb3)])
-                          : [Color(0xffc8435f), Color(0xffc94d83)])
-                          : (!imageMessage
-                          ? ([Color(0xff93a5cf), const Color(0xff93a5cf)])
-                          : [Color(0xff64769e), Color(0xff64769e)])),
-                  borderRadius: isMe
-                      ? BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(18),
-                      bottomLeft: Radius.circular(18))
-                      : BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(18),
-                      bottomRight: Radius.circular(18))),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Flexible(
-                    child: (!imageMessage)
-                        ? Text(message,
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ))
-                        : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      //                        crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        viewImage(
-                                            imageUrl, context, message, time),
-                                  ));
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(23)),
-                              child: Hero(
-                                tag: time,
-                                child: CachedImage(
-                                  url: imageUrl,
-                                ),
-                              ),
-                            )),
-                        message != ""
-                            ? Container(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text(
-                            message,
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
-                            : Container(),
-                      ],
-                    ),
-                  ),
-                  !imageMessage
-                      ? Container(
-                    padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
-                    child: Text(
-                      !newDay
-                          ? DateFormat('kk:mm').format(
-                          DateTime.fromMillisecondsSinceEpoch(time))
-                          : DateFormat('kk:mm dd/M').format(
-                          DateTime.fromMillisecondsSinceEpoch(time)),
-                      style: TextStyle(
-                        fontSize: 12,
-                      ),
-                    ),
-                  )
-                      : Container(),
-                  !imageMessage && read && isMe
-                      ? Container(
-                    padding: EdgeInsets.symmetric(horizontal: 5),
-                    child: Icon(
-                      Icons.check,
-//                    color: Color(0xff51cec0),
-                      size: 15,
-                    ),
-                  )
-                      : Container(),
-                ],
-              ),
-            ),
-          ),
-        ));
-    return msg;
-  }
-
-  Widget composeImage() {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(),
-      body: Center(
-        child: Column(
-          children: [
-            Expanded(
-              flex: 2,
-              child: Container(
-                decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: FileImage(newImage),
-                      fit: BoxFit.none,
-                    )),
-              ),
-            ),
-            Container(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.max,
-                children: [
-                  SizedBox(
-                    width: 20,
-                  ),
-                  Expanded(
-                    child: TextField(
-                        controller: captionTEC,
-                        textCapitalization: TextCapitalization.sentences,
-                        onSubmitted: sendImage(context),
-                        decoration: InputDecoration(
-                          hintText: "Caption",
-                          hintStyle: TextStyle(
-                            color: Colors.black54,
-                            fontSize: 24,
-                          ),
-                          contentPadding:
-                          EdgeInsets.only(left: 15, top: 20, bottom: 20),
-                          fillColor: Colors.white70,
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                          ),
-                        )),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      sendImage(context);
-                    },
-                    icon: Icon(Icons.send),
-                    color: Colors.blue,
-                    iconSize: 25,
-                  )
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
   }
 }
