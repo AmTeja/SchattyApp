@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/helper/preferencefunctions.dart' show Preferences;
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ChangePassword.dart';
@@ -35,17 +35,24 @@ class _EditProfileState extends State<EditProfile> {
   final formKey = GlobalKey<FormState>();
 
   String displayName;
+  bool isGoogle = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     isLoading = true;
+    getIsGoogle();
     assignURL();
     getDisplayName();
     setState(() {
       isLoading = false;
     });
+  }
+
+  getIsGoogle() async {
+    isGoogle = await Preferences.getIsGoogleUser() ?? false;
+    print(isGoogle);
+    setState(() {});
   }
 
   getDisplayName() async {
@@ -162,7 +169,7 @@ class _EditProfileState extends State<EditProfile> {
                 ),
               ),
             ),
-            Padding(
+            isGoogle ? Container() : Padding(
               padding:
               const EdgeInsets.symmetric(horizontal: 120, vertical: 10),
               child: MaterialButton(

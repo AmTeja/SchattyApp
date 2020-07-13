@@ -213,11 +213,14 @@ class _CommentsPageState extends State<CommentsPage> {
                   style: TextStyle(fontSize: 18),
                 ),
               ),
-              Container(
-                padding: EdgeInsets.all(10),
-                child: Text(
-                  commentContent,
-                  style: TextStyle(fontSize: 18),
+              Expanded(
+                child: Container(
+                  margin: EdgeInsets.all(10),
+                  padding: EdgeInsets.all(10),
+                  child: Text(
+                    commentContent,
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               )
             ],
@@ -274,6 +277,7 @@ class _CommentsPageState extends State<CommentsPage> {
         'username': username,
         'photoURL': await databaseMethods.getProfileUrlByName(username),
         'commentId': ranString,
+        'time': DateTime.now().millisecondsSinceEpoch,
       };
       await Firestore.instance
           .collection('Posts')
@@ -388,6 +392,7 @@ class _CommentsPageState extends State<CommentsPage> {
           .collection(widget.tag)
           .document(id)
           .collection('comments')
+          .orderBy('time', descending: true)
           .snapshots();
     });
   }

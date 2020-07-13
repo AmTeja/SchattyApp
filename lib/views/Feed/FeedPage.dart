@@ -64,6 +64,7 @@ class _FeedPageState extends State<FeedPage>
   CurvedAnimation curve;
 
   Stream postStream;
+  Stream tagStream;
 
   Widget bottomNavBar(context, darkThemeData) {
     return Consumer<DarkThemeProvider>(
@@ -186,6 +187,7 @@ class _FeedPageState extends State<FeedPage>
     getUserInfo();
     setupAnimations();
     setTagStream(selectedTag, descendingOrder);
+    setTagsStream();
     pageController = new PageController(initialPage: 0, keepPage: true);
   }
 
@@ -196,12 +198,15 @@ class _FeedPageState extends State<FeedPage>
     Preferences.saveUserNameSharedPreference(null);
     Preferences.saveUserEmailSharedPreference(null);
     Preferences.saveUserImageURL(null);
-    if (user.providerId != "Google") {
-      authMethods.signOut();
-      print("not google :)");
-    } else {
+    if (await Preferences.getIsGoogleUser()) {
       authMethods.signOutGoogle();
+      print('Is Google');
     }
+    else {
+      authMethods.signOut();
+      print('Is not google');
+    }
+    Preferences.saveIsGoogleUser(null);
     Navigator.pushReplacement(
         context, MaterialPageRoute(builder: (context) => AuthHome()));
   }
@@ -316,7 +321,7 @@ class _FeedPageState extends State<FeedPage>
               showAboutDialog(
                 context: context,
                 applicationName: "Schatty",
-                applicationVersion: '0.3 (Beta)',
+                applicationVersion: '1.0.4 (Beta)',
                 applicationIcon: SchattyIcon(),
                 children: [
                   SizedBox(
@@ -426,16 +431,31 @@ class _FeedPageState extends State<FeedPage>
                     Container(
                       margin: EdgeInsets.symmetric(vertical: 20),
                       height: 40,
+                      width: MediaQuery
+                          .of(context)
+                          .size
+                          .width,
                       child: ListView(
                         scrollDirection: Axis.horizontal,
                         children: [
-                          showTag("Sci-Fi"),
-                          showTag("Memes"),
-                          showTag("Tech"),
-                          showTag("Art"),
-                          showTag("Animals"),
-                          showTag("History"),
-                          showTag("Educational"),
+                          StreamBuilder(
+                            stream: tagStream,
+                            builder: (context, snap) {
+                              return snap.hasData ?
+                              ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: snap.data.documents.length,
+                                  itemBuilder: (context, index) {
+                                    return showTag(
+                                        snap.data.documents[index].data['tag']);
+                                  }
+                              )
+                                  : Container(
+                                child: Center(child: Text("OOF"),),);
+                            },
+                          )
                         ],
                       ),
                     ),
@@ -556,6 +576,15 @@ class _FeedPageState extends State<FeedPage>
     } catch (e) {
       print('PostStream Error: $e');
     }
+  }
+
+  setTagsStream() {
+    tagStream =
+        Firestore.instance.collection('Posts').document('Public').collection(
+            'Tags').snapshots();
+    setState(() {
+
+    });
   }
 
   setupAnimations() {

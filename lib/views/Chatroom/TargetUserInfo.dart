@@ -32,6 +32,7 @@ class _TargetUserInfoState extends State<TargetUserInfo>
   NewSearch newSearch = new NewSearch();
 
   Stream postStream;
+  Stream tagStream;
 
   TabController tabController;
 
@@ -51,6 +52,15 @@ class _TargetUserInfoState extends State<TargetUserInfo>
     setState(() {});
   }
 
+  setTagsStream() {
+    tagStream = Firestore.instance
+        .collection('Posts')
+        .document('Public')
+        .collection('Tags')
+        .snapshots();
+    setState(() {});
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -58,6 +68,7 @@ class _TargetUserInfoState extends State<TargetUserInfo>
     setPostStream(tagForStream);
     tabController = new TabController(length: 5, vsync: this);
     getData();
+    setTagsStream();
   }
 
   @override
@@ -97,16 +108,30 @@ class _TargetUserInfoState extends State<TargetUserInfo>
           Container(
             margin: EdgeInsets.symmetric(vertical: 10),
             height: 40,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                showTag("Sci-Fi"),
-                showTag("Memes"),
-                showTag("Tech"),
-                showTag("Art"),
-                showTag("Animals"),
-                showTag("History"),
-                showTag("Educational"),
+                StreamBuilder(
+                  stream: tagStream,
+                  builder: (context, snap) {
+                    return snap.hasData ?
+                    ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: snap.data.documents.length,
+                        itemBuilder: (context, index) {
+                          return showTag(snap.data.documents[index]
+                              .data['tag']);
+                        }
+                    )
+                        : Container(child: Center(child: Text("OOF"),),);
+                  },
+                )
               ],
             ),
           ),

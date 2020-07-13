@@ -224,15 +224,16 @@ class _AuthHomeState extends State<AuthHome> {
           "https://www.searchpng.com/wp-content/uploads/2019/02/Deafult-Profile-Pitcher.png";
       String uid = user.uid;
 
+      Preferences.saveIsGoogleUser(true);
+
       if (user != null && authResult.additionalUserInfo.isNewUser) {
         Map<String, String> userInfoMap = {
           //Making MAP for firebase
           "username": username,
           "email": email,
-          "searchKey": username.substring(0, 1).toUpperCase(),
           "photoURL": profilePicURL,
           "uid": uid,
-          "usernameIndex" : await makeIndex(username),
+          "usernameIndex": await makeIndex(username),
         };
 
         await databaseMethods.uploadUserInfo(userInfoMap, uid);

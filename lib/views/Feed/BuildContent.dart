@@ -212,7 +212,6 @@ class _BuildPostState extends State<BuildPost> {
   Widget Footer() {
     likesLength = widget.likes.length;
     dislikesLength = widget.likes.length;
-
     double splashRadius = 25.0;
     return Container(
 //      height: 80,
@@ -227,6 +226,15 @@ class _BuildPostState extends State<BuildPost> {
         direction: Axis.vertical,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+            child: Text(
+              "${widget.caption}",
+              style: TextStyle(
+                fontSize: 18,
+              ),
+            ),
+          ),
           ListTile(
             leading: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -235,7 +243,7 @@ class _BuildPostState extends State<BuildPost> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("${likesLength - dislikesLength}",
+                  Text("${widget.likes.length - widget.dislikes.length}",
                     style: TextStyle(
                         fontSize: 20
                     ),),
@@ -267,16 +275,6 @@ class _BuildPostState extends State<BuildPost> {
                     },
                   )
                 ],
-              ),
-            ),
-          ),
-          Padding(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 32.0, vertical: 16.0),
-            child: Text(
-              "${widget.caption}",
-              style: TextStyle(
-                fontSize: 18,
               ),
             ),
           ),
@@ -344,15 +342,11 @@ class _BuildPostState extends State<BuildPost> {
     }
   }
 
-
-
   _selected(val, context) {
     if (val == "Report") {
       reportPost();
     }
   }
-
-
 
   reportPost() async
   {
@@ -385,16 +379,17 @@ class _BuildPostState extends State<BuildPost> {
 
   updateLike(bool newVal) async
   {
+    print('Called update like');
     await selectedTagRef
         .where('postUid', isEqualTo: widget.postUid)
         .getDocuments().then((docs) async {
       likesList = await docs.documents[0].data["likes"];
-      if (newVal ) {
+      if (newVal) {
         likesList.add("${Constants.ownerName.toLowerCase()}");
       }
       else {
-          likesList.removeAt(
-              likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
+        likesList.removeAt(
+            likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
       }
       Map<String, dynamic> likeListMap = {
         'likes': likesList,
@@ -414,7 +409,7 @@ class _BuildPostState extends State<BuildPost> {
         dislikesList.add("${Constants.ownerName.toLowerCase()}");
       }
       else {
-        if (isLiked && !newVal) {
+        if (!newVal) {
           dislikesList.removeAt(
               dislikesList.indexOf("${Constants.ownerName.toLowerCase()}"));
         }

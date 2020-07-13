@@ -37,7 +37,7 @@ bool selectedPrivate = false;
 bool isLoading = false;
 bool dev = true;
 bool nsfw = false;
-
+bool newTag = false;
 
 File selectedImage;
 
@@ -49,6 +49,12 @@ String selectedImagePath;
 
 TextEditingController captionTEC = new TextEditingController();
 TextEditingController titleTEC = new TextEditingController();
+TextEditingController tagTEC = new TextEditingController();
+
+Stream tagStream;
+ScrollController tagController;
+
+final tagFormKey = new GlobalKey<FormState>();
 
 ImagePicker picker = ImagePicker();
 
@@ -58,6 +64,8 @@ class _PostContentState extends State<PostContent> {
     // TODO: implement initState
     super.initState();
     selectedImage = null;
+    setTagStream();
+    tagController = new ScrollController();
   }
 
   @override
@@ -231,38 +239,6 @@ class _PostContentState extends State<PostContent> {
                           .size
                           .height * 0.05,
                     ),
-//                    Container(
-//                      padding:
-//                          EdgeInsets.symmetric(vertical: 8, horizontal: 90),
-//                      child: Row(
-//                        children: [
-//                          GestureDetector(
-//                              onTap: () {
-//                                _selectedPublic();
-//                              },
-//                              child: Text(
-//                                "Public",
-//                                style: TextStyle(
-//                                    fontSize: 40,
-//                                    fontWeight: FontWeight.bold,
-//                                    color: !selectedPublic ? Color.fromARGB(153, 245, 245, 245) : Color.fromARGB(255, 245, 245, 245)),
-//                              )),
-//                          SizedBox(width: 30),
-//                          GestureDetector(
-//                            onTap: (){
-//                              _selectedPrivate();
-//                            },
-//                            child: Text(
-//                              "Private",
-//                              style: TextStyle(
-//                                  fontSize: 40,
-//                                  fontWeight: FontWeight.bold,
-//                                  color: !selectedPrivate ? Color.fromARGB(153, 245, 245, 245) : Color.fromARGB(255, 245, 245, 245)),
-//                            ),
-//                          )
-//                        ],
-//                      ),
-//                    ),
                     Container(
                       padding: EdgeInsets.all(28),
                       child: FlatButton(
@@ -361,6 +337,14 @@ class _PostContentState extends State<PostContent> {
     );
   }
 
+  setTagStream() {
+    tagStream =
+        Firestore.instance.collection('Posts').document('Public').collection(
+            'Tags').snapshots();
+    setState(() {
+
+    });
+  }
 
   getVideo() async {
     try {
@@ -426,25 +410,63 @@ class _PostContentState extends State<PostContent> {
           return AlertDialog(
             title: Text("Select Tag"),
             content: Container(
-              width: MediaQuery.of(context).size.width * 0.55,
-              height: MediaQuery.of(context).size.height * 0.40,
-              decoration: BoxDecoration(
-                  border: Border(
-                    top: BorderSide(color: Colors.black),
-                    bottom: BorderSide(color: Colors.black),
-                    left: BorderSide(color: Colors.black),
-                    right: BorderSide(color: Colors.black),
-                  ),
-                  borderRadius: BorderRadius.circular(23)),
+              color: Colors.transparent,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.55,
+              height: MediaQuery
+                  .of(context)
+                  .size
+                  .height * 0.7,
               child: ListView(
+                controller: tagController,
                 children: [
-                  tagContainer("Sci-Fi",),
-                  tagContainer("Memes"),
-                  tagContainer("Tech",),
-                  tagContainer("Art"),
-                  tagContainer("Animals"),
-                  tagContainer("History"),
-                  tagContainer("Educational"),
+                  StreamBuilder(
+                    stream: tagStream,
+                    builder: (context, snapshot) {
+                      return snapshot.hasData ?
+                      ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemCount: snapshot.data.documents.length,
+                          itemBuilder: (context, index) {
+                            return tagContainer(
+                                snapshot.data.documents[index].data["tag"]);
+                          }
+                      ) : Container(child: Center(child: Text("No tags"),),);
+                    },
+                  ),
+                  Form(
+                      key: tagFormKey,
+                      child: TextFormField(
+                        validator: TagValidator.validate,
+                        style: TextStyle(fontSize: 18),
+                        onTap: () {
+                          print('Tapped on field');
+                          tagController.animateTo(
+                              tagController.position.maxScrollExtent,
+                              duration: Duration(milliseconds: 1000),
+                              curve: Curves.easeInOut);
+                        },
+                        decoration: InputDecoration(
+                            hintText: "New tag",
+                            suffixIcon: IconButton(
+                              icon: Icon(Icons.create),
+                              color: Color(0xFF7ED9F1),
+                              onPressed: () {
+                                createNewTag();
+                              },
+                            ),
+                            focusColor: Color(0xFF7ED9F1),
+                            border: OutlineInputBorder(
+                              borderSide:
+                              BorderSide(color: Colors.black),
+                              borderRadius: BorderRadius.circular(40),
+                            )
+                        ),
+                        controller: tagTEC,
+                      ))
                 ],
               ),
             ),
@@ -452,12 +474,22 @@ class _PostContentState extends State<PostContent> {
         });
   }
 
+  createNewTag() {
+    if (tagFormKey.currentState.validate()) {
+      Firestore.instance.collection('Posts').document('Public').collection(
+          'Tags').add({'tag': tagTEC.text});
+      tagSelected(tagTEC.text);
+      tagTEC.text = "";
+      Navigator.pop(context);
+    }
+  }
+
   bool tagIsSelected = false;
 
   Widget tagContainer(String title) {
     return ListTile(
       key: Key(title),
-      leading: Text(title),
+      title: Text(title),
       onTap: () {
         tagSelected(title);
         Navigator.pop(context);
@@ -572,7 +604,6 @@ class _PostContentState extends State<PostContent> {
   }
 
   nsfwTrigger(bool val) {
-    print(val);
     if (mounted) {
       setState(() {
         nsfw = val;
@@ -620,7 +651,9 @@ class _PostContentState extends State<PostContent> {
               "url": postUrl ?? urlFromImage,
               "username": widget.username,
               "caption": captionTEC.text,
-              "time": DateTime.now().millisecondsSinceEpoch,
+              "time": DateTime
+                  .now()
+                  .millisecondsSinceEpoch,
               "profileUrl": widget.profileUrl,
               "likes": [""],
               "dislikes": [""],

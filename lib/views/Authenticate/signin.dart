@@ -60,7 +60,6 @@ class _SignInState extends State<SignIn> {
                 AuthResult result = await _auth.signInWithEmailAndPassword(
                     email: email, password: passwordTEC.text);
                 FirebaseUser firebaseUser = result.user;
-
                 if (firebaseUser != null && firebaseUser.isEmailVerified) {
                   Preferences.saveUserLoggedInSharedPreference(true);
                   Preferences.saveUserEmailSharedPreference(email);
@@ -226,18 +225,19 @@ class _SignInState extends State<SignIn> {
                       children: [
                         TextFormField(
                           validator: UserNameValidator.validate,
-                          controller: userNameTEC,
-                          style: simpleTextStyle(),
-                          decoration: new InputDecoration(
-                              contentPadding: EdgeInsets.only(
-                                  left: 15, top: 20, bottom: 20),
-                              labelText: "Username",
-                              labelStyle: TextStyle(
-                                fontSize: 18,
-                                color: Colors.white60,
-                              ),
-                              border: new OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(40),
+                                controller: userNameTEC,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
+                                decoration: new InputDecoration(
+                                    contentPadding: EdgeInsets.only(
+                                        left: 15, top: 20, bottom: 20),
+                                    labelText: "Username",
+                                    labelStyle: TextStyle(
+                                      fontSize: 18,
+                                      color: Colors.white60,
+                                    ),
+                                    border: new OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(40),
 //                                  borderSide: BorderSide(color: Colors.blue)
                               )),
                           textInputAction: TextInputAction.next,
@@ -254,7 +254,7 @@ class _SignInState extends State<SignIn> {
                             obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 suffixIcon: IconButton(
                                   onPressed: () {
@@ -297,7 +297,7 @@ class _SignInState extends State<SignIn> {
                         EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
                           "Forgot Password?",
-                          style: simpleTextStyle(),
+                          style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),
                     ),

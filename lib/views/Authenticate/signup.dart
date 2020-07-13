@@ -259,19 +259,18 @@ class _SignUpState extends State<SignUp> {
                         children: [
                           TextFormField(
                             validator: UserNameValidator.validate,
-                            controller: userNameTEC,
-                            style: simpleTextStyle(),
-                            decoration: new InputDecoration(
-                                contentPadding:
-                                EdgeInsets.only(left: 15),
-                                labelText: "Username",
-                                labelStyle: TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white70,
-                                ),
-                                border: new OutlineInputBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(40),
+                                  controller: userNameTEC,
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 18),
+                                  decoration: new InputDecoration(
+                                      contentPadding: EdgeInsets.only(left: 15),
+                                      labelText: "Username",
+                                      labelStyle: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white70,
+                                      ),
+                                      border: new OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(40),
                                   borderSide:
                                   BorderSide(color: Colors.white),
                                 )),
@@ -288,7 +287,7 @@ class _SignUpState extends State<SignUp> {
 
                             validator: EmailValidator.validate,
                             controller: emailTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 contentPadding: EdgeInsets.only(left: 15),
                                 labelText: "Email",
@@ -312,7 +311,7 @@ class _SignUpState extends State<SignUp> {
                             obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 suffixIcon: IconButton(
                                   onPressed: () {
@@ -352,7 +351,7 @@ class _SignUpState extends State<SignUp> {
                                   : "Password cannot be empty";
                             },
                             controller: rePasswordTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 suffixIcon: IconButton(
                                   onPressed: () {

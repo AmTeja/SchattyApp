@@ -50,7 +50,7 @@ compareTime(String timeInDM) {
 
 TextStyle simpleTextStyle() {
   return TextStyle(
-    color: Colors.white,
+      color: Colors.white,
     fontSize: 18,
   );
 }
@@ -90,18 +90,22 @@ Widget viewPost(docs, topic) {
       title: Text("Schatty"),
       centerTitle: true,
     ),
-    body: BuildPost(
-      loop: false,
-      time: docs.data['time'],
-      url: docs.data["url"],
-      username: docs.data["username"],
-      topic: topic,
-      caption: docs.data["caption"],
-      postUid: docs.data["postUid"] ?? "null",
-      likes: docs.data['likes'],
-      dislikes: docs.data['dislikes'],
-      nsfw: docs.data["NSFW"] ?? false,
-      title: docs.data["title"],
+    body: ListView(
+      children: [
+        BuildPost(
+          loop: false,
+          time: docs.data['time'],
+          url: docs.data["url"],
+          username: docs.data["username"],
+          topic: topic,
+          caption: docs.data["caption"],
+          postUid: docs.data["postUid"] ?? "null",
+          likes: docs.data['likes'],
+          dislikes: docs.data['dislikes'],
+          nsfw: docs.data["NSFW"] ?? false,
+          title: docs.data["title"],
+        ),
+      ],
     ),
   );
 }

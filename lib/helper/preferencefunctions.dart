@@ -48,7 +48,7 @@ class Preferences {
 
   static Future<bool> getIsGoogleUser() async {
     final SharedPreferences preferences = await SharedPreferences.getInstance();
-    return preferences.getBool(isGoogleUser);
+    return preferences.getBool(isGoogleUser) ?? false;
   }
 
   static Future<String> getUserImageURL() async {

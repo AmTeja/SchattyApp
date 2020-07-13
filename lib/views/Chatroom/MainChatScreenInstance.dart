@@ -71,6 +71,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     onScreen = true;
+    setSeenBy();
     getProfileUrl();
     databaseMethods.getMessage(widget.chatRoomID).then((val) {
       setState(() {
@@ -168,7 +169,6 @@ class _ChatScreenState extends State<ChatScreen> {
             isSelected = false;
             selectedText = null;
             setState(() {});
-            print('called ontap');
           },
           child: Column(
             children: <Widget>[
@@ -185,17 +185,18 @@ class _ChatScreenState extends State<ChatScreen> {
                             padding: EdgeInsets.only(top: 15),
                             itemCount: snapshot.data.documents.length,
                             itemBuilder: (context, index) {
-                              return buildMessage(
-                                  snapshot.data.documents[index]
-                                      .data["message"],
-                                  snapshot.data.documents[index]
-                                      .data["sendBy"] ==
-                                      Constants.ownerName.toLowerCase(),
-                                  snapshot
-                                      .data.documents[index].data["time"],
-                                  snapshot
-                                      .data.documents[index].data["url"],
-                                  snapshot.data.documents[index]
+                              setSeen(snapshot, index);
+                                  return buildMessage(
+                                      snapshot.data.documents[index]
+                                          .data["message"],
+                                      snapshot.data.documents[index]
+                                              .data["sendBy"] ==
+                                          Constants.ownerName.toLowerCase(),
+                                      snapshot
+                                          .data.documents[index].data["time"],
+                                      snapshot
+                                          .data.documents[index].data["url"],
+                                      snapshot.data.documents[index]
                                       .data["isSeen"]);
                             })
                             : Container();
@@ -598,8 +599,8 @@ class _ChatScreenState extends State<ChatScreen> {
         });
   }
 
-  setSeen() async {
-    CollectionReference ref;
+  setSeen(documents, index) async {
+    DocumentReference ref;
     await Firestore.instance
         .collection('ChatRoom')
         .where("chatRoomId", isEqualTo: widget.chatRoomID)
@@ -608,17 +609,19 @@ class _ChatScreenState extends State<ChatScreen> {
       ref = Firestore.instance
           .collection('ChatRoom')
           .document(docs.documents[0].documentID)
-          .collection('chats');
-    });
-    QuerySnapshot querySnapshot = await ref
-        .where('sendTo', isEqualTo: sentFrom)
-        .where('sentFrom', isEqualTo: sentTo)
-        .where('isSeen', isEqualTo: false)
-        .getDocuments();
-    querySnapshot.documents.forEach((msgDoc) {
-      msgDoc.reference.updateData({'isSeen': true});
+          .collection('chats').document(
+          documents.data.documents[index].documentID);
     });
 
+    if (documents.data.documents[index].data["sendBy"] !=
+        Constants.ownerName.toLowerCase()) {
+      await ref.updateData({'isSeen': true});
+    }
+    setSeenBy();
+  }
+
+  setSeenBy() async
+  {
     await Firestore.instance
         .collection('ChatRoom')
         .where('chatRoomId', isEqualTo: widget.chatRoomID)
@@ -636,7 +639,6 @@ class _ChatScreenState extends State<ChatScreen> {
     FirebaseUser user = await firebaseAuth.currentUser();
     sentTo = await databaseMethods.getUIDByUsername(widget.userName);
     sentFrom = user.uid;
-    setSeen();
     if (mounted) {
       setState(() {});
     }

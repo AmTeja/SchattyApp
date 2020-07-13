@@ -79,6 +79,18 @@ class EmailValidator {
   }
 }
 
+class TagValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return ("Tag cannot be empty");
+    }
+    if (value.length < 3 || value.length > 12) {
+      return ("Tag length must be between 2 and 13");
+    }
+    return null;
+  }
+}
+
 class UserNameValidator {
   static String validate(String value) {
     if (value.isEmpty) {
