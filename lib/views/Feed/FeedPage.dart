@@ -222,7 +222,6 @@ class _FeedPageState extends State<FeedPage>
               children: <Widget>[
                 CircleAvatar(
                   radius: 50,
-//                  backgroundColor: Colors.blue,
                   child: ClipOval(
                     child: SizedBox(
                       width: 100,
@@ -246,11 +245,13 @@ class _FeedPageState extends State<FeedPage>
                   child: Container(
                     alignment: Alignment.center,
                     child: Constants.ownerName != null
-                        ? Text(
-                            Constants.ownerName,
-                            textAlign: TextAlign.left,
-                            style: TextStyle(
-                              fontSize: 22,
+                        ? FittedBox(
+                            child: Text(
+                              Constants.ownerName,
+                              textAlign: TextAlign.left,
+                              style: TextStyle(
+                                fontSize: 22,
+                              ),
                             ),
                           )
                         : Text("Error"),
@@ -583,7 +584,7 @@ class _FeedPageState extends State<FeedPage>
         Firestore.instance.collection('Posts').document('Public').collection(
             'Tags').snapshots();
     setState(() {
-
+      tagStream.asBroadcastStream();
     });
   }
 
@@ -642,6 +643,7 @@ class _FeedPageState extends State<FeedPage>
   void _onRefresh() async {
     // monitor network fetch
     setTagStream(selectedTag, descendingOrder);
+    setTagsStream();
     await Future.delayed(Duration(milliseconds: 1000));
     setState(() {});
     // if failed,use refreshFailed()

@@ -17,7 +17,9 @@ class _SettingsViewState extends State<SettingsView> {
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          title: Text("Settings"),
+        ),
         body: Center(
           child: ListView(
             children: [

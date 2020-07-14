@@ -1,6 +1,7 @@
 import 'package:achievement_view/achievement_view.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:random_string/random_string.dart';
@@ -187,7 +188,6 @@ class _CommentsPageState extends State<CommentsPage> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
-          height: 80,
           width: MediaQuery.of(context).size.width,
           alignment: Alignment.center,
           color: isSelected &&
@@ -207,19 +207,36 @@ class _CommentsPageState extends State<CommentsPage> {
                   child: UserAvatar(url, 20),
                 ),
               ),
-              Container(
-                child: Text(
-                  username,
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
-              Expanded(
+//              Container(
+//                alignment: Alignment.topCenter,
+//                child: FittedBox(
+//                  child: Text(
+//                    username,
+//                    style: TextStyle(fontSize: 18),
+//                  ),
+//                ),
+//              ),
+              Flexible(
                 child: Container(
                   margin: EdgeInsets.all(10),
                   padding: EdgeInsets.all(10),
-                  child: Text(
-                    commentContent,
-                    style: TextStyle(fontSize: 18),
+                  child: Flex(
+                    direction: Axis.horizontal,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "$username  ",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      Flexible(
+                        child: Text(
+                          commentContent,
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               )

@@ -1,16 +1,24 @@
+import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_native_admob/flutter_native_admob.dart';
 import 'package:flutter_native_admob/native_admob_controller.dart';
+import 'package:flutter_native_admob/native_admob_options.dart';
 
 class FeedAd extends StatelessWidget {
   //AdMob
-  static const adUnitAd = "ca-app-pub-1304691467262814/5518891816";
+  final adUnitId;
+
   final _controller = NativeAdmobController();
+
+  FeedAd({this.adUnitId});
 
   @override
   Widget build(BuildContext context) {
     final _nativeAdMob = NativeAdmob(
-      adUnitID: FeedAd.adUnitAd,
+      options: NativeAdmobOptions(
+        showMediaContent: true,
+      ),
+      adUnitID: adUnitId ?? NativeAd.testAdUnitId,
       loading: Center(child: CircularProgressIndicator()),
       error: Center(child: Text("Failed to load")),
       controller: _controller,
@@ -21,7 +29,10 @@ class FeedAd extends StatelessWidget {
         children: [
           Container(
             margin: EdgeInsets.all(10),
-            child: Text("Advert:"),
+            child: Text(
+              "Advert:",
+              style: TextStyle(fontSize: 20),
+            ),
           ),
           Container(
             height: 330,

@@ -97,9 +97,11 @@ class _TargetUserInfoState extends State<TargetUserInfo>
                 UserAvatar(profileURL, 70),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
-                    displayName ?? userName,
-                    style: TextStyle(fontSize: 30),
+                  child: FittedBox(
+                    child: Text(
+                      displayName ?? userName,
+                      style: TextStyle(fontSize: 30),
+                    ),
                   ),
                 ),
               ],

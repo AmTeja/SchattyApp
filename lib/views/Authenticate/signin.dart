@@ -241,16 +241,11 @@ class _SignInState extends State<SignIn> {
 //                                  borderSide: BorderSide(color: Colors.blue)
                               )),
                           textInputAction: TextInputAction.next,
-                          onFieldSubmitted: (v) {
-                            FocusScope.of(context).requestFocus(focus);
-                          },
-                          autofocus: true,
                         ),
                         SizedBox(
                           height: 20,
                         ),
                         TextFormField(
-                            focusNode: focus,
                             obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,

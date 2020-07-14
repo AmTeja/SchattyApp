@@ -343,7 +343,6 @@ class _SignUpState extends State<SignUp> {
                             height: 20,
                           ),
                           TextFormField(
-                            focusNode: focus,
                             obscureText: hidePassword,
                             validator: (val) {
                               return passwordTEC.text.isNotEmpty

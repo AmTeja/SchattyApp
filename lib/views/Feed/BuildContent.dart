@@ -9,7 +9,6 @@ import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
 import 'package:schatty/views/Feed/CommentsPage.dart';
-import 'package:schatty/views/FeedAd.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class BuildPost extends StatefulWidget {
@@ -76,7 +75,6 @@ class _BuildPostState extends State<BuildPost> {
         .collection(widget.topic);
     return Consumer<DarkThemeProvider>(
       builder: (BuildContext context, value, Widget child) {
-
         return widget.url != "Advert"
             ? Container(
                 decoration: BoxDecoration(color: Colors.transparent),
@@ -135,17 +133,18 @@ class _BuildPostState extends State<BuildPost> {
                           borderRadius: BorderRadius.circular(23),
                       child: Hero(
                         tag: widget.caption,
-                        child: CachedNetworkImage(
-                          imageUrl: widget.url,
-                          fit: BoxFit.fill,
-                        ),
-                      ),
+                                  child: CachedNetworkImage(
+                                    imageUrl: widget.url,
+                                    fit: BoxFit.fill,
+                                  ),
+                                ),
+                              ),
+                            ),
                     ),
-                  ),
-                ),
-                Footer(),
-              ],
-            )) : FeedAd();
+                    Footer(),
+                  ],
+                ))
+            : SizedBox();
       },
     );
   }
@@ -228,10 +227,12 @@ class _BuildPostState extends State<BuildPost> {
         children: [
           Container(
             margin: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-            child: Text(
-              "${widget.caption}",
-              style: TextStyle(
-                fontSize: 18,
+            child: FittedBox(
+              child: Text(
+                "${widget.caption}",
+                style: TextStyle(
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
@@ -285,19 +286,24 @@ class _BuildPostState extends State<BuildPost> {
 
   setLikeAndDislike() async
   {
-    if (await widget.likes[("${Constants.ownerName}")] == "${Constants.ownerName}") {
+    print(await widget.likes.indexOf(Constants.ownerName));
+    print(await widget.dislikes.indexOf(Constants.ownerName));
+    print(widget.caption);
+    if (await widget.likes.indexOf(Constants.ownerName) != -1) {
       isLiked = true;
     }
     else {
       isLiked = false;
     }
-    if (await widget.dislikes[widget
-        .dislikes("${Constants.ownerName}")] == "${Constants.ownerName}") {
+    if (await widget.dislikes.indexOf("${Constants.ownerName}") != -1) {
       isDisliked = true;
     }
     else {
-      isLiked = false;
+      isDisliked = false;
     }
+    setState(() {
+
+    });
   }
 
   _liked() {

@@ -216,7 +216,7 @@ class DatabaseMethods {
     });
   }
 
-  getMessage(String chatRoomID) async {
+  getMessage(String chatRoomID, int limit) async {
     return Firestore.instance
         .collection("ChatRoom")
         .document(chatRoomID)

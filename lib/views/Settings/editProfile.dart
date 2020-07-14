@@ -72,7 +72,7 @@ class _EditProfileState extends State<EditProfile> {
 //      backgroundColor: Color.fromARGB(100, 39, 38, 38),
       appBar: AppBar(
         title: Text(
-          "Schatty",
+          "Edit Profile",
         ),
       ),
       body: Center(
@@ -115,16 +115,20 @@ class _EditProfileState extends State<EditProfile> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   displayName == null
-                      ? Text(
-                          "Display Name: ${widget.username}",
-                          style: TextStyle(
-                            fontSize: 26,
+                      ? FittedBox(
+                          child: Text(
+                            "Display Name: ${widget.username}",
+                            style: TextStyle(
+                              fontSize: 26,
+                            ),
                           ),
                         )
-                      : Text(
-                          "Display Name: $displayName",
-                          style: TextStyle(
-                            fontSize: 26,
+                      : FittedBox(
+                          child: Text(
+                            "Display Name: $displayName",
+                            style: TextStyle(
+                              fontSize: 26,
+                            ),
                           ),
                         ),
                   IconButton(
@@ -152,18 +156,21 @@ class _EditProfileState extends State<EditProfile> {
                 splashColor: Colors.black,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Text(
-                      "Edit Picture",
-                      style: TextStyle(color: Colors.black, fontSize: 18),
+                    FittedBox(
+                      child: Text(
+                        "Edit Picture",
+                        style: TextStyle(color: Colors.black, fontSize: 18),
+                      ),
                     ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Icon(
-                      Icons.camera_alt,
-                      size: 40,
-                      color: Colors.black,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.camera_alt,
+                        size: 40,
+                        color: Colors.black,
+                      ),
                     )
                   ],
                 ),

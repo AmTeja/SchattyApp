@@ -13,6 +13,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:link_text/link_text.dart';
 import 'package:provider/provider.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:schatty/enums/view_state.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
@@ -58,6 +59,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String profileUrl;
 
   int selectedTime;
+  int limit = 20;
 
   bool onScreen;
   bool isSelectedOwner = false;
@@ -66,6 +68,7 @@ class _ChatScreenState extends State<ChatScreen> {
   File newImage;
 
   ScrollController scrollController;
+  RefreshController refreshController = new RefreshController();
 
   @override
   void initState() {
@@ -73,7 +76,7 @@ class _ChatScreenState extends State<ChatScreen> {
     onScreen = true;
     setSeenBy();
     getProfileUrl();
-    databaseMethods.getMessage(widget.chatRoomID).then((val) {
+    databaseMethods.getMessage(widget.chatRoomID, limit).then((val) {
       setState(() {
         chatMessageStream = val;
       });
@@ -179,13 +182,13 @@ class _ChatScreenState extends State<ChatScreen> {
                       builder: (context, snapshot) {
                         return snapshot.hasData
                             ? ListView.builder(
-                            cacheExtent: 50.0,
-                            controller: scrollController,
-                            reverse: true,
-                            padding: EdgeInsets.only(top: 15),
-                            itemCount: snapshot.data.documents.length,
-                            itemBuilder: (context, index) {
-                              setSeen(snapshot, index);
+                                cacheExtent: 50.0,
+                                controller: scrollController,
+                                reverse: true,
+                                padding: EdgeInsets.only(top: 15),
+                                itemCount: snapshot.data.documents.length,
+                                itemBuilder: (context, index) {
+                                  setSeen(snapshot, index);
                                   return buildMessage(
                                       snapshot.data.documents[index]
                                           .data["message"],
@@ -197,8 +200,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                       snapshot
                                           .data.documents[index].data["url"],
                                       snapshot.data.documents[index]
-                                      .data["isSeen"]);
-                            })
+                                          .data["isSeen"]);
+                                })
                             : Container();
                       }),
                 ),
@@ -220,6 +223,31 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     scrollController.dispose();
     super.dispose();
+  }
+
+  setMessageStream() {
+    databaseMethods.getMessage(widget.chatRoomID, limit).then((val) {
+      setState(() {
+        chatMessageStream = val;
+      });
+    });
+  }
+
+  onRefresh() async
+  {
+    limit += 20;
+    await setMessageStream();
+    setState(() {
+
+    });
+    refreshController.refreshCompleted();
+  }
+
+  onLoading() {
+    setState(() {
+
+    });
+    refreshController.loadComplete();
   }
 
   buildMessage(String message, bool isMe, int time, String imageUrl,
