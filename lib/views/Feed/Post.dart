@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import 'package:random_string/random_string.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
+import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class PostContent extends StatefulWidget {
@@ -55,6 +56,9 @@ Stream tagStream;
 ScrollController tagController;
 
 final tagFormKey = new GlobalKey<FormState>();
+final postFormKey = new GlobalKey<FormState>();
+
+DatabaseMethods databaseMethods = new DatabaseMethods();
 
 ImagePicker picker = ImagePicker();
 
@@ -99,9 +103,9 @@ class _PostContentState extends State<PostContent> {
                   begin: Alignment.center,
                   end: Alignment.bottomRight) :
               LinearGradient(
-                  colors: [Color(0xff111111), Color(0xff3B3B3B)],
-                  begin: Alignment.center,
-                  end: Alignment.bottomLeft)
+                  colors: [Color(0xff111111), Color(0xff111111)],
+                      begin: Alignment.center,
+                      end: Alignment.bottomLeft)
           ),
           child: Center(
             child: ListView(
@@ -188,8 +192,14 @@ class _PostContentState extends State<PostContent> {
                         ),
                       ),
                     ),
-                    TitleField(),
-                    CaptionField(),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TitleField(),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: CaptionField(),
+                    ),
                     Container(
                       padding:
                       EdgeInsets.symmetric(vertical: 8, horizontal: 64),
@@ -317,22 +327,26 @@ class _PostContentState extends State<PostContent> {
           .of(context)
           .size
           .width * 0.70,
-      child: TextField(
-        maxLines: 1,
-        controller: titleTEC,
-        textCapitalization: TextCapitalization.sentences,
-        style: TextStyle(color: Colors.white, fontSize: 24),
-        maxLength: 50,
-        decoration: InputDecoration(
-            focusColor: Colors.white,
-            hoverColor: Colors.white,
-            labelText: "Title",
-            labelStyle: TextStyle(color: Colors.white, fontSize: 20),
-            contentPadding: EdgeInsets.all(12),
-            filled: false,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(15),
-            )),
+      child: Form(
+        key: postFormKey,
+        child: TextFormField(
+          maxLines: 1,
+          validator: TitleValidator.validate,
+          controller: titleTEC,
+          textCapitalization: TextCapitalization.sentences,
+          style: TextStyle(color: Colors.white, fontSize: 24),
+          maxLength: 50,
+          decoration: InputDecoration(
+              focusColor: Colors.white,
+              hoverColor: Colors.white,
+              labelText: "Title",
+              labelStyle: TextStyle(color: Colors.white, fontSize: 20),
+              contentPadding: EdgeInsets.all(12),
+              filled: false,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(15),
+              )),
+        ),
       ),
     );
   }
@@ -477,7 +491,8 @@ class _PostContentState extends State<PostContent> {
   createNewTag() {
     if (tagFormKey.currentState.validate()) {
       Firestore.instance.collection('Posts').document('Public').collection(
-          'Tags').add({'tag': tagTEC.text});
+          'Tags').document(selectedTag).setData(
+          {'tag': tagTEC.text, 'posts': 0});
       tagSelected(tagTEC.text);
       tagTEC.text = "";
       Navigator.pop(context);
@@ -505,7 +520,7 @@ class _PostContentState extends State<PostContent> {
 
   showError() {
     Fluttertoast.showToast(
-        msg: "Invalid Image/Tag(Choose Public)", gravity: ToastGravity.CENTER);
+        msg: "Invalid Image/Tag", gravity: ToastGravity.CENTER);
   }
 
   getRandom() {
@@ -598,8 +613,14 @@ class _PostContentState extends State<PostContent> {
         .add(postMap)
         .catchError((onError) {
       print("Error posting to selected tag: $onError");
-    }).then((doc) {
-
+    });
+    int posts;
+    await Firestore.instance.collection('Posts').document('Public').collection(
+        'Tags').document(selectedTag).get().then((docs) async {
+      posts = await docs.data['posts'];
+      posts++;
+      Firestore.instance.collection('Posts').document('Public').collection(
+          'Tags').document(selectedTag).updateData({'posts': posts});
     });
   }
 
@@ -622,20 +643,33 @@ class _PostContentState extends State<PostContent> {
     return indexList;
   }
 
+  updateUserPosts() async
+  {
+    var uid = await databaseMethods.getUIDByUsername(widget.username);
+    int posts;
+    await Firestore.instance.collection('users').document(uid).get().then((
+        docs) async {
+      posts = await docs.data["numPosts"];
+      posts++;
+      await Firestore.instance.collection('users').document(uid).updateData(
+          {'numPosts': posts});
+    });
+  }
 
   post(BuildContext context) async {
     try {
-      print('called');
-      isLoading = true;
-      if (mounted) {
-        setState(() {
+      if (postFormKey.currentState.validate()) {
+        print('called');
+        isLoading = true;
+        if (mounted) {
+          setState(() {
 
-        });
-      }
-      if (selectedImage == null && selectedTag == null &&
-          urlFromImage == null) {
-        setState(() {
-          isLoading = false;
+          });
+        }
+        if (selectedImage == null && selectedTag == null &&
+            urlFromImage == null) {
+          setState(() {
+            isLoading = false;
         });
         showError();
       } else {
@@ -661,16 +695,23 @@ class _PostContentState extends State<PostContent> {
               "NSFW": nsfw ?? false,
               "title": titleTEC.text,
               "titleIndex": await makeIndex(),
+              "numLikes": 0,
+              "numDislikes": 0,
             };
             postToSelectedTag(postMap);
+            updateUserPosts();
             isLoading = false;
             captionTEC.text = "";
             selectedTag = null;
             urlFromImage = null;
+            titleTEC.text = "";
+            captionTEC.text = "";
+
             setState(() {});
             print("done");
             Navigator.pop(context);
           }
+        }
         }
       }
     } catch (e) {

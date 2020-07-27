@@ -3,11 +3,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
+import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/views/Feed/CommentsPage.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -24,6 +25,8 @@ class BuildPost extends StatefulWidget {
   final nsfw;
   final title;
   final loop;
+  final numLikes;
+  final numDislikes;
 
   // ignore: non_constant_identifier_names
   const BuildPost({
@@ -38,6 +41,8 @@ class BuildPost extends StatefulWidget {
     @required this.title,
     this.loop,
     this.dislikes,
+    this.numLikes,
+    this.numDislikes,
   });
 
   @override
@@ -55,7 +60,10 @@ class _BuildPostState extends State<BuildPost> {
 
   var likesLength;
   var dislikesLength;
+  var uid;
+  var firestoreInstance = Firestore.instance;
 
+  bool isReported = false;
 
   @override
   void initState() {
@@ -69,81 +77,101 @@ class _BuildPostState extends State<BuildPost> {
   @override
   Widget build(BuildContext context) {
     getUserProfileUrl();
-    selectedTagRef = Firestore.instance
+    selectedTagRef = firestoreInstance
         .collection('Posts')
         .document('Public')
         .collection(widget.topic);
     return Consumer<DarkThemeProvider>(
       builder: (BuildContext context, value, Widget child) {
         return widget.url != "Advert"
-            ? Container(
-                decoration: BoxDecoration(color: Colors.transparent),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Header(),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 30.0),
-                      decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          borderRadius: BorderRadius.circular(23)),
-                      child: widget.nsfw ? GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    viewImage(widget.url, context,
-                                        widget.caption, widget.caption),
-                              ));
-                        },
-                        child: Container(
-                          color: Colors.transparent,
-                          height: 300,
-                          child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    "NSFW", style: TextStyle(fontSize: 40,),),
-                                ),
-                                Text("May contain inappropriate content",
-                                  style: TextStyle(fontSize: 16,),),
-                                Text(
-                                    "Tap to view if you are above 18 years old",
-                                    style: TextStyle(fontSize: 16,)),
-                              ],
-                            ),
-                          ),),
-                      ) : GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    viewImage(widget.url, context,
-                                        widget.caption, widget.caption),
-                              ));
-                        },
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(23),
-                      child: Hero(
-                        tag: widget.caption,
-                                  child: CachedNetworkImage(
-                                    imageUrl: widget.url,
-                                    fit: BoxFit.fill,
+            ? !isReported
+                ? Container(
+                    decoration: BoxDecoration(color: Colors.transparent),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Header(),
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 30.0),
+                          decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(23)),
+                          child: widget.nsfw
+                              ? GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => viewImage(
+                                              widget.url,
+                                              context,
+                                              widget.caption,
+                                              widget.caption),
+                                        ));
+                                  },
+                                  child: Container(
+                                    color: Colors.transparent,
+                                    height: 300,
+                                    child: Center(
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              "NSFW",
+                                              style: TextStyle(
+                                                fontSize: 40,
+                                              ),
+                                            ),
+                                          ),
+                                          Text(
+                                            "May contain inappropriate content",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          Text(
+                                              "Tap to view if you are above 18 years old",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                              )),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              : GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => viewImage(
+                                              widget.url,
+                                              context,
+                                              widget.caption,
+                                              widget.caption),
+                                        ));
+                                  },
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(23),
+                                    child: Hero(
+                                      tag: widget.caption,
+                                      child: CachedNetworkImage(
+                                        imageUrl: widget.url,
+                                        fit: BoxFit.fill,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                    ),
-                    Footer(),
-                  ],
-                ))
+                        ),
+                        Footer(),
+                      ],
+                    ))
+                : SizedBox.shrink()
             : SizedBox();
       },
     );
@@ -164,44 +192,57 @@ class _BuildPostState extends State<BuildPost> {
       child: Container(
         padding: EdgeInsets.all(8.0),
         alignment: Alignment.center,
-        decoration: BoxDecoration(
-        ),
+        decoration: BoxDecoration(),
         height: 70,
         child: ListTile(
-            leading: CircleAvatar(
-              child: ClipOval(
-                child: profileUrl != null
-                    ? CachedNetworkImage(
-                  width: 60,
-                  height: 60,
-                  imageUrl: profileUrl,
-                  fit: BoxFit.cover,
-                )
-                    : Image.asset(
-                  "assets/images/username.png",
-                  fit: BoxFit.fill,
-                ),
+          leading: CircleAvatar(
+            child: ClipOval(
+              child: profileUrl != null
+                  ? CachedNetworkImage(
+                width: 60,
+                height: 60,
+                imageUrl: profileUrl,
+                fit: BoxFit.cover,
+              )
+                  : Image.asset(
+                "assets/images/username.png",
+                fit: BoxFit.fill,
               ),
             ),
-            title: widget.username != null
-                ? Text(widget.username)
-                : Center(
-              child: CircularProgressIndicator(),
-            ),
-            subtitle: widget.title != null ? Text(widget.title) : null,
-            trailing: PopupMenuButton(
-              onSelected: (val) => _selected(val, context),
-              icon: Icon(Icons.expand_more),
-              itemBuilder: (BuildContext build) {
-                return [
-                  PopupMenuItem(
-                    height: 30,
-                    value: "Report",
-                    child: Text("Report"),
-                  )
-                ];
-              },
-            )
+          ),
+          title: widget.username != null
+              ? Text(widget.username)
+              : Center(
+            child: CircularProgressIndicator(),
+          ),
+          subtitle: widget.title != null ? Text(widget.title) : Text(""),
+          trailing: widget.username != Constants.ownerName
+              ? PopupMenuButton(
+            onSelected: (val) => _selected(val, context),
+            icon: Icon(Icons.expand_more),
+            itemBuilder: (BuildContext build) {
+              return [
+                PopupMenuItem(
+                  height: 30,
+                  value: "Report",
+                  child: Text("Report"),
+                ),
+              ];
+            },
+          )
+              : PopupMenuButton(
+            onSelected: (val) => _selected((val), context),
+            icon: Icon(Icons.expand_more),
+            itemBuilder: (BuildContext build) {
+              return [
+                PopupMenuItem(
+                  height: 30,
+                  value: "Delete",
+                  child: Text("Delete"),
+                )
+              ];
+            },
+          ),
         ),
       ),
     );
@@ -209,8 +250,6 @@ class _BuildPostState extends State<BuildPost> {
 
   // ignore: non_constant_identifier_names
   Widget Footer() {
-    likesLength = widget.likes.length;
-    dislikesLength = widget.likes.length;
     double splashRadius = 25.0;
     return Container(
 //      height: 80,
@@ -227,14 +266,16 @@ class _BuildPostState extends State<BuildPost> {
         children: [
           Container(
             margin: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-            child: FittedBox(
+            child: widget.caption != null && widget.caption != ""
+                ? FittedBox(
               child: Text(
                 "${widget.caption}",
                 style: TextStyle(
                   fontSize: 16,
                 ),
               ),
-            ),
+            )
+                : SizedBox.shrink(),
           ),
           ListTile(
             leading: Padding(
@@ -244,15 +285,14 @@ class _BuildPostState extends State<BuildPost> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("${widget.likes.length - widget.dislikes.length}",
-                    style: TextStyle(
-                        fontSize: 20
-                    ),),
+                  Text(
+                    "${widget.numLikes - widget.numDislikes}",
+                    style: TextStyle(fontSize: 20),
+                  ),
                   IconButton(
                     icon: Icon(Icons.thumb_up),
-                    color: isLiked != null && isLiked
-                        ? Color(0xffFF8F8F)
-                        : null,
+                    color:
+                    isLiked != null && isLiked ? Color(0xffFF8F8F) : null,
                     splashRadius: splashRadius,
                     onPressed: () => _liked(),
                   ),
@@ -268,11 +308,14 @@ class _BuildPostState extends State<BuildPost> {
                     icon: Icon(Icons.comment),
                     splashRadius: splashRadius,
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(
-                          builder: (context) =>
-                              CommentsPage(
-                                postUID: widget.postUid, tag: widget.topic,)
-                      ));
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  CommentsPage(
+                                    postUID: widget.postUid,
+                                    tag: widget.topic,
+                                  )));
                     },
                   )
                 ],
@@ -284,26 +327,21 @@ class _BuildPostState extends State<BuildPost> {
     );
   }
 
-  setLikeAndDislike() async
-  {
-    print(await widget.likes.indexOf(Constants.ownerName));
-    print(await widget.dislikes.indexOf(Constants.ownerName));
-    print(widget.caption);
-    if (await widget.likes.indexOf(Constants.ownerName) != -1) {
+  setLikeAndDislike() async {
+    if (await widget.likes.indexOf("${Constants.ownerName.toLowerCase()}") !=
+        -1) {
       isLiked = true;
-    }
-    else {
+    } else {
+      print("called");
       isLiked = false;
     }
-    if (await widget.dislikes.indexOf("${Constants.ownerName}") != -1) {
+    if (await widget.dislikes.indexOf("${Constants.ownerName.toLowerCase()}") !=
+        -1) {
       isDisliked = true;
-    }
-    else {
+    } else {
       isDisliked = false;
     }
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   _liked() {
@@ -316,10 +354,9 @@ class _BuildPostState extends State<BuildPost> {
       isDisliked = !newVal;
     }
     updateLike(newVal);
-    if(temp)
-      {
-        updateDislike(!newVal);
-      }
+    if (temp) {
+      updateDislike(!newVal);
+    }
     if (mounted) {
       setState(() {
         isLiked = newVal;
@@ -337,8 +374,7 @@ class _BuildPostState extends State<BuildPost> {
       isLiked = !newVal;
     }
     updateDislike(newVal);
-    if(temp)
-    {
+    if (temp) {
       updateLike(!newVal);
     }
     if (mounted) {
@@ -352,92 +388,176 @@ class _BuildPostState extends State<BuildPost> {
     if (val == "Report") {
       reportPost();
     }
+    if (val == "Delete") {
+      deletePost();
+    }
   }
 
-  reportPost() async
-  {
-    Map<String, dynamic> reportPostMap = {
-      'reportedBy': Constants.ownerName.toLowerCase(),
-      'postId': widget.postUid,
-      'tag': widget.topic,
-      'title': widget.title,
-    };
+  deletePost() async {
+    await selectedTagRef
+        .where('postUid', isEqualTo: widget.postUid)
+        .getDocuments()
+        .then((docs) async {
+      await selectedTagRef.document(docs.documents[0].documentID).delete();
+      AchievementView(
+        context,
+        title: "Deleted",
+        duration: Duration(seconds: 1,),
+        subTitle: "The post has been deleted.",
+        icon: Icon(Icons.delete),
+        color: Color(0xff3B3B3B),
+      )
+        ..show();
+    }).catchError((onError) {
+      AchievementView(
+        context,
+        title: "Error",
+        duration: Duration(seconds: 1),
+        subTitle: onError,
+        icon: Icon(Icons.error),
+        color: Color(0xff3B3B3B),
+      )
+        ..show();
+    });
+    int posts;
+    await updateUserPosts();
+    await firestoreInstance.collection('Posts').document('Public').collection(
+        'Tags').document(widget.topic).get().then((docs) async {
+      posts = await docs.data['posts'];
+      posts--;
+      firestoreInstance.collection('Posts').document('Public').collection(
+          'Tags').document(widget.topic).updateData({'posts': posts});
+    });
+  }
 
-    await Firestore.instance.collection('Reported')
-        .document('Posts')
-        .collection('ReportedPosts')
-        .add(reportPostMap);
-    setState(() {
+  updateUserPosts() async
+  {
+    uid = await databaseMethods.getUIDByUsername(widget.username);
+    int posts;
+    await firestoreInstance.collection('users').document(uid).get().then((
+        docs) async {
+      posts = await docs.data["numPosts"];
+      posts--;
+      await firestoreInstance.collection('users').document(uid).updateData(
+          {'numPosts': posts});
+    });
+  }
+
+  var reportedPostsList;
+
+  reportPost() async {
+    try {
+      uid =
+      await databaseMethods.getUIDByUsername(Constants.ownerName.toLowerCase());
+      Map<String, dynamic> reportPostMap = {
+        'reportedBy': Constants.ownerName.toLowerCase(),
+        'postId': widget.postUid,
+        'tag': widget.topic,
+        'title': widget.title,
+      };
+      isReported = true;
+      if (mounted) {
+        setState(() {
+
+        });
+      }
+
+      await firestoreInstance
+          .collection('Reported')
+          .document('Posts')
+          .collection('ReportedPosts')
+          .add(reportPostMap);
+      print(uid);
+      await firestoreInstance.collection('users').document(uid).get().then((
+          docs) async {
+        reportedPostsList = await docs.data["reportedPosts"];
+        print(reportedPostsList);
+        reportedPostsList.add(widget.postUid);
+        await firestoreInstance.collection('users').document(uid).updateData(
+            {"reportedPosts": reportedPostsList});
+      });
       AchievementView(
         context,
         title: "Reported",
-        duration: Duration(seconds: 1, milliseconds: 500),
+        duration: Duration(seconds: 1),
         subTitle: "The post has been reported. Thank you!",
         icon: Icon(Icons.report),
         color: Color(0xff3B3B3B),
       )
         ..show();
-    });
+    } catch (error) {
+      isReported = false;
+      Fluttertoast.showToast(
+          msg: "An error occurred", gravity: ToastGravity.CENTER);
+      setState(() {
+
+      });
+    }
   }
 
   var likesList;
   var dislikesList;
+  var likes;
+  var dislikes;
 
-  updateLike(bool newVal) async
-  {
+  updateLike(bool newVal) async {
     print('Called update like');
     await selectedTagRef
         .where('postUid', isEqualTo: widget.postUid)
-        .getDocuments().then((docs) async {
+        .getDocuments()
+        .then((docs) async {
       likesList = await docs.documents[0].data["likes"];
+      likes = await docs.documents[0].data["numLikes"];
       if (newVal) {
         likesList.add("${Constants.ownerName.toLowerCase()}");
-      }
-      else {
+        likes = likes + 1;
+      } else {
         likesList.removeAt(
             likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
+        likes = likes - 1;
       }
       Map<String, dynamic> likeListMap = {
         'likes': likesList,
+        "numLikes": likes,
       };
-      await selectedTagRef.document(docs.documents[0].documentID).updateData(
-          likeListMap);
+      await selectedTagRef
+          .document(docs.documents[0].documentID)
+          .updateData(likeListMap);
     });
   }
 
-  updateDislike(bool newVal) async
-  {
+  updateDislike(bool newVal) async {
     await selectedTagRef
         .where('postUid', isEqualTo: widget.postUid)
-        .getDocuments().then((docs) async {
+        .getDocuments()
+        .then((docs) async {
       dislikesList = await docs.documents[0].data["dislikes"];
+      dislikes = await docs.documents[0].data["numDislikes"];
+
       if (newVal && isDisliked) {
         dislikesList.add("${Constants.ownerName.toLowerCase()}");
-      }
-      else {
+        dislikes++;
+      } else {
         if (!newVal) {
           dislikesList.removeAt(
               dislikesList.indexOf("${Constants.ownerName.toLowerCase()}"));
-        }
-        else {
-
-        }
+          dislikes--;
+        } else {}
       }
       Map<String, dynamic> dislikeListMap = {
         'dislikes': dislikesList,
+        'numDislikes': dislikes,
       };
-      await selectedTagRef.document(docs.documents[0].documentID).updateData(
-          dislikeListMap);
+      await selectedTagRef
+          .document(docs.documents[0].documentID)
+          .updateData(dislikeListMap);
     });
   }
-
 
   getUserProfileUrl() async {
     profileUrl = await databaseMethods.getProfileUrlByName(widget.username);
     if (mounted) {
-      setState(() {
-
-      });
+      setState(() {});
     }
   }
 }

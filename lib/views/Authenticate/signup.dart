@@ -52,7 +52,7 @@ class _SignUpState extends State<SignUp> {
               email: emailTEC.text, password: passwordTEC.text);
           FirebaseUser firebaseUser = result.user;
           if (firebaseUser != null) {
-            Map<String, String> userInfoMap = {
+            Map<String, dynamic> userInfoMap = {
               //Making MAP for firebase
               "username": userNameTEC.text.toLowerCase(),
               "displayName": userNameTEC.text,
@@ -61,6 +61,8 @@ class _SignUpState extends State<SignUp> {
               "photoURL": profilePicURL,
               "uid": firebaseUser.uid,
               "usernameIndex": await makeIndex(),
+              "numPosts": 0,
+              "reportedPosts": [""],
             };
             String uid = firebaseUser.uid;
             databaseMethods.uploadUserInfo(userInfoMap, uid);

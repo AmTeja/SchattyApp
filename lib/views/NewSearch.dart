@@ -5,7 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/services/SearchService.dart';
-import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
+import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/widgets/widget.dart';
 
 import 'Chatroom/MainChatScreenInstance.dart';

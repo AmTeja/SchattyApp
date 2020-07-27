@@ -27,13 +27,11 @@ import 'ChatTile.dart';
 Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) {
   if (message.containsKey('data')) {
 // Handle data message
-    final dynamic data = message['data'];
     print("Background Data: $message");
   }
 
   if (message.containsKey('notification')) {
 // Handle notification message
-    final dynamic notification = message['notification'];
     print("Background notification: $message");
   }
 
@@ -191,7 +189,6 @@ class _ChatRoomState extends State<ChatRoom>
     firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
         print("onMessage: $message");
-        var data = message['data'];
         var notification = message['notification'];
         String sentUser = await notification["title"];
         String sentMessage = await notification["body"];

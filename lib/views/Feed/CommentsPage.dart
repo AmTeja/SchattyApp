@@ -7,7 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:random_string/random_string.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
+import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class CommentsPage extends StatefulWidget {
@@ -60,7 +60,7 @@ class _CommentsPageState extends State<CommentsPage> {
                   },
                 )
               : SizedBox(),
-          isSelected
+          isSelected && selectedUsername != Constants.ownerName.toLowerCase()
               ? IconButton(
                   icon: Icon(Icons.report),
                   onPressed: () {
@@ -357,8 +357,8 @@ class _CommentsPageState extends State<CommentsPage> {
                 listener: (status) {
                   print(status);
                 },
-                duration: Duration(seconds: 1, milliseconds: 500),
-                icon: Icon(Icons.delete_forever),
+                duration: Duration(seconds: 1),
+                icon: Icon(Icons.delete),
                 color: Color(0xff3B3B3B),
               )..show();
               isSelected = false;

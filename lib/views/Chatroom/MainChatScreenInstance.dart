@@ -19,7 +19,7 @@ import 'package:schatty/helper/constants.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
+import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ChatScreen extends StatefulWidget {
@@ -806,7 +806,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   deleteMessage(String message, int time) async {
     try {
-      if (message != url) {
+      if (message != null && !isImage) {
+        print(message);
+        print(url);
         await Firestore.instance
             .collection('ChatRoom')
             .document(widget.chatRoomID)
@@ -843,6 +845,7 @@ class _ChatScreenState extends State<ChatScreen> {
       isSelected = false;
       selectedTime = null;
       selectedText = null;
+      isImage = null;
       if (mounted) setState(() {});
     } catch (e) {
       print("Error deleting message: $e");

@@ -50,7 +50,7 @@ compareTime(String timeInDM) {
 
 TextStyle simpleTextStyle() {
   return TextStyle(
-      color: Colors.white,
+    color: Colors.white,
     fontSize: 18,
   );
 }
@@ -58,7 +58,9 @@ TextStyle simpleTextStyle() {
 Widget viewImage(String url, BuildContext context, String message, Object tag) {
   return Scaffold(
     appBar: AppBar(
-      title: Text(message),
+      title: message != null && message != ""
+          ? FittedBox(child: Text(message))
+          : Text(""),
       actions: [
         IconButton(
           icon: Icon(Icons.share),
@@ -104,6 +106,8 @@ Widget viewPost(docs, topic) {
           dislikes: docs.data['dislikes'],
           nsfw: docs.data["NSFW"] ?? false,
           title: docs.data["title"],
+          numLikes: docs.data["numLikes"],
+          numDislikes: docs.data["numDislikes"],
         ),
       ],
     ),
@@ -157,19 +161,18 @@ Widget UserAvatar(String profileURL, double radius) {
     child: ClipOval(
       child: profileURL != null
           ? CachedNetworkImage(
-        width: radius * 2,
-        height: radius * 2,
-        imageUrl: profileURL,
-        fit: BoxFit.cover,
-        placeholder: (context, url) =>
-            Center(
-              child: CircularProgressIndicator(),
-            ),
-      )
+              width: radius * 2,
+              height: radius * 2,
+              imageUrl: profileURL,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
           : Image.asset(
-        "assets/images/username.png",
-        fit: BoxFit.fill,
-      ),
+              "assets/images/username.png",
+              fit: BoxFit.fill,
+            ),
     ),
   );
 }

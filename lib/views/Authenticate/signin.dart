@@ -165,7 +165,6 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    final focus = FocusNode();
     return Scaffold(
       backgroundColor: Colors.black,
       //appBar: appBarMain(context),

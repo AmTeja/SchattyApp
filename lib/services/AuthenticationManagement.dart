@@ -132,6 +132,15 @@ class PasswordValidator {
   }
 }
 
+class TitleValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return "Title can't be empty";
+    }
+    return null;
+  }
+}
+
 class UrlValidator {
   static String validate(String value) {
     if (value.isEmpty) {

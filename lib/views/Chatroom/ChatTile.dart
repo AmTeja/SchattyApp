@@ -4,7 +4,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:intl/intl.dart';
 import 'package:schatty/helper/constants.dart';
 import 'package:schatty/views/Chatroom/MainChatScreenInstance.dart';
-import 'package:schatty/views/Chatroom/TargetUserInfo.dart';
+import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class ChatRoomTile extends StatelessWidget {

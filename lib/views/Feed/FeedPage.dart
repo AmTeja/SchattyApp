@@ -55,6 +55,8 @@ class _FeedPageState extends State<FeedPage>
   bool error = false;
   bool descendingOrder = true;
 
+  List reportedPosts;
+
   AnimationController _animationController;
   final feedListController = ScrollController();
   RefreshController _refreshController2 =
@@ -173,10 +175,22 @@ class _FeedPageState extends State<FeedPage>
     await firebaseAuth.currentUser().then((docs) {
       uid = docs.uid;
     });
-    url = await databaseMethods
-        .getProfileUrlByName(Constants.ownerName.toLowerCase());
     username = Constants.ownerName.toLowerCase();
+    url = await databaseMethods
+        .getProfileUrlByName(username);
+    await Firestore.instance.collection('users').document(uid).get().then((
+        docs) {
+      reportedPosts = docs.data['reportedPosts'];
+    });
     setState(() {});
+  }
+
+  getReportedList() async
+  {
+    await Firestore.instance.collection('users').document(uid).get().then((
+        docs) {
+      reportedPosts = docs.data['reportedPosts'];
+    });
   }
 
   @override
@@ -201,8 +215,7 @@ class _FeedPageState extends State<FeedPage>
     if (await Preferences.getIsGoogleUser()) {
       authMethods.signOutGoogle();
       print('Is Google');
-    }
-    else {
+    } else {
       authMethods.signOut();
       print('Is not google');
     }
@@ -392,8 +405,9 @@ class _FeedPageState extends State<FeedPage>
                 child: Column(
                   children: [
                     Container(
-                      alignment: Alignment.center,
-                        padding: EdgeInsets.symmetric(vertical: 9.0),
+                        alignment: Alignment.center,
+                        padding:
+                        EdgeInsets.symmetric(vertical: 9.0),
                         child: Text(
                           "Discover",
                           style: TextStyle(
@@ -408,23 +422,33 @@ class _FeedPageState extends State<FeedPage>
                       children: [
                         Text("Sort by: "),
                         Container(
-                          margin: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                          margin: EdgeInsets.symmetric(
+                              vertical: 2, horizontal: 4),
                           child: DropdownButton(
                             value: sortingMethod,
                             onChanged: (val) => _sort(val),
                             items: [
-                              DropdownMenuItem(child: Text("New"), value: "New",),
-                              DropdownMenuItem(child: Text("Likes"),value: "Likes"),
-                              DropdownMenuItem(child: Text("Dislikes"),value: "Dislikes"),
+                              DropdownMenuItem(
+                                child: Text("New"),
+                                value: "New",
+                              ),
+                              DropdownMenuItem(
+                                  child: Text("Likes"),
+                                  value: "Likes"),
+                              DropdownMenuItem(
+                                  child: Text("Dislikes"),
+                                  value: "Dislikes"),
                             ],
                           ),
                         ),
                         IconButton(
                           icon: Icon(Icons.search),
-                          onPressed: (){
-                            Navigator.push(context, MaterialPageRoute(
-                                builder: (context) => NewSearch(),
-                            ));
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => NewSearch(),
+                                ));
                           },
                         )
                       ],
@@ -442,19 +466,27 @@ class _FeedPageState extends State<FeedPage>
                           StreamBuilder(
                             stream: tagStream,
                             builder: (context, snap) {
-                              return snap.hasData ?
-                              ListView.builder(
+                              return snap.hasData
+                                  ? ListView.builder(
                                   shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  scrollDirection: Axis.horizontal,
-                                  itemCount: snap.data.documents.length,
-                                  itemBuilder: (context, index) {
-                                    return showTag(
-                                        snap.data.documents[index].data['tag']);
-                                  }
-                              )
+                                  physics:
+                                  NeverScrollableScrollPhysics(),
+                                  scrollDirection:
+                                  Axis.horizontal,
+                                  itemCount: snap
+                                      .data.documents.length,
+                                  itemBuilder:
+                                      (context, index) {
+                                    return showTag(snap
+                                        .data
+                                        .documents[index]
+                                        .data['tag']);
+                                  })
                                   : Container(
-                                child: Center(child: Text("OOF"),),);
+                                child: Center(
+                                  child: Text("OOF"),
+                                ),
+                              );
                             },
                           )
                         ],
@@ -462,19 +494,21 @@ class _FeedPageState extends State<FeedPage>
                     ),
                     ListView.builder(
                       physics: NeverScrollableScrollPhysics(),
-                                  cacheExtent:
-                                      snapshot.data.documents.length / 2,
-                                  controller: feedListController,
-                                  shrinkWrap: true,
-                                  itemCount: snapshot.data.documents.length,
-                                  itemBuilder: (context, index) {
-                                    var ref = snapshot.data.documents[index];
-                                    return snapshot.hasData
-                                        ? BuildPost(
-                                            time: snapshot.data.documents[index]
-                                                .data['time'],
-                                            url: snapshot.data.documents[index]
-                                                .data["url"],
+                      cacheExtent:
+                      snapshot.data.documents.length / 2,
+                      controller: feedListController,
+                      shrinkWrap: true,
+                      itemCount: snapshot.data.documents.length,
+                      itemBuilder: (context, index) {
+                        var ref = snapshot.data.documents[index];
+                        return snapshot.hasData
+                            ? reportedPosts.indexOf(ref.data['postUid']) ==
+                            -1 && reportedPosts.indexOf(ref.data['postUid']) !=
+                            null ? BuildPost(
+                          time: snapshot.data.documents[index]
+                              .data['time'],
+                          url: snapshot.data.documents[index]
+                              .data["url"],
                           username: snapshot
                               .data
                               .documents[index]
@@ -496,8 +530,12 @@ class _FeedPageState extends State<FeedPage>
                               false,
                           title: snapshot.data
                               .documents[index].data["title"],
+                          numLikes: snapshot.data.documents[index]
+                              .data["numLikes"] ?? 0,
+                          numDislikes: snapshot.data.documents[index]
+                              .data["numDislikes"] ?? 0,
                         )
-                            : Container(
+                            : SizedBox.shrink() : Container(
                           child: Center(
                             child: Text("No Posts"),
                           ),
@@ -522,29 +560,21 @@ class _FeedPageState extends State<FeedPage>
     );
   }
 
-  _sort(value)
-  {
+  _sort(value) {
     print('Called sort');
     sortingMethod = value;
-    if(sortingMethod == "New")
-      {
-        streamOrder = 'time';
-        descendingOrder = true;
-      }
-    else if(sortingMethod == "Likes")
-      {
-        streamOrder = 'likes';
-        descendingOrder = true;
-      }
-    else if(sortingMethod == "Dislikes")
-      {
-        streamOrder = 'dislikes';
-        descendingOrder = true;
-      }
-    setTagStream(selectedTag,descendingOrder);
-    setState(() {
-
-    });
+    if (sortingMethod == "New") {
+      streamOrder = 'time';
+      descendingOrder = true;
+    } else if (sortingMethod == "Likes") {
+      streamOrder = 'numLikes';
+      descendingOrder = true;
+    } else if (sortingMethod == "Dislikes") {
+      streamOrder = 'numDislikes';
+      descendingOrder = true;
+    }
+    setTagStream(selectedTag, descendingOrder);
+    setState(() {});
   }
 
   void onPageChanged(int page) async {
@@ -561,13 +591,13 @@ class _FeedPageState extends State<FeedPage>
     });
   }
 
-  setTagStream(String selectedTag, bool descending) async {
+  setTagStream(String selectedTag, bool descendingOrder) async {
     try {
       postStream = Firestore.instance
           .collection("Posts")
           .document('Public')
           .collection(selectedTag)
-          .orderBy(streamOrder, descending: descending)
+          .orderBy(streamOrder, descending: descendingOrder)
           .snapshots();
       if (postStream == null) {
         error = true;
@@ -580,12 +610,13 @@ class _FeedPageState extends State<FeedPage>
   }
 
   setTagsStream() {
-    tagStream =
-        Firestore.instance.collection('Posts').document('Public').collection(
-            'Tags').snapshots();
-    setState(() {
-      tagStream.asBroadcastStream();
-    });
+    tagStream = Firestore.instance
+        .collection('Posts')
+        .document('Public')
+        .collection('Tags')
+        .orderBy('posts', descending: true)
+        .snapshots();
+    setState(() {});
   }
 
   setupAnimations() {
@@ -644,6 +675,7 @@ class _FeedPageState extends State<FeedPage>
     // monitor network fetch
     setTagStream(selectedTag, descendingOrder);
     setTagsStream();
+    getReportedList();
     await Future.delayed(Duration(milliseconds: 1000));
     setState(() {});
     // if failed,use refreshFailed()
