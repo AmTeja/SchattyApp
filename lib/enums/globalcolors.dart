@@ -33,10 +33,10 @@ class GlobalColors {
         elevation: 0.0,
       ),
 
+      fontFamily: "Rosario",
       //Fonts
-//      textTheme: GoogleFonts.robotoSlabTextTheme(
-//        Theme.of(context).textTheme,
-//      ),
+//      fontFamily: GoogleFonts.rosario,
+//      textTheme: GoogleFonts.rosarioTextTheme(),
     );
   }
 }

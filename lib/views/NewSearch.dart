@@ -1,10 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/preferencefunctions.dart';
-import 'package:schatty/helper/targetURL.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/services/SearchService.dart';
+import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/widgets/widget.dart';
 
 import 'Chatroom/MainChatScreenInstance.dart';
@@ -15,157 +16,323 @@ class NewSearch extends StatefulWidget {
 }
 
 class _NewSearchState extends State<NewSearch> {
-  var queryResultSet = [];
-  var tempSearchStore = [];
-  bool foundNone = false;
   bool isLoading = false;
 
+  String type = "User";
+  String searchString;
+
+  QuerySnapshot userSnap;
+  Stream<QuerySnapshot> titleSnap;
+
+  SearchService searchService = new SearchService();
   DatabaseMethods databaseMethods = new DatabaseMethods();
 
-  initiateSearch(String value) {
-    if (value.length == 0) {
-      setState(() {
-        queryResultSet = [];
-        tempSearchStore = [];
-        foundNone = false;
-      });
-    }
-
-    var capitalisedValue =
-        value.substring(0, 1).toUpperCase() + value.substring(1);
-    if (queryResultSet.length == 0 && value.length == 1) {
-      SearchService().searchByName(value).then((QuerySnapshot docs) {
-        for (int i = 0; i < docs.documents.length; i++) {
-          queryResultSet.add(docs.documents[i].data);
-          setState(() {
-            foundNone = false;
-          });
-        }
-      });
-    } else {
-      tempSearchStore = [];
-      queryResultSet.forEach((element) {
-        if (element['username'].startsWith(value) ||
-            element['username'].startsWith(capitalisedValue)) {
-          setState(() {
-            tempSearchStore.add(element);
-            foundNone = false;
-          });
-        }
-      });
-    }
-    if (tempSearchStore.length == 0 && value.length > 1) {
-      setState(() {
-        foundNone = true;
-      });
-    }
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    searchString = null;
+    print(searchString);
   }
+
 
   @override
   Widget build(BuildContext context) {
     return !isLoading
         ? Scaffold(
-            appBar: AppBar(
-              title: Text(
-                "Schatty",
-              ),
-            ),
-            body: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).unfocus();
-              },
-              child: ListView(
-                children: <Widget>[
+      appBar: AppBar(
+        title: Text(
+          "Schatty",
+        ),
+        centerTitle: true,
+      ),
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Column(
+          children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(
                   top: 20, bottom: 20, left: 30, right: 30),
               child: TextField(
                 onChanged: (val) {
-                  initiateSearch(val);
+                  searchString = val;
+                  updateRef();
                 },
                 decoration: new InputDecoration(
-                  hintText: "Search for users",
-                  hintStyle: TextStyle(
+                  contentPadding: EdgeInsets.all(16.0),
+                  prefixIcon: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: DropdownButton<String>(
+                      value: type,
+                      items: [
+                        DropdownMenuItem(
+                          value: "User",
+                          child: Text("User"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Sci-Fi",
+                          child: Text("SciFi"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Art",
+                          child: Text("Art"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Memes",
+                          child: Text("Memes"),
+                        ),
+                        DropdownMenuItem(
+                          value: "Tech",
+                          child: Text("Tech"),
+                        ),
+                      ],
+                      onChanged: (String newVal) {
+                        if (newVal == "SciFi") {
+                          type = "Sci-Fi";
+                          updateRef();
+                        } else {
+                          print(newVal);
+                          type = newVal;
+                          print(type);
+                          updateRef();
+                        }
+                      },
+                    ),
                   ),
+                  hintText: type == null
+                      ? "Search for users/title"
+                      : type == "User" || type == null
+                      ? "Search for a user"
+                      : "Search for a title in $type ",
+                  hintStyle: TextStyle(),
                   border: new OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30)
-                  ),
+                      borderRadius: BorderRadius.circular(30)),
                 ),
               ),
             ),
-            SizedBox(
-              height: 10,
-            ),
-            !foundNone
-                ? ListView(
-                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-              primary: false,
-              shrinkWrap: true,
-              children: tempSearchStore.map((element) {
-                return buildResultCard(element);
-              }).toList(),
+            Expanded(
+              child: searchString != null && searchString != "" ? type != "User"
+                  ?
+              StreamBuilder<QuerySnapshot>(
+                stream: titleSnap,
+                builder: (context, snapshot) {
+                  print('called stream');
+                  if (snapshot.hasError)
+                    return Text('Error: ${snapshot.hasError}');
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Center(child: CircularProgressIndicator());
+                    default:
+                      return snapshot.hasData ? ListView.builder(
+                        itemCount: snapshot.data.documents.length,
+                        itemBuilder: (context, index) {
+                          return ListTile(
+                            title: type != "User" ? returnTitlePreview(snapshot.data.documents[index]) :
+                            Text(snapshot.data.documents[index]
+                                .data['username']),
+                          );
+                        },
+                      ) : Container(child: Text("Nothing here"),);
+                  }
+                },
+              )
+                  : searchString != null && searchString != "" ? //Future builder for username
+              FutureBuilder(
+                future: searchService.searchByName(searchString),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError)
+                    return Text('Error: ${snapshot.hasError}');
+                  switch (snapshot.connectionState) {
+                    case ConnectionState.waiting:
+                      return Center(child: CircularProgressIndicator());
+                    default:
+                      return ListView.builder(
+                        itemCount: snapshot.data.documents.length,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            padding: EdgeInsets.all(16.0),
+                                                child: GestureDetector(
+                                                  onTap: () => Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                          builder: (context) =>
+                                                              TargetUserInfo(snapshot
+                                                                      .data
+                                                                      .documents[
+                                                                          index]
+                                                                      .data[
+                                                                  'username']))),
+                                                  child: ListTile(
+                                                    leading: Container(
+                                                      child: CircleAvatar(
+                                                        radius: 40,
+                                                        child: ClipOval(
+                                                          child:
+                                                              CachedNetworkImage(
+                                                            width: 60,
+                                                            height: 60,
+                                                            imageUrl: snapshot
+                                                                    .data
+                                                                    .documents[
+                                                                        index]
+                                                                    .data[
+                                                                'photoURL'],
+                                                            fit: BoxFit.cover,
+                                                            placeholder:
+                                                                (context,
+                                                                        url) =>
+                                                                    Center(
+                                                              child:
+                                                                  CircularProgressIndicator(),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    title: Text(snapshot
+                                                        .data
+                                                        .documents[index]
+                                                        .data['username']),
+                                                    trailing: FlatButton(
+                                                      child: Text("Message"),
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          23)),
+                                                      color: Color.fromARGB(
+                                                          255, 126, 217, 241),
+                                                      onPressed: () {
+                                                        createChatInstance(
+                                                            snapshot
+                                                                    .data
+                                                                    .documents[
+                                                                        index]
+                                                                    .data[
+                                                                'username']);
+                                                      },
+                                                    ),
+                                                  ),
+                            ),
+                          );
+                        },
+                      );
+                  }
+                },
+              ) : SizedBox() : SizedBox(),
             )
-                : showEmptyList()
           ],
         ),
       ),
-    ) : loadingScreen("Loading");
+    )
+        : loadingScreen("Loading");
   }
 
-  Widget showEmptyList() {
-    return Container(
-      child: Center(
-          child: Container(
-        width: 350,
-        height: 300,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+  updateRef() {
+    titleSnap =
+        Firestore.instance.collection("Posts").document("Public").collection(
+            type).where("titleIndex", arrayContains: searchString).snapshots();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  returnTitlePreview(docs)
+  {
+    return GestureDetector(
+      onTap: () {
+        if(type != "User")
+          {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      viewPost(docs,
+                          type),
+                ));
+          }
+      },
+      child: Container(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                "No user found...",
-                style: TextStyle(fontSize: 26),
+            Container(
+              height: 120,
+              width: 120,
+              child: docs.data["NSFW"] ? Center(child: Text("NSFW", style: TextStyle(fontSize: 30),),) :CachedNetworkImage(
+                imageUrl: docs.data['url'],
+                fit: BoxFit.cover,
               ),
-            )
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(23),
+                border: Border(
+                  top: BorderSide(color: Colors.black),
+                  bottom: BorderSide(color: Colors.black),
+                  right: BorderSide(color: Colors.black),
+                  left: BorderSide(color: Colors.black),
+                )
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(20),
+                height: 120,
+                width: 200,
+                child: Text("${docs.data['title']} by ${docs.data['username']}", style: TextStyle(fontSize: 22),)),
           ],
         ),
-      )),
+      ),
     );
   }
 
   createChatInstance(String userName) async {
-    final GetPhotoURL targetURL = new GetPhotoURL();
+    final String username = userName.toLowerCase();
     setState(() {
       isLoading = true;
     });
     try {
-      if (userName != Constants.ownerName) {
+      if (username != Constants.ownerName.toLowerCase()) {
         String chatRoomID = getChatRoomID(
-            userName.toLowerCase(), Constants.ownerName.toLowerCase());
+            username.toLowerCase(), Constants.ownerName.toLowerCase());
 //      print("${userName.toLowerCase()}, ${Constants.ownerName.toLowerCase()}");
-        String targetUserURL = await targetURL.fetchTargetURL(userName);
-        String currentUserURL = await Preferences.getUserImageURL();
+        String targetUserURL = await databaseMethods.getProfileUrlByName(
+            username.toLowerCase());
+        String currentUserURL = await databaseMethods.getProfileUrlByName(
+            Constants.ownerName.toLowerCase());
         String ownerDName = await databaseMethods.getDName(Constants.ownerName);
         print(Constants.ownerName);
         print(ownerDName);
-        String targetDName = await databaseMethods.getDName(userName);
+        String targetDName = await databaseMethods.getDName(username);
         print("$ownerDName, $targetDName");
-        List<String> dNames = [ownerDName, targetDName];
         List<String> users = [
           Constants.ownerName.toLowerCase(),
-          userName.toLowerCase()
+          username.toLowerCase()
         ];
-        List<String> photos = [currentUserURL, targetUserURL];
-        List<String> lastMessage = ["", ""];
+        Map<String, dynamic> photos = {
+          "${Constants.ownerName}": currentUserURL,
+          "$username": targetUserURL
+        };
 //      print(chatRoomID);
+        Map<String, dynamic> dNames = {
+          "${Constants.ownerName}": ownerDName,
+          "$username": targetDName
+        };
+        Map<String, dynamic> seenByMap = {
+          "$username": false,
+          "${Constants.ownerName}": false
+        };
         Map<String, dynamic> chatRoomMap = {
           "users": users,
           "chatRoomId": chatRoomID,
           "photoURLS": photos,
           "displayNames": dNames,
-          "lastTime": DateTime.now().millisecondsSinceEpoch,
-          "lastMessage": lastMessage
+          "lastTime": DateTime
+              .now()
+              .millisecondsSinceEpoch,
+          "seenBy": seenByMap,
         };
 
         DatabaseMethods().createChatRoom(chatRoomID, chatRoomMap);
@@ -175,7 +342,14 @@ class _NewSearchState extends State<NewSearch> {
         Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => ChatScreen(chatRoomID, userName)));
+                builder: (context) => ChatScreen(chatRoomID, username)));
+      }
+      else {
+        Fluttertoast.showToast(
+            msg: "Cannot message yourself", gravity: ToastGravity.CENTER);
+        setState(() {
+          isLoading = false;
+        });
       }
     } catch (error) {
       setState(() {
@@ -191,47 +365,5 @@ class _NewSearchState extends State<NewSearch> {
     } else {
       return "$a\_$b";
     }
-  }
-
-  Widget buildResultCard(data) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      height: 100,
-      child: GestureDetector(
-        onTap: () {
-          createChatInstance(data['username']);
-        },
-        child: Card(
-          color: Colors.black,
-          shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(40.0)),
-          elevation: 3,
-          shadowColor: Color.fromARGB(217, 0, 0, 0),
-          child: Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(40),
-                gradient: LinearGradient(
-                    colors: [
-                      Color.fromARGB(255, 14, 14, 14),
-                      Color.fromARGB(100, 46, 45, 45)
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight
-                )
-            ),
-            child: Center(
-              child: Text(
-                data['username'],
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

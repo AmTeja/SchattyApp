@@ -33,6 +33,7 @@ class _SignUpState extends State<SignUp> {
   bool hidePassword = true;
 
   signUp() async {
+    error = null;
     if (formKey.currentState.validate() &&
         (passwordTEC.text == rePasswordTEC.text)) {
       setState(() {
@@ -51,24 +52,27 @@ class _SignUpState extends State<SignUp> {
               email: emailTEC.text, password: passwordTEC.text);
           FirebaseUser firebaseUser = result.user;
           if (firebaseUser != null) {
-            Map<String, String> userInfoMap = {
+            Map<String, dynamic> userInfoMap = {
               //Making MAP for firebase
               "username": userNameTEC.text.toLowerCase(),
               "displayName": userNameTEC.text,
               "email": emailTEC.text,
               "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
-              "photoUrl": profilePicURL,
-              "uid": firebaseUser.uid
+              "photoURL": profilePicURL,
+              "uid": firebaseUser.uid,
+              "usernameIndex": await makeIndex(),
+              "numPosts": 0,
+              "reportedPosts": [""],
             };
             String uid = firebaseUser.uid;
             databaseMethods.uploadUserInfo(userInfoMap, uid);
             await firebaseUser.sendEmailVerification().then((value) => {
-                  setState(() {
-                    error = null;
-                    verificationSent = true;
-                    isLoading = false;
-                  })
-                });
+              setState(() {
+                error = null;
+                verificationSent = true;
+                isLoading = false;
+              })
+            });
           }
         } else {
           setState(() {
@@ -79,9 +83,9 @@ class _SignUpState extends State<SignUp> {
         }
       } catch (e) {
         print(e);
+        error = await e.message;
         setState(() {
           isLoading = false;
-          error = e.message;
         });
       }
     } else {
@@ -89,6 +93,21 @@ class _SignUpState extends State<SignUp> {
         error = "Passwords do not match!";
         isLoading = false;
       });
+    }
+  }
+
+  makeIndex() {
+    try {
+      print('Called');
+      List<String> indexList = [];
+      for (int i = 0; i < userNameTEC.text.length; i++) {
+        for (int y = 0; y < userNameTEC.text.length + 1; y++) {
+          indexList.add(userNameTEC.text.substring(0, y).toLowerCase());
+        }
+      }
+      return indexList;
+    } catch (e) {
+      print('Error making index: $e');
     }
   }
 
@@ -219,17 +238,18 @@ class _SignUpState extends State<SignUp> {
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 24),
                 child: ListView(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(vertical: 20),
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        "Join Us",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 40,
-                        ),
+                  physics: NeverScrollableScrollPhysics(),
+                        children: [
+                          Container(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            alignment: Alignment.topCenter,
+                            child: Text(
+                              "Join Us",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 40,
+                              ),
                       ),
                     ),
                     showErrorAlert(),
@@ -240,29 +260,28 @@ class _SignUpState extends State<SignUp> {
                       child: Column(
                         children: [
                           TextFormField(
-                              validator: UserNameValidator.validate,
-                                    controller: userNameTEC,
-                                    style: simpleTextStyle(),
-                                    decoration: new InputDecoration(
-                                        contentPadding:
-                                            EdgeInsets.only(left: 15),
-                                        labelText: "Username",
-                                        labelStyle: TextStyle(
-                                          fontSize: 18,
-                                          color: Colors.white70,
-                                        ),
-                                        border: new OutlineInputBorder(
-                                    borderRadius:
-                                    BorderRadius.circular(40),
-                                    borderSide:
-                                    BorderSide(color: Colors.white),
-                                  )),
-                              autofocus: true,
-                              textInputAction: TextInputAction.next,
-                              onFieldSubmitted: (v) {
-                                FocusScope.of(context).nextFocus();
-                              },
-                              ),
+                            validator: UserNameValidator.validate,
+                                  controller: userNameTEC,
+                                  style: TextStyle(
+                                      color: Colors.white, fontSize: 18),
+                                  decoration: new InputDecoration(
+                                      contentPadding: EdgeInsets.only(left: 15),
+                                      labelText: "Username",
+                                      labelStyle: TextStyle(
+                                        fontSize: 18,
+                                        color: Colors.white70,
+                                      ),
+                                      border: new OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(40),
+                                  borderSide:
+                                  BorderSide(color: Colors.white),
+                                )),
+                            autofocus: true,
+                            textInputAction: TextInputAction.next,
+                            onFieldSubmitted: (v) {
+                              FocusScope.of(context).nextFocus();
+                            },
+                          ),
                           SizedBox(
                             height: 20,
                           ),
@@ -270,7 +289,7 @@ class _SignUpState extends State<SignUp> {
 
                             validator: EmailValidator.validate,
                             controller: emailTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 contentPadding: EdgeInsets.only(left: 15),
                                 labelText: "Email",
@@ -294,7 +313,7 @@ class _SignUpState extends State<SignUp> {
                             obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 suffixIcon: IconButton(
                                   onPressed: () {
@@ -326,7 +345,6 @@ class _SignUpState extends State<SignUp> {
                             height: 20,
                           ),
                           TextFormField(
-                            focusNode: focus,
                             obscureText: hidePassword,
                             validator: (val) {
                               return passwordTEC.text.isNotEmpty
@@ -334,7 +352,7 @@ class _SignUpState extends State<SignUp> {
                                   : "Password cannot be empty";
                             },
                             controller: rePasswordTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 suffixIcon: IconButton(
                                   onPressed: () {
@@ -379,7 +397,7 @@ class _SignUpState extends State<SignUp> {
                       child: Text("Sign Up"),
                     ),
                     SizedBox(height: error != null ? 20 : 120,)
-                        ],
+                  ],
                       ),
               ),
             ),

@@ -7,7 +7,7 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ForgotPasswordLayout.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Feed/FeedPage.dart';
+import 'package:schatty/views/Feed/FeedPage.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class SignIn extends StatefulWidget {
@@ -39,9 +39,7 @@ class _SignInState extends State<SignIn> {
   signIn() async {
     if (formKey.currentState.validate()) {
       try {
-        databaseMethods
-            .getUserByUserName(userNameTEC.text.toLowerCase())
-            .then((val) async {
+        databaseMethods.getUserByUserName(userNameTEC.text).then((val) async {
           if (val != null || val != 0) {
             setState(() {
               userNameExists = true;
@@ -62,7 +60,6 @@ class _SignInState extends State<SignIn> {
                 AuthResult result = await _auth.signInWithEmailAndPassword(
                     email: email, password: passwordTEC.text);
                 FirebaseUser firebaseUser = result.user;
-
                 if (firebaseUser != null && firebaseUser.isEmailVerified) {
                   Preferences.saveUserLoggedInSharedPreference(true);
                   Preferences.saveUserEmailSharedPreference(email);
@@ -104,10 +101,12 @@ class _SignInState extends State<SignIn> {
                   isLoading = false;
                 });
               } else {
-                setState(() {
-                  error = e.message;
-                  isLoading = false;
-                });
+                if (mounted) {
+                  setState(() {
+                    error = e.message;
+                    isLoading = false;
+                  });
+                }
               }
             }
           }
@@ -166,7 +165,6 @@ class _SignInState extends State<SignIn> {
 
   @override
   Widget build(BuildContext context) {
-    final focus = FocusNode();
     return Scaffold(
       backgroundColor: Colors.black,
       //appBar: appBarMain(context),
@@ -208,6 +206,7 @@ class _SignInState extends State<SignIn> {
               ),
               padding: EdgeInsets.symmetric(horizontal: 24),
               child: ListView(
+                physics: NeverScrollableScrollPhysics(),
                 children: [
                   Container(
                     alignment: Alignment.center,
@@ -217,7 +216,6 @@ class _SignInState extends State<SignIn> {
                       style: TextStyle(color: Colors.white, fontSize: 40),
                     ),
                   ),
-
                   showAlert(),
                   SizedBox(height: 70,),
                   Form(
@@ -225,9 +223,10 @@ class _SignInState extends State<SignIn> {
                     child: Column(
                       children: [
                         TextFormField(
-                            validator: UserNameValidator.validate,
+                          validator: UserNameValidator.validate,
                                 controller: userNameTEC,
-                                style: simpleTextStyle(),
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
                                 decoration: new InputDecoration(
                                     contentPadding: EdgeInsets.only(
                                         left: 15, top: 20, bottom: 20),
@@ -237,24 +236,19 @@ class _SignInState extends State<SignIn> {
                                       color: Colors.white60,
                                     ),
                                     border: new OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(40),
+                                      borderRadius: BorderRadius.circular(40),
 //                                  borderSide: BorderSide(color: Colors.blue)
                               )),
                           textInputAction: TextInputAction.next,
-                          onFieldSubmitted: (v) {
-                              FocusScope.of(context).requestFocus(focus);
-                          },
-                          autofocus: true,
                         ),
                         SizedBox(
                           height: 20,
                         ),
                         TextFormField(
-                          focusNode: focus,
                             obscureText: hidePassword,
                             validator: PasswordValidator.validate,
                             controller: passwordTEC,
-                            style: simpleTextStyle(),
+                            style: TextStyle(color: Colors.white, fontSize: 18),
                             decoration: new InputDecoration(
                                 suffixIcon: IconButton(
                                   onPressed: () {
@@ -297,7 +291,7 @@ class _SignInState extends State<SignIn> {
                         EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: Text(
                           "Forgot Password?",
-                          style: simpleTextStyle(),
+                          style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),
                     ),
@@ -317,8 +311,8 @@ class _SignInState extends State<SignIn> {
                         borderRadius: BorderRadius.circular(40)),
                     elevation: 4,
                     child: Text("Sign in"),
-                        ),
-                      ],
+                  ),
+                ],
                     ),
                   ),
                 ),

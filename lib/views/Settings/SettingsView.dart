@@ -12,68 +12,52 @@ class SettingsView extends StatefulWidget {
 }
 
 class _SettingsViewState extends State<SettingsView> {
+
   @override
   Widget build(BuildContext context) {
     final themeChange = Provider.of<DarkThemeProvider>(context);
     return Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          title: Text("Settings"),
+        ),
         body: Center(
           child: ListView(
             children: [
-              Container(
-                  height: 100,
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          "Dark Theme",
-                          style: TextStyle(
-                            fontSize: 30.0,
-                          ),
-                        ),
-                      ),
-                      Switch(
-                        value: themeChange.darkTheme,
-                        onChanged: (value) {
-                          themeChange.darkTheme = value;
-                          setState(() {});
-                        },
-                      ),
-                    ],
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border(
-                        bottom: BorderSide(
-//                            color: Color.fromARGB(255, 141, 133, 133),
-//                            width: 0.1
-                            )),
-                  )),
-              InkWell(
+              GestureDetector(
                 onTap: () {
-                  showAd(context);
+                  themeChange.darkTheme = !themeChange.darkTheme;
                 },
                 child: Container(
-                  height: 100,
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "View an ad",
-                        style: TextStyle(
-                          fontSize: 30.0,
+                    height: 100,
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Dark Theme",
+                            style: TextStyle(
+                              fontSize: 30.0,
+                            ),
+                          ),
                         ),
-                      )
-                    ],
-                  ),
-                  decoration: BoxDecoration(
+                        Switch(
+                          value: themeChange.darkTheme,
+                          onChanged: (value) {
+                            themeChange.darkTheme = value;
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                    decoration: BoxDecoration(
                       border: Border(
-                        bottom: BorderSide(),
-                      )),
-                ),
-              )
+                          bottom: BorderSide(
+//                            color: Color.fromARGB(255, 141, 133, 133),
+//                            width: 0.1
+                              )),
+                    )),
+              ),
             ],
           ),
         ));

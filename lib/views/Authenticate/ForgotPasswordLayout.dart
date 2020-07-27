@@ -186,17 +186,18 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                       ),
                       TextFormField(
                           validator: (val) {
-                            return RegExp(
-                                        r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-                                    .hasMatch(val)
-                                ? null
-                                : "Please enter a valid e-mail ID.";
-                          },
-                          controller: emailTEC,
-                          style: simpleTextStyle(),
-                          decoration: InputDecoration(
-                              hintText: "Email",
-                              hintStyle: TextStyle(color: Colors.white))),
+                                  return RegExp(
+                                              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                                          .hasMatch(val)
+                                      ? null
+                                      : "Please enter a valid e-mail ID.";
+                                },
+                                controller: emailTEC,
+                                style: TextStyle(
+                                    color: Colors.white, fontSize: 18),
+                                decoration: InputDecoration(
+                                    hintText: "Email",
+                                    hintStyle: TextStyle(color: Colors.white))),
                     ],
                   ),
                 ),

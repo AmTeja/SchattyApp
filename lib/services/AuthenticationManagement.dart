@@ -79,6 +79,18 @@ class EmailValidator {
   }
 }
 
+class TagValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return ("Tag cannot be empty");
+    }
+    if (value.length < 3 || value.length > 12) {
+      return ("Tag length must be between 2 and 13");
+    }
+    return null;
+  }
+}
+
 class UserNameValidator {
   static String validate(String value) {
     if (value.isEmpty) {
@@ -87,8 +99,8 @@ class UserNameValidator {
     if (value.length < 5) {
       return "Username must be at least 5 chars long";
     }
-    if (value.length > 20) {
-      return "Username must be less than 20 chars long";
+    if (value.length > 15) {
+      return "Username must be less than 15 chars long";
     }
     return RegExp(r"^[a-zA-Z0-9_]+([_]?[a-zA-Z0-9])*$").hasMatch(value)
         ? null
@@ -120,11 +132,24 @@ class PasswordValidator {
   }
 }
 
+class TitleValidator {
+  static String validate(String value) {
+    if (value.isEmpty) {
+      return "Title can't be empty";
+    }
+    return null;
+  }
+}
+
 class UrlValidator {
   static String validate(String value) {
     if (value.isEmpty) {
       return "Url cannot be empty!";
     }
-    return null;
+    return RegExp(
+                r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%.,_\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\,+.~#?&//=]*)")
+            .hasMatch(value)
+        ? null
+        : "Invalid url";
   }
 }

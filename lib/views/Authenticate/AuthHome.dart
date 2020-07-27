@@ -43,26 +43,35 @@ class _AuthHomeState extends State<AuthHome> {
           ],
           ),
           child: ListView(
+            physics: NeverScrollableScrollPhysics(),
             children: <Widget>[
               Container(
                 alignment: Alignment.topCenter,
                 padding: EdgeInsets.symmetric(vertical: 50),
-                child: Text("Schatty",
-                style: TextStyle(
-                  fontSize: 70,
+                child: Text(
+                  "Schatty",
+                  style: TextStyle(
+                    fontSize: 70,
 //                  fontFamily: 'odibeeSans',
-                  color:  Colors.white,
-                ),),
+                    color: Colors.white,
+                  ),
+                ),
               ),
-              SizedBox(height: 20,),
+              SizedBox(
+                height: MediaQuery.of(context).size.height * 0.1,
+              ),
               Container(
                 alignment: Alignment.center,
                 child: Column(
                   children: <Widget>[
                     signInButton(),
-                    SizedBox(height: 20,),
+                    SizedBox(
+                      height: 20,
+                    ),
                     signUpButton(),
-                    SizedBox(height: 30,),
+                    SizedBox(
+                      height: 30,
+                    ),
                     googleButton(),
                   ],
                 ),
@@ -200,30 +209,31 @@ class _AuthHomeState extends State<AuthHome> {
           idToken: googleSignInAuthentication.idToken,
           accessToken: googleSignInAuthentication.accessToken);
       final AuthResult authResult =
-          await _auth.signInWithCredential(authCredential);
+      await _auth.signInWithCredential(authCredential);
       final FirebaseUser user = authResult.user;
       assert(!user.isAnonymous);
       assert(await user.getIdToken() != null);
 
-    final FirebaseUser currentUser = await _auth.currentUser();
-    assert(user.uid == currentUser.uid);
+      final FirebaseUser currentUser = await _auth.currentUser();
+      assert(user.uid == currentUser.uid);
 
       //Defining terms to update in database.
-      String username = user.displayName.replaceAll(" ", "");
+      String username = user.displayName.replaceAll(" ", "").toLowerCase();
       String email = user.email;
       String profilePicURL =
           "https://www.searchpng.com/wp-content/uploads/2019/02/Deafult-Profile-Pitcher.png";
       String uid = user.uid;
 
-    if(user !=null && authResult.additionalUserInfo.isNewUser)
-      {
+      Preferences.saveIsGoogleUser(true);
+
+      if (user != null && authResult.additionalUserInfo.isNewUser) {
         Map<String, String> userInfoMap = {
           //Making MAP for firebase
           "username": username,
           "email": email,
-          "searchKey": username.substring(0, 1).toUpperCase(),
           "photoURL": profilePicURL,
-          "uid": uid
+          "uid": uid,
+          "usernameIndex": await makeIndex(username),
         };
 
         await databaseMethods.uploadUserInfo(userInfoMap, uid);
@@ -235,13 +245,28 @@ class _AuthHomeState extends State<AuthHome> {
     else if(user !=null && !authResult.additionalUserInfo.isNewUser)
       {
         print("Already Exists");
-        Preferences.saveUserNameSharedPreference(username);
+        Preferences.saveUserNameSharedPreference(username.toLowerCase());
         Preferences.saveUserLoggedInSharedPreference(true);
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (context) => FeedPage()));
       }
     } catch (e) {
     print(e.toString());
+    }
+  }
+
+  makeIndex(String username) {
+    try {
+      print('Called');
+      List<String> indexList = [];
+      for (int i = 0; i < username.length; i++) {
+        for (int y = 0; y < username.length + 1; y++) {
+          indexList.add(username.substring(0, y).toLowerCase());
+        }
+      }
+      return indexList;
+    } catch (e) {
+      print('Error making index: $e');
     }
   }
 

@@ -1,9 +1,11 @@
 import 'dart:async';
+
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/enums/globalcolors.dart';
 import 'package:schatty/helper/NavigationService.dart';
@@ -11,8 +13,9 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/views/Authenticate/AuthHome.dart';
+import 'package:schatty/views/Chatroom/MainChatsRoom.dart';
 import 'package:schatty/views/Feed/FeedPage.dart';
-import 'file:///C:/Users/Dell/AndroidStudioProjects/schatty/lib/views/Chatroom/MainChatsRoom.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +27,7 @@ void main() async {
       .initialize(appId: "ca-app-pub-1304691467262814~7353905593");
 
   LicenseRegistry.addLicense(() async* {
-    final license = await rootBundle.loadString('google_fonts/OFL.txt');
+    final license = await rootBundle.loadString('google_fonts/OFLRosario.txt');
     yield LicenseEntryWithLineBreaks(['google_fonts'], license);
   });
 
@@ -42,7 +45,6 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   NavigationService navigationService = new NavigationService();
   DarkThemeProvider themeChangeProvider = new DarkThemeProvider();
-//  ImageChangeProvider imageChangeProvider = new ImageChangeProvider();
   bool isUserLoggedIn = false;
 
   @override
@@ -79,18 +81,20 @@ class _MyAppState extends State<MyApp> {
       ],
       child: Consumer<DarkThemeProvider>(
         builder: (BuildContext context, value, Widget child) {
-          return MaterialApp(
-            routes: {
-              '/ChatsRoom': (context) => ChatRoom(),
-            },
-            title: 'Schatty',
-            navigatorKey: navigationService.navigatorKey,
-            debugShowCheckedModeBanner: false,
-            theme:
-            GlobalColors.themeData(themeChangeProvider.darkTheme, context),
-            home: isUserLoggedIn != null
-                ? (isUserLoggedIn ? FeedPage() : AuthHome())
-                : AuthHome(),
+          return OverlaySupport(
+            child: MaterialApp(
+              routes: {
+                '/ChatsRoom': (context) => ChatRoom(),
+              },
+              title: 'Schatty',
+              navigatorKey: navigationService.navigatorKey,
+              debugShowCheckedModeBanner: false,
+              theme: GlobalColors.themeData(
+                  themeChangeProvider.darkTheme, context),
+              home: isUserLoggedIn != null
+                  ? (isUserLoggedIn ? FeedPage() : AuthHome())
+                  : AuthHome(),
+            ),
           );
         },
       ),

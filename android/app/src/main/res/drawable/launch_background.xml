@@ -6,7 +6,7 @@
     <!-- You can insert your own image assets here -->
     <item>
         <bitmap
-            android:gravity="center"
-            android:src="@drawable/splashschatty" />
+            android:gravity="center_horizontal"
+            android:src="@mipmap/icon2" />
     </item>
 </layer-list>

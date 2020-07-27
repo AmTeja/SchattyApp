@@ -1,10 +1,14 @@
+import 'dart:io';
 import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:overlay_support/overlay_support.dart';
 import 'package:path/path.dart';
+import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:schatty/enums/globalcolors.dart';
 import 'package:schatty/helper/NavigationService.dart';
@@ -13,10 +17,26 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/services/encryptionservice.dart';
-import 'package:schatty/widgets/widget.dart';
 import 'package:schatty/views/Chatroom/MainChatScreenInstance.dart';
+import 'package:schatty/widgets/InAppNotification.dart';
+import 'package:schatty/widgets/widget.dart';
+
 import 'ChatTile.dart';
+
+// ignore: missing_return
+Future<dynamic> myBackgroundMessageHandler(Map<String, dynamic> message) {
+  if (message.containsKey('data')) {
+// Handle data message
+    print("Background Data: $message");
+  }
+
+  if (message.containsKey('notification')) {
+// Handle notification message
+    print("Background notification: $message");
+  }
+
+// Or do other work.
+}
 
 class ChatRoom extends StatefulWidget {
   @override
@@ -29,13 +49,12 @@ class _ChatRoomState extends State<ChatRoom>
   DatabaseMethods databaseMethods = new DatabaseMethods();
   NavigationService navigationService = new NavigationService();
   FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
-  EncryptionService encryptionService = new EncryptionService();
   DarkThemeProvider darkThemeProvider = new DarkThemeProvider();
   GlobalColors gc = new GlobalColors();
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
   RefreshController _refreshController =
-      RefreshController(initialRefresh: false);
+  RefreshController(initialRefresh: false);
 
 //  final StorageReference storageRef = FirebaseStorage.instance.ref().child(fileName);
   BuildContext newContext;
@@ -47,8 +66,11 @@ class _ChatRoomState extends State<ChatRoom>
   bool isLoading = false;
   bool isChatRoom = true;
 
+  BuildContext scaffoldContext;
+
   var imageUrl;
 
+  String newMessageUsername;
   String url;
   String uid;
 
@@ -65,11 +87,13 @@ class _ChatRoomState extends State<ChatRoom>
 
   @override
   Widget build(BuildContext context) {
+    scaffoldContext = context;
+    final darkTheme = Provider.of<DarkThemeProvider>(context);
     newContext = context;
     return !isLoading
         ? Scaffold(
             body: Container(
-              child: chatRoomList(),
+              child: chatRoomList(darkTheme),
             ),
           )
         : Scaffold(
@@ -106,7 +130,7 @@ class _ChatRoomState extends State<ChatRoom>
         ));
   }
 
-  Widget chatRoomList() {
+  Widget chatRoomList(darkTheme) {
     return StreamBuilder(
       stream: chatRoomsStream,
       builder: (context, snapshot) {
@@ -114,26 +138,44 @@ class _ChatRoomState extends State<ChatRoom>
             ? SmartRefresher(
           enablePullDown: true,
           enablePullUp: false,
-          header: BezierCircleHeader(),
+          header: BezierCircleHeader(
+            circleColor:
+            darkTheme.darkTheme ? Colors.white : Color(0xFF7ED9F1),
+          ),
           controller: _refreshController,
           onRefresh: _onRefresh,
           onLoading: _onLoading,
           child: ListView.builder(
               reverse: false,
+              cacheExtent: 5,
               itemCount: snapshot.data.documents.length,
               itemBuilder: (context, index) {
-                return ChatRoomTile(
-                  snapshot.data.documents[index].data["chatRoomId"]
-                      .toString()
-                      .replaceAll("_", "")
-                      .replaceAll(Constants.ownerName.toLowerCase(), ""),
-                  snapshot.data.documents[index].data["chatRoomId"],
-                  snapshot.data.documents[index].data["photoURLS"],
-                  snapshot.data.documents[index].data["users"],
-                  snapshot.data.documents[index].data["displayNames"],
-                  snapshot.data.documents[index].data["lastMessage"],
-                  snapshot.data.documents[index].data["lastTime"],
-                );
+                final lastMessage = snapshot.data.documents[index]
+                    .data["lastMessage"];
+                if (lastMessage[0] != "" && lastMessage[1] != "") {
+                  return ChatRoomTile(
+                    username: snapshot.data.documents[index]
+                        .data["chatRoomId"].toString()
+                        .replaceAll("_", "")
+                        .replaceAll(
+                        Constants.ownerName.toLowerCase(), ""),
+                    chatRoomId: snapshot.data.documents[index]
+                        .data["chatRoomId"],
+                    urls: snapshot.data.documents[index]
+                        .data["photoUrls"],
+                    displayNames: snapshot.data.documents[index]
+                        .data["displayNames"],
+                    lastMessageDetails: snapshot.data.documents[index]
+                        .data["lastMessage"] ?? null,
+                    lastTime: snapshot.data.documents[index]
+                        .data["lastTime"],
+                    seenBy: (snapshot.data.documents[index]
+                        .data["seenBy"]) ?? null,
+                  );
+                }
+                else {
+                  return Container();
+                }
               }),
         )
             : suchEmpty(context);
@@ -141,19 +183,41 @@ class _ChatRoomState extends State<ChatRoom>
     );
   }
 
+
+  //Notification functions
   configureFirebaseListeners() {
     firebaseMessaging.configure(
       onMessage: (Map<String, dynamic> message) async {
-        print('onMessage: $message');
+        print("onMessage: $message");
+        var notification = message['notification'];
+        String sentUser = await notification["title"];
+        String sentMessage = await notification["body"];
+
+        newMessageReceived = true;
+        newMessageUsername = sentUser;
+
+        setState(() {
+          print('Called');
+        });
+
+        showOverlayNotification((scaffoldContext) {
+          return MessageNotification(
+            title: sentUser,
+            body: sentMessage,
+            onReply: () {
+              OverlaySupportEntry.of(scaffoldContext).dismiss();
+              toast('you checked this message');
+            },);
+        }, duration: Duration(seconds: 2));
       },
       onLaunch: (Map<String, dynamic> message) async {
         print('onLaunch: $message');
-        await sendToChatScreen(message);
       },
       onResume: (Map<String, dynamic> message) async {
         print('OnResume: $message');
         await sendToChatScreen(message);
       },
+      onBackgroundMessage: Platform.isIOS ? null : myBackgroundMessageHandler,
     );
   }
 
@@ -163,9 +227,9 @@ class _ChatRoomState extends State<ChatRoom>
     String sentUser = await data["sentUser"];
     String toUser = await data["toUser"];
     String roomID1 =
-        getChatRoomID(sentUser.toLowerCase(), toUser.toLowerCase());
+    getChatRoomID(sentUser.toLowerCase(), toUser.toLowerCase());
     String roomID2 =
-        getChatRoomID(toUser.toLowerCase(), sentUser.toLowerCase());
+    getChatRoomID(toUser.toLowerCase(), sentUser.toLowerCase());
     try {
       await Firestore.instance
           .collection("ChatRoom")
@@ -195,10 +259,12 @@ class _ChatRoomState extends State<ChatRoom>
     }
   }
 
+
+  //Initial functions
   uploadToken() async {
     String token;
     token = await firebaseMessaging.getToken();
-    databaseMethods.updateToken(token, Constants.ownerName.toLowerCase());
+    databaseMethods.updateToken(token, uid);
   }
 
   getChatRoomID(String a, String b) {
@@ -210,6 +276,7 @@ class _ChatRoomState extends State<ChatRoom>
   }
 
   getUserInfo() async {
+    print('Get info called');
     Constants.ownerName = await Preferences.getUserNameSharedPreference();
     try {
       databaseMethods
@@ -222,8 +289,8 @@ class _ChatRoomState extends State<ChatRoom>
       await firebaseAuth.currentUser().then((docs) {
         uid = docs.uid;
       });
-      url = await databaseMethods
-          .getProfileUrl(Constants.ownerName.toLowerCase());
+      url = await Preferences.getUserImageURL() ?? await databaseMethods
+          .getProfileUrlByName(Constants.ownerName.toLowerCase());
       setState(() {
         isLoading = false;
       });
@@ -232,36 +299,10 @@ class _ChatRoomState extends State<ChatRoom>
     }
   }
 
-  setupEncryption() async {
-    try {
-      print("Encryption Setting up");
-      encryptionService.futureKeyPair = encryptionService.getKeyPair();
-      encryptionService.keyPair = await encryptionService.futureKeyPair;
-      Map<String, dynamic> keyMap = {
-        "privateKey": encryptionService.keyPair.privateKey,
-      };
-      await Firestore.instance
-          .collection('users')
-          .where('uid', isEqualTo: uid)
-          .getDocuments()
-          .then((docs) async {
-        await Firestore.instance
-            .document('/users/${docs.documents[0].documentID}')
-            .updateData(keyMap);
-      });
-
-      var privateString = await encryptionService
-          .getPrivatekeyInPlain(encryptionService.keyPair);
-      var publicString = await encryptionService
-          .getPublicKeyInPlain(encryptionService.keyPair);
-      print("Private: $privateString");
-      print("Public: $publicString");
-    } catch (e) {
-      print("Encryption Error: $e");
-    }
-  }
-
+  //Refresh functions
   void _onRefresh() async {
+    print('Refreshed');
+    getUserInfo();
     await Future.delayed(Duration(milliseconds: 1000));
     setState(() {});
     _refreshController.refreshCompleted();

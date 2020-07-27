@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/helper/preferencefunctions.dart';
+import 'package:schatty/helper/preferencefunctions.dart' show Preferences;
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Authenticate/ChangePassword.dart';
@@ -35,21 +35,34 @@ class _EditProfileState extends State<EditProfile> {
   final formKey = GlobalKey<FormState>();
 
   String displayName;
+  bool isGoogle = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     isLoading = true;
+    getIsGoogle();
     assignURL();
+    getDisplayName();
     setState(() {
       isLoading = false;
     });
   }
 
+  getIsGoogle() async {
+    isGoogle = await Preferences.getIsGoogleUser() ?? false;
+    print(isGoogle);
+    setState(() {});
+  }
+
+  getDisplayName() async {
+    displayName = await databaseMethods.getDName(widget.username);
+    setState(() {});
+  }
+
   assignURL() async {
-    profilePicURL =
-        await databaseMethods.getProfileUrl(Constants.ownerName.toLowerCase());
+    profilePicURL = await databaseMethods
+        .getProfileUrlByName(Constants.ownerName.toLowerCase());
     setState(() {});
   }
 
@@ -59,7 +72,7 @@ class _EditProfileState extends State<EditProfile> {
 //      backgroundColor: Color.fromARGB(100, 39, 38, 38),
       appBar: AppBar(
         title: Text(
-          "Schatty",
+          "Edit Profile",
         ),
       ),
       body: Center(
@@ -102,16 +115,20 @@ class _EditProfileState extends State<EditProfile> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   displayName == null
-                      ? Text(
-                          "Display Name: ${widget.username}",
-                          style: TextStyle(
-                            fontSize: 26,
+                      ? FittedBox(
+                          child: Text(
+                            "Display Name: ${widget.username}",
+                            style: TextStyle(
+                              fontSize: 26,
+                            ),
                           ),
                         )
-                      : Text(
-                          "Display Name: $displayName",
-                          style: TextStyle(
-                            fontSize: 26,
+                      : FittedBox(
+                          child: Text(
+                            "Display Name: $displayName",
+                            style: TextStyle(
+                              fontSize: 26,
+                            ),
                           ),
                         ),
                   IconButton(
@@ -139,24 +156,27 @@ class _EditProfileState extends State<EditProfile> {
                 splashColor: Colors.black,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
-                    Text(
-                      "Edit Picture",
-                      style: TextStyle(color: Colors.black, fontSize: 18),
+                    FittedBox(
+                      child: Text(
+                        "Edit Picture",
+                        style: TextStyle(color: Colors.black, fontSize: 18),
+                      ),
                     ),
-                    SizedBox(
-                      width: 20,
-                    ),
-                    Icon(
-                      Icons.camera_alt,
-                      size: 40,
-                      color: Colors.black,
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Icon(
+                        Icons.camera_alt,
+                        size: 40,
+                        color: Colors.black,
+                      ),
                     )
                   ],
                 ),
               ),
             ),
-            Padding(
+            isGoogle ? Container() : Padding(
               padding:
               const EdgeInsets.symmetric(horizontal: 120, vertical: 10),
               child: MaterialButton(
@@ -249,7 +269,8 @@ class _EditProfileState extends State<EditProfile> {
     setState(() {
 
     });
-    databaseMethods.updateDisplayName(displayName);
+    databaseMethods.updateDisplayName(
+        displayName, widget.username.toLowerCase());
   }
 
   Future getImage() async {
