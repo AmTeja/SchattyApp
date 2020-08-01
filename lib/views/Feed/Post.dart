@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -39,8 +40,9 @@ bool isLoading = false;
 bool dev = true;
 bool nsfw = false;
 bool newTag = false;
+bool isVideo = false;
 
-File selectedImage;
+File selectedFile;
 
 String selectedTag;
 String postUrl;
@@ -67,7 +69,7 @@ class _PostContentState extends State<PostContent> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    selectedImage = null;
+    selectedFile = null;
     setTagStream();
     tagController = new ScrollController();
   }
@@ -121,47 +123,48 @@ class _PostContentState extends State<PostContent> {
                           .size
                           .height * 0.1,
                     ),
-                    selectedImage == null && urlFromImage == null ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.collections,
-                              color: Colors.white,
-                              size: 35,
-                            ),
-                            onPressed: () {
-                              getImage(ImageSource.gallery);
-                            },
-                          ),
-                        ),
-//                        Padding(
-//                          padding: const EdgeInsets.all(8.0),
-//                          child: IconButton(
-//                            icon: Icon(
-//                              Icons.videocam,
-//                              color: Colors.white,
-//                              size: 35,
-//                            ),
-//                            onPressed: () {
-//                              getVideo();
-//                            },
-//                          ),
-//                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 35,
-                            ),
-                            onPressed: () {
-                              getImage(ImageSource.camera);
-                            },
+                    selectedFile == null && urlFromImage == null
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.collections,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                  onPressed: () {
+                                    getImage(ImageSource.gallery);
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.videocam,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                  onPressed: () {
+                                    getVideo();
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                  onPressed: () {
+                                    getImage(ImageSource.camera);
+                                  },
                           ),
                         ),
                         Padding(
@@ -183,7 +186,7 @@ class _PostContentState extends State<PostContent> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8.0, vertical: 30.0),
                       child: Container(
-                        child: selectedImage == null ? Text(
+                        child: selectedFile == null ? Text(
                           "File: ",
                           style: TextStyle(fontSize: 24, color: Colors.white),
                         ) : Text(
@@ -362,9 +365,20 @@ class _PostContentState extends State<PostContent> {
 
   getVideo() async {
     try {
-      var tempVideo = await picker.getVideo(source: ImageSource.gallery);
-      if (tempVideo != null) {
-        selectedImage = File(tempVideo.path);
+//      PickedFile tempVideo;
+//      tempVideo = await picker.getVideo(source: ImageSource.gallery, maxDuration: Duration(minutes: 2));
+      var tempFile = await FilePicker.getFile(
+        type: FileType.video,
+      );
+      if (tempFile != null) {
+        selectedFile = File(tempFile.path);
+        print(selectedFile.path);
+        isVideo = true;
+        selectedImagePath =
+            selectedFile.path;
+        setState(() {
+
+        });
       }
     } catch (e) {
       print('Error getting video: $e');
@@ -408,7 +422,7 @@ class _PostContentState extends State<PostContent> {
             ));
         setState(() {
           if (cropped != null) {
-            selectedImage = cropped;
+            selectedFile = cropped;
           }
         });
       }
@@ -527,13 +541,28 @@ class _PostContentState extends State<PostContent> {
     ranString = randomString(10);
   }
 
+
+  uploadVideo(String tag) async {
+    getRandom();
+    print("uploading");
+    final String fileName = 'PublicPosts/' + tag + '/$ranString.mp4';
+    final StorageReference storageReference =
+    FirebaseStorage.instance.ref().child("$fileName");
+    StorageUploadTask task = storageReference.putFile(selectedFile);
+    StorageTaskSnapshot taskSnapshot = await task.onComplete;
+    var post = await taskSnapshot.ref.getDownloadURL();
+    setState(() {
+      postUrl = post.toString();
+    });
+  }
+
   uploadImageToPublic(String tag) async {
     getRandom();
     print("uploading");
-    final String fileName = 'PublicPosts/' + tag + '/$ranString.jgp';
+    final String fileName = 'PublicPosts/' + tag + '/$ranString.jpg';
     final StorageReference storageReference =
     FirebaseStorage.instance.ref().child(fileName);
-    StorageUploadTask task = storageReference.putFile(selectedImage);
+    StorageUploadTask task = storageReference.putFile(selectedFile);
     StorageTaskSnapshot taskSnapshot = await task.onComplete;
     var post = await taskSnapshot.ref.getDownloadURL();
     setState(() {
@@ -666,18 +695,23 @@ class _PostContentState extends State<PostContent> {
 
           });
         }
-        if (selectedImage == null && selectedTag == null &&
+        if (selectedFile == null && selectedTag == null &&
             urlFromImage == null) {
           setState(() {
             isLoading = false;
-        });
-        showError();
-      } else {
-        print('Else called: $selectedPublic');
-        if (selectedPublic) {
-          if (urlFromImage == null) {
-            await uploadImageToPublic(selectedTag);
-          }
+          });
+          showError();
+        } else {
+          print('Else called: $selectedPublic');
+          if (selectedPublic) {
+            if (urlFromImage == null) {
+              if (isVideo) {
+                await uploadVideo(selectedTag);
+              }
+              else if (!isVideo) {
+                await uploadImageToPublic(selectedTag);
+              }
+            }
           print('Uploaded!');
           if (postUrl != null || urlFromImage != null) {
             print("not null");
@@ -688,7 +722,6 @@ class _PostContentState extends State<PostContent> {
               "time": DateTime
                   .now()
                   .millisecondsSinceEpoch,
-              "profileUrl": widget.profileUrl,
               "likes": [""],
               "dislikes": [""],
               "postUid": ranString,
@@ -697,6 +730,7 @@ class _PostContentState extends State<PostContent> {
               "titleIndex": await makeIndex(),
               "numLikes": 0,
               "numDislikes": 0,
+              "isVideo": isVideo,
             };
             postToSelectedTag(postMap);
             updateUserPosts();
@@ -706,7 +740,7 @@ class _PostContentState extends State<PostContent> {
             urlFromImage = null;
             titleTEC.text = "";
             captionTEC.text = "";
-
+            isVideo = false;
             setState(() {});
             print("done");
             Navigator.pop(context);
@@ -716,6 +750,8 @@ class _PostContentState extends State<PostContent> {
       }
     } catch (e) {
       print("Error Posting: $e");
+      isLoading = false;
+      Fluttertoast.showToast(msg: "An error occurred: $e");
     }
   }
 }

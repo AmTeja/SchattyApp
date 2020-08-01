@@ -10,6 +10,8 @@ import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/views/Feed/CommentsPage.dart';
+import 'package:schatty/views/NewSearch.dart';
+import 'package:schatty/widgets/FeedVideoPlayer.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class BuildPost extends StatefulWidget {
@@ -27,6 +29,7 @@ class BuildPost extends StatefulWidget {
   final loop;
   final numLikes;
   final numDislikes;
+  final isVideo;
 
   // ignore: non_constant_identifier_names
   const BuildPost({
@@ -39,6 +42,7 @@ class BuildPost extends StatefulWidget {
     @required this.likes,
     @required this.nsfw,
     @required this.title,
+    this.isVideo,
     this.loop,
     this.dislikes,
     this.numLikes,
@@ -68,7 +72,6 @@ class _BuildPostState extends State<BuildPost> {
   @override
   void initState() {
     // TODO: implement initState
-    profileUrl = null;
     setLikeAndDislike();
     super.initState();
 //    getUserProfileUrl();
@@ -158,13 +161,15 @@ class _BuildPostState extends State<BuildPost> {
                                   },
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(23),
-                                    child: Hero(
-                                      tag: widget.caption,
-                                      child: CachedNetworkImage(
-                                        imageUrl: widget.url,
-                                        fit: BoxFit.fill,
-                                      ),
-                                    ),
+                                    child: widget.isVideo
+                                        ? FeedVideoPlayer(
+                                            url: widget.url,
+                                            key: new Key(widget.url),
+                                          )
+                                        : CachedNetworkImage(
+                                            imageUrl: widget.url,
+                                            fit: BoxFit.fill,
+                                          ),
                                   ),
                                 ),
                         ),
@@ -252,10 +257,7 @@ class _BuildPostState extends State<BuildPost> {
   Widget Footer() {
     double splashRadius = 25.0;
     return Container(
-//      height: 80,
       decoration: BoxDecoration(
-//        color: widget.isDark ? Colors.black : Colors.white,
-//        borderRadius: BorderRadius.circular(23)
           border: Border(
               bottom: BorderSide(
                 color: Colors.black,
@@ -315,11 +317,30 @@ class _BuildPostState extends State<BuildPost> {
                                   CommentsPage(
                                     postUID: widget.postUid,
                                     tag: widget.topic,
+                                    postOwnerUsername: widget.username,
                                   )));
                     },
                   )
                 ],
               ),
+            ),
+            trailing: IconButton(
+              icon: Icon(Icons.share),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          NewSearch(
+                            isPost: true,
+                            postUid: widget.postUid,
+                            caption: widget.caption,
+                            ownerUsername: widget.username,
+                            topic: widget.topic,
+                            postUrl: widget.url,
+                          ),
+                    ));
+              },
             ),
           ),
         ],
@@ -328,14 +349,13 @@ class _BuildPostState extends State<BuildPost> {
   }
 
   setLikeAndDislike() async {
-    if (await widget.likes.indexOf("${Constants.ownerName.toLowerCase()}") !=
+    if (await widget.likes.indexOf("${Constants.ownerName}") !=
         -1) {
       isLiked = true;
     } else {
-      print("called");
       isLiked = false;
     }
-    if (await widget.dislikes.indexOf("${Constants.ownerName.toLowerCase()}") !=
+    if (await widget.dislikes.indexOf("${Constants.ownerName}") !=
         -1) {
       isDisliked = true;
     } else {
@@ -402,7 +422,9 @@ class _BuildPostState extends State<BuildPost> {
       AchievementView(
         context,
         title: "Deleted",
-        duration: Duration(seconds: 1,),
+        duration: Duration(
+          seconds: 1,
+        ),
         subTitle: "The post has been deleted.",
         icon: Icon(Icons.delete),
         color: Color(0xff3B3B3B),
@@ -421,25 +443,38 @@ class _BuildPostState extends State<BuildPost> {
     });
     int posts;
     await updateUserPosts();
-    await firestoreInstance.collection('Posts').document('Public').collection(
-        'Tags').document(widget.topic).get().then((docs) async {
+    await firestoreInstance
+        .collection('Posts')
+        .document('Public')
+        .collection('Tags')
+        .document(widget.topic)
+        .get()
+        .then((docs) async {
       posts = await docs.data['posts'];
       posts--;
-      firestoreInstance.collection('Posts').document('Public').collection(
-          'Tags').document(widget.topic).updateData({'posts': posts});
+      firestoreInstance
+          .collection('Posts')
+          .document('Public')
+          .collection('Tags')
+          .document(widget.topic)
+          .updateData({'posts': posts});
     });
   }
 
-  updateUserPosts() async
-  {
+  updateUserPosts() async {
     uid = await databaseMethods.getUIDByUsername(widget.username);
     int posts;
-    await firestoreInstance.collection('users').document(uid).get().then((
-        docs) async {
+    await firestoreInstance
+        .collection('users')
+        .document(uid)
+        .get()
+        .then((docs) async {
       posts = await docs.data["numPosts"];
       posts--;
-      await firestoreInstance.collection('users').document(uid).updateData(
-          {'numPosts': posts});
+      await firestoreInstance
+          .collection('users')
+          .document(uid)
+          .updateData({'numPosts': posts});
     });
   }
 
@@ -447,8 +482,6 @@ class _BuildPostState extends State<BuildPost> {
 
   reportPost() async {
     try {
-      uid =
-      await databaseMethods.getUIDByUsername(Constants.ownerName.toLowerCase());
       Map<String, dynamic> reportPostMap = {
         'reportedBy': Constants.ownerName.toLowerCase(),
         'postId': widget.postUid,
@@ -457,9 +490,7 @@ class _BuildPostState extends State<BuildPost> {
       };
       isReported = true;
       if (mounted) {
-        setState(() {
-
-        });
+        setState(() {});
       }
 
       await firestoreInstance
@@ -467,14 +498,17 @@ class _BuildPostState extends State<BuildPost> {
           .document('Posts')
           .collection('ReportedPosts')
           .add(reportPostMap);
-      print(uid);
-      await firestoreInstance.collection('users').document(uid).get().then((
-          docs) async {
+      await firestoreInstance
+          .collection('users')
+          .document(Constants.ownerUid)
+          .get()
+          .then((docs) async {
         reportedPostsList = await docs.data["reportedPosts"];
-        print(reportedPostsList);
         reportedPostsList.add(widget.postUid);
-        await firestoreInstance.collection('users').document(uid).updateData(
-            {"reportedPosts": reportedPostsList});
+        await firestoreInstance
+            .collection('users')
+            .document(Constants.ownerUid)
+            .updateData({"reportedPosts": reportedPostsList});
       });
       AchievementView(
         context,
@@ -489,9 +523,7 @@ class _BuildPostState extends State<BuildPost> {
       isReported = false;
       Fluttertoast.showToast(
           msg: "An error occurred", gravity: ToastGravity.CENTER);
-      setState(() {
-
-      });
+      setState(() {});
     }
   }
 
@@ -501,29 +533,34 @@ class _BuildPostState extends State<BuildPost> {
   var dislikes;
 
   updateLike(bool newVal) async {
-    print('Called update like');
-    await selectedTagRef
-        .where('postUid', isEqualTo: widget.postUid)
-        .getDocuments()
-        .then((docs) async {
-      likesList = await docs.documents[0].data["likes"];
-      likes = await docs.documents[0].data["numLikes"];
-      if (newVal) {
-        likesList.add("${Constants.ownerName.toLowerCase()}");
-        likes = likes + 1;
-      } else {
-        likesList.removeAt(
-            likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
-        likes = likes - 1;
-      }
-      Map<String, dynamic> likeListMap = {
-        'likes': likesList,
-        "numLikes": likes,
-      };
+    try {
+      print('Called update Like');
       await selectedTagRef
-          .document(docs.documents[0].documentID)
-          .updateData(likeListMap);
-    });
+          .where('postUid', isEqualTo: widget.postUid)
+          .getDocuments()
+          .then((docs) async {
+        likesList = await docs.documents[0].data["likes"];
+        likes = await docs.documents[0].data["numLikes"];
+        if (newVal) {
+          likesList.add("${Constants.ownerName.toLowerCase()}");
+          likes = likes + 1;
+        } else {
+          likesList.removeAt(
+              likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
+          likes = likes - 1;
+        }
+        Map<String, dynamic> likeListMap = {
+          'likes': likesList,
+          "numLikes": likes,
+        };
+        await selectedTagRef
+            .document(docs.documents[0].documentID)
+            .updateData(likeListMap);
+        setState(() {});
+      });
+    } catch (error) {
+      print("UpdateLike error: $error");
+    }
   }
 
   updateDislike(bool newVal) async {
@@ -535,6 +572,7 @@ class _BuildPostState extends State<BuildPost> {
       dislikes = await docs.documents[0].data["numDislikes"];
 
       if (newVal && isDisliked) {
+        print('true and true');
         dislikesList.add("${Constants.ownerName.toLowerCase()}");
         dislikes++;
       } else {
@@ -542,6 +580,7 @@ class _BuildPostState extends State<BuildPost> {
           dislikesList.removeAt(
               dislikesList.indexOf("${Constants.ownerName.toLowerCase()}"));
           dislikes--;
+          print('false ');
         } else {}
       }
       Map<String, dynamic> dislikeListMap = {
@@ -552,6 +591,7 @@ class _BuildPostState extends State<BuildPost> {
           .document(docs.documents[0].documentID)
           .updateData(dislikeListMap);
     });
+    setState(() {});
   }
 
   getUserProfileUrl() async {

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:schatty/views/Feed/BuildContent.dart';
@@ -86,6 +87,26 @@ Widget viewImage(String url, BuildContext context, String message, Object tag) {
   );
 }
 
+viewPostInChat(String postUid, String topic, BuildContext context) async {
+  var docs;
+  if (postUid != null) {
+    await Firestore.instance
+        .collection('Posts')
+        .document('Public')
+        .collection(topic)
+        .where('postUid', isEqualTo: postUid)
+        .getDocuments()
+        .then((documents) {
+      docs = documents.documents[0];
+    });
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => viewPost(docs, topic),
+        ));
+  }
+}
+
 Widget viewPost(docs, topic) {
   return Scaffold(
     appBar: AppBar(
@@ -108,6 +129,7 @@ Widget viewPost(docs, topic) {
           title: docs.data["title"],
           numLikes: docs.data["numLikes"],
           numDislikes: docs.data["numDislikes"],
+          isVideo: docs.data["isVideo"] ?? false,
         ),
       ],
     ),

@@ -21,6 +21,7 @@ import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/widgets/widget.dart';
+import 'package:time_machine/time_machine.dart';
 
 class ChatScreen extends StatefulWidget {
   final String chatRoomID;
@@ -74,6 +75,7 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     onScreen = true;
+    timeSetup();
     setSeenBy();
     getProfileUrl();
     databaseMethods.getMessage(widget.chatRoomID, limit).then((val) {
@@ -84,6 +86,8 @@ class _ChatScreenState extends State<ChatScreen> {
     scrollController = ScrollController();
     setSentTo();
   }
+
+  timeSetup() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -189,18 +193,20 @@ class _ChatScreenState extends State<ChatScreen> {
                                 itemCount: snapshot.data.documents.length,
                                 itemBuilder: (context, index) {
                                   setSeen(snapshot, index);
+                                  var docs = snapshot.data.documents[index];
                                   return buildMessage(
-                                      snapshot.data.documents[index]
-                                          .data["message"],
-                                      snapshot.data.documents[index]
-                                              .data["sendBy"] ==
-                                          Constants.ownerName.toLowerCase(),
-                                      snapshot
-                                          .data.documents[index].data["time"],
-                                      snapshot
-                                          .data.documents[index].data["url"],
-                                      snapshot.data.documents[index]
-                                          .data["isSeen"]);
+                                    message: docs.data['message'],
+                                    imageUrl: docs.data['url'],
+                                    isMe: docs.data["sendBy"] ==
+                                        Constants.ownerName.toLowerCase(),
+                                    tempTime: docs.data['time'],
+                                    read: docs.data['isSeen'] ?? false,
+                                    isPost: docs.data['isPost'] ?? false,
+                                    ownerUsername: docs.data['ownerUsername'] ??
+                                        null,
+                                    postUid: docs.data['postUid'] ?? null,
+                                    topic: docs.data['topic'] ?? null,
+                                  );
                                 })
                             : Container();
                       }),
@@ -250,17 +256,30 @@ class _ChatScreenState extends State<ChatScreen> {
     refreshController.loadComplete();
   }
 
-  buildMessage(String message, bool isMe, int time, String imageUrl,
-      bool read) {
+  buildMessage({
+    String message,
+    bool isMe,
+    Timestamp tempTime,
+    String imageUrl,
+    bool read,
+    bool isPost,
+    String ownerUsername,
+    String postUid,
+    String topic,
+  }) {
+    var time = tempTime.toDate().add(tempTime
+        .toDate()
+        .timeZoneOffset);
     bool imageMessage = false;
     var timeInDM =
-    DateFormat('dd:M:y').format(DateTime.fromMillisecondsSinceEpoch(time));
+    DateFormat('dd:M:y').format(
+        DateTime.fromMillisecondsSinceEpoch(time.millisecondsSinceEpoch));
     newDay = compareTime(timeInDM);
     if (!(imageUrl == null || imageUrl == "")) {
       imageMessage = true;
     }
     final Widget msg = SafeArea(
-        child: Container(
+        child: !isPost ? Container(
           padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
           margin: EdgeInsets.symmetric(vertical: 8),
           width: MediaQuery
@@ -275,7 +294,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 setState(() {
                   isSelected = !isSelected;
                   selectedText = message;
-                  selectedTime = time;
+                  selectedTime = time
+                      .subtract(time.timeZoneOffset)
+                      .millisecondsSinceEpoch;
                   isSelectedOwner = isMe;
                   isImage = false;
                 });
@@ -283,7 +304,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 setState(() {
                   isSelected = !isSelected;
                   selectedText = imageUrl;
-                  selectedTime = time;
+                  selectedTime = time
+                      .subtract(time.timeZoneOffset)
+                      .millisecondsSinceEpoch;
                   isSelectedOwner = isMe;
                   isImage = true;
                 });
@@ -347,20 +370,55 @@ class _ChatScreenState extends State<ChatScreen> {
                                             imageUrl, context, message, time),
                                   ));
                             },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(23)),
-                              child: Hero(
-                                tag: time,
-                                child: CachedNetworkImage(
-                                  imageUrl: imageUrl,
-                                  errorWidget: (context, msg, error) =>
-                                      Center(
-                                        child: Text(
-                                            "Error loading $msg: $error"),
-                                      ),
+                            child: Stack(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(23)),
+                                  child: Hero(
+                                    tag: time,
+                                    child: CachedNetworkImage(
+                                      imageUrl: imageUrl,
+                                      errorWidget: (context, msg, error) =>
+                                          Center(
+                                            child: Text(
+                                                "Error loading $msg: $error"),
+                                          ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Row(
+                                    children: [
+                                      Padding(padding: EdgeInsets.symmetric(
+                                          horizontal: 4, vertical: 4),
+                                          child: read
+                                              ? Icon(Icons.check)
+                                              : SizedBox.shrink()),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 4, vertical: 4),
+                                        child: Text(
+                                          !newDay
+                                              ? DateFormat('kk:mm').format(
+                                              DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                  time.millisecondsSinceEpoch))
+                                              : DateFormat('kk:mm dd/M').format(
+                                              DateTime
+                                                  .fromMillisecondsSinceEpoch(
+                                                  time.millisecondsSinceEpoch)),
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
                             )),
                         message != ""
                             ? Container(
@@ -384,9 +442,11 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: Text(
                       !newDay
                           ? DateFormat('kk:mm').format(
-                          DateTime.fromMillisecondsSinceEpoch(time))
+                          DateTime.fromMillisecondsSinceEpoch(
+                              time.millisecondsSinceEpoch))
                           : DateFormat('kk:mm dd/M').format(
-                          DateTime.fromMillisecondsSinceEpoch(time)),
+                          DateTime.fromMillisecondsSinceEpoch(
+                              time.millisecondsSinceEpoch)),
                       style: TextStyle(
                         fontSize: 12,
                       ),
@@ -407,8 +467,134 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-        ));
+        ) : ShowPost(
+            isMe,
+            read,
+            imageUrl,
+            time.millisecondsSinceEpoch,
+            message,
+            ownerUsername,
+            postUid,
+            topic));
     return msg;
+  }
+
+  // ignore: non_constant_identifier_names
+  ShowPost(bool isMe, bool isSeen, String imageUrl, int time, String message,
+      String ownerUsername, String postUid, String topic) {
+    return Container(
+      padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+      margin: EdgeInsets.symmetric(vertical: 8),
+      width: MediaQuery
+          .of(context)
+          .size
+          .width * 0.8,
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: GestureDetector(
+        onLongPress: () {
+          HapticFeedback.mediumImpact();
+          setState(() {
+            isSelected = !isSelected;
+            selectedText = imageUrl;
+            selectedTime = time;
+            isSelectedOwner = isMe;
+            isImage = true;
+          });
+        },
+        onTap: () {
+          viewPostInChat(postUid, topic, context);
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery
+                .of(context)
+                .size
+                .width * 0.8,
+          ),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isMe
+                  ? [Color(0xffc8435f), Color(0xffc94d83)]
+                  : [Color(0xff64769e), Color(0xff64769e)],
+            ),
+            borderRadius: isMe
+                ? BorderRadius.only(
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(18),
+                bottomLeft: Radius.circular(18))
+                : BorderRadius.only(
+                topLeft: Radius.circular(18),
+                topRight: Radius.circular(18),
+                bottomRight: Radius.circular(18)),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Flexible(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(23)),
+                      child: Hero(
+                        tag: time,
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          errorWidget: (context, msg, error) =>
+                              Center(
+                                child: Text(
+                                    "Error loading $msg: $error"),
+                              ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(8.0),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(),
+                      height: 70,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ownerUsername != null ? FittedBox(child: Text(
+                            "post by $ownerUsername",
+                            style: TextStyle(fontSize: 20,),)) : Text(""),
+                          Row(
+                            children: [
+                              isSeen ? Icon(Icons.check) : SizedBox.shrink(),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0),
+                                child: Text(
+                                  !newDay
+                                      ? DateFormat('kk:mm').format(
+                                      DateTime.fromMillisecondsSinceEpoch(time))
+                                      : DateFormat('kk:mm dd/M').format(
+                                      DateTime.fromMillisecondsSinceEpoch(
+                                          time)),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget composeImage() {
@@ -682,13 +868,13 @@ class _ChatScreenState extends State<ChatScreen> {
     if (messageTEC.text.isNotEmpty && messageTEC.text
         .trim()
         .isNotEmpty) {
-//      print(sentTo);
+      var now = Instant.now().inUtc().toDateTimeLocal();
+      var nowInEpoch = now.millisecondsSinceEpoch;
       Map<String, dynamic> messageMap = {
         "message": messageTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        "time": now,
+        "timeInEpoch": nowInEpoch,
         "sendTo": sentTo,
         "sentFrom": sentFrom,
         "url": "",
@@ -705,6 +891,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   sendImage(BuildContext context) async {
     try {
+      var now = Instant.now().inUtc().toDateTimeLocal();
+      var nowInEpoch = now.millisecondsSinceEpoch;
 //      Navigator.pop(context);
       imageUploadProvider.setToLoading();
       final String fileName = 'userImages/' +
@@ -725,13 +913,12 @@ class _ChatScreenState extends State<ChatScreen> {
       Map<String, dynamic> imageMap = {
         "message": captionTEC.text,
         "sendBy": Constants.ownerName,
-        "time": DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        "time": now,
+        "timeInEpoch": nowInEpoch,
         "sendTo": sentTo,
         "sentFrom": sentFrom,
         "url": url,
-        "seen": false,
+        "isSeen": false,
       };
 
       databaseMethods.updateLastMessage(
@@ -745,17 +932,18 @@ class _ChatScreenState extends State<ChatScreen> {
 
   sendImageFromUrl(String url, String caption) {
     try {
+      var now = Instant.now().inUtc().toDateTimeLocal();
       imageUploadProvider.setToLoading();
       setState(() {});
       Map<String, dynamic> imageMap = {
         "message": caption,
         "sendBy": Constants.ownerName,
-        "time": DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        "time": now,
+        "timeInEpoch": now.millisecondsSinceEpoch,
         "sendTo": sentTo,
         "sentFrom": sentFrom,
-        "url": url
+        "url": url,
+        "isSeen": false,
       };
       databaseMethods.updateChatRoomTime(widget.chatRoomID);
       databaseMethods.addMessage(widget.chatRoomID, imageMap);
@@ -807,14 +995,12 @@ class _ChatScreenState extends State<ChatScreen> {
   deleteMessage(String message, int time) async {
     try {
       if (message != null && !isImage) {
-        print(message);
-        print(url);
         await Firestore.instance
             .collection('ChatRoom')
             .document(widget.chatRoomID)
             .collection('chats')
             .where('message', isEqualTo: message)
-            .where('time', isEqualTo: time)
+            .where('timeInEpoch', isEqualTo: time)
             .getDocuments()
             .then((docs) async {
           await Firestore.instance
@@ -825,13 +1011,13 @@ class _ChatScreenState extends State<ChatScreen> {
               .delete();
         });
       } else {
-        print('Its a url');
+
         await Firestore.instance
             .collection('ChatRoom')
             .document(widget.chatRoomID)
             .collection('chats')
             .where('url', isEqualTo: message)
-            .where('time', isEqualTo: time)
+            .where('timeInEpoch', isEqualTo: time)
             .getDocuments()
             .then((docs) async {
           await Firestore.instance

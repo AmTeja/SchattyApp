@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
+import 'package:schatty/temp/swipetest.dart';
 
 import '../AdView.dart';
 
@@ -47,6 +48,38 @@ class _SettingsViewState extends State<SettingsView> {
                             themeChange.darkTheme = value;
                             setState(() {});
                           },
+                        ),
+                      ],
+                    ),
+                    decoration: BoxDecoration(
+                      border: Border(
+                          bottom: BorderSide(
+//                            color: Color.fromARGB(255, 141, 133, 133),
+//                            width: 0.1
+                              )),
+                    )),
+              ),
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SwipeTest(),
+                      ));
+                },
+                child: Container(
+                    height: 100,
+                    padding: EdgeInsets.symmetric(horizontal: 30),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Test",
+                            style: TextStyle(
+                              fontSize: 30.0,
+                            ),
+                          ),
                         ),
                       ],
                     ),

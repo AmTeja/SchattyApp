@@ -56,7 +56,7 @@ class DatabaseMethods {
     });
   }
 
-  createChatRoom(String chatRoomID, Map chatRoomMap) {
+  createChatRoom(String chatRoomID, Map chatRoomMap, String targetUsername) {
     Firestore.instance
         .collection("ChatRoom")
         .where('chatRoomId', isEqualTo: chatRoomID)
@@ -64,15 +64,21 @@ class DatabaseMethods {
         .then((docs) {
       if (docs.documents.length != 0) {
         print("docs available");
+        chatRoomMap["archivedUsers.${Constants.ownerName}"] = false;
         Firestore.instance
             .collection("ChatRoom")
             .document(chatRoomID)
             .updateData(chatRoomMap)
             .catchError((e) {
-          print("CreateChatRoom: $e");
+          print("Update ChatRoom: $e");
         });
       } else {
         chatRoomMap["lastMessage"] = ["", ""];
+        Map<String, dynamic> otherMap = {
+          Constants.ownerName: false,
+          "$targetUsername": false
+        };
+        chatRoomMap["archivedUsers"] = otherMap;
         Firestore.instance
             .collection("ChatRoom")
             .document(chatRoomID)
@@ -195,7 +201,6 @@ class DatabaseMethods {
         .getDocuments()
         .then((value) async {
       url = await value.documents[0].data["photoURL"];
-//        length = await value.documents.length;
       await Preferences.saveUserImageURL(url);
     }).catchError((e) {
       print("URL ERROR: $e");

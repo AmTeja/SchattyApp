@@ -26,7 +26,6 @@ class _ChangePasswordState extends State<ChangePassword> {
     try {
       if (formKey.currentState.validate()) {
         FirebaseUser user = await auth.currentUser();
-
         AuthResult result = await auth.signInWithEmailAndPassword(
             email: user.email, password: oldPasswordTEC.text);
         FirebaseUser oldUser = result.user;

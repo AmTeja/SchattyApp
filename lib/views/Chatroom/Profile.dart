@@ -31,7 +31,9 @@ class _TargetUserInfoState extends State<TargetUserInfo>
   bool dev = true;
 
   DatabaseMethods databaseMethods = new DatabaseMethods();
-  NewSearch newSearch = new NewSearch();
+  NewSearch newSearch = new NewSearch(
+    isPost: false,
+  );
 
   Stream postStream;
   Stream tagStream;
@@ -96,38 +98,49 @@ class _TargetUserInfoState extends State<TargetUserInfo>
   }
 
   Widget newBody() {
+    int senstivity = 2;
     return SingleChildScrollView(
       physics: ScrollPhysics(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            alignment: Alignment.center,
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-            child: Row(
-              children: [
-                UserAvatar(profileURL, 70),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 32),
-                      child: FittedBox(
-                        child: Text(
-                          displayName ?? userName,
-                          style: TextStyle(fontSize: 30),
+          GestureDetector(
+            onHorizontalDragUpdate: (details) {
+              if (details.delta.dx > senstivity) {
+                print("right");
+              }
+              else if (details.delta.dx < -senstivity) {
+                print("left");
+              }
+            },
+            child: Container(
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+              child: Row(
+                children: [
+                  UserAvatar(profileURL, 70),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 32),
+                        child: FittedBox(
+                          child: Text(
+                            displayName ?? userName,
+                            style: TextStyle(fontSize: 30),
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text("Posts: $numPosts",
-                        style: TextStyle(fontSize: 20),),
-                    ),
-                  ],
-                ),
-              ],
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text("Posts: $numPosts",
+                          style: TextStyle(fontSize: 20),),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
           Container(
