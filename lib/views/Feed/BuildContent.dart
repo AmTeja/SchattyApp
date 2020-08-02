@@ -10,6 +10,7 @@ import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/views/Feed/CommentsPage.dart';
+import 'package:schatty/views/Feed/Post.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/FeedVideoPlayer.dart';
 import 'package:schatty/widgets/widget.dart';
@@ -42,11 +43,11 @@ class BuildPost extends StatefulWidget {
     @required this.likes,
     @required this.nsfw,
     @required this.title,
-    this.isVideo,
-    this.loop,
-    this.dislikes,
-    this.numLikes,
-    this.numDislikes,
+    @required this.isVideo,
+    @required this.loop,
+    @required this.dislikes,
+    @required this.numLikes,
+    @required this.numDislikes,
   });
 
   @override
@@ -332,13 +333,14 @@ class _BuildPostState extends State<BuildPost> {
                     MaterialPageRoute(
                       builder: (context) =>
                           NewSearch(
-                            isPost: true,
-                            postUid: widget.postUid,
-                            caption: widget.caption,
-                            ownerUsername: widget.username,
-                            topic: widget.topic,
-                            postUrl: widget.url,
-                          ),
+                            isVideo: isVideo,
+                        isPost: true,
+                        postUid: widget.postUid,
+                        caption: widget.caption,
+                        ownerUsername: widget.username,
+                        topic: widget.topic,
+                        postUrl: widget.url,
+                      ),
                     ));
               },
             ),

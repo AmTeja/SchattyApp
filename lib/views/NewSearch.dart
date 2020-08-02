@@ -13,6 +13,7 @@ import 'Chatroom/MainChatScreenInstance.dart';
 // ignore: must_be_immutable
 class NewSearch extends StatefulWidget {
   bool isPost;
+  bool isVideo;
   String ownerUsername;
   String postUrl;
   String caption;
@@ -21,6 +22,7 @@ class NewSearch extends StatefulWidget {
 
   NewSearch({
     @required this.isPost,
+    this.isVideo,
     this.topic,
     this.postUid,
     this.ownerUsername,
@@ -35,7 +37,7 @@ class NewSearch extends StatefulWidget {
 class _NewSearchState extends State<NewSearch> {
   bool isLoading = false;
 
-  String type = "User";
+  String type;
   String searchString;
 
   QuerySnapshot userSnap;
@@ -48,6 +50,8 @@ class _NewSearchState extends State<NewSearch> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    type = widget.topic ?? "User";
+    print(type);
     searchString = null;
   }
 
@@ -322,6 +326,8 @@ class _NewSearchState extends State<NewSearch> {
                   style: TextStyle(fontSize: 30),
                 ),
               )
+                  : docs.data["isVideo"]
+                  ? Center(child: Text("Video"))
                   : CachedNetworkImage(
                 imageUrl: docs.data['url'],
                 fit: BoxFit.cover,
@@ -437,6 +443,7 @@ class _NewSearchState extends State<NewSearch> {
         "sentFrom": Constants.ownerUid,
         "url": postUrl,
         "isPost": true,
+        "isVideo": widget.isVideo,
         "ownerUsername": postOwner,
         "postUid": postUid,
         "topic": topic,
@@ -450,3 +457,5 @@ class _NewSearchState extends State<NewSearch> {
     }
   }
 }
+
+

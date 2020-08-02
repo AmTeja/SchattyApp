@@ -456,7 +456,8 @@ class _FeedPageState extends State<FeedPage>
                                   builder: (context) =>
                                       NewSearch(
                                         isPost: false,
-                                      ),
+                                                topic: selectedTag,
+                                              ),
                                 ));
                           },
                         )

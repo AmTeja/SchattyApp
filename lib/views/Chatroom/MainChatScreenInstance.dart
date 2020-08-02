@@ -11,7 +11,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:link_text/link_text.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:schatty/enums/view_state.dart';
@@ -202,10 +201,11 @@ class _ChatScreenState extends State<ChatScreen> {
                                     tempTime: docs.data['time'],
                                     read: docs.data['isSeen'] ?? false,
                                     isPost: docs.data['isPost'] ?? false,
-                                    ownerUsername: docs.data['ownerUsername'] ??
-                                        null,
+                                    ownerUsername:
+                                        docs.data['ownerUsername'] ?? null,
                                     postUid: docs.data['postUid'] ?? null,
                                     topic: docs.data['topic'] ?? null,
+                                    isVideo: docs.data['isVideo'] ?? false,
                                   );
                                 })
                             : Container();
@@ -263,6 +263,7 @@ class _ChatScreenState extends State<ChatScreen> {
     String imageUrl,
     bool read,
     bool isPost,
+    bool isVideo,
     String ownerUsername,
     String postUid,
     String topic,
@@ -347,20 +348,20 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Flexible(
                     child: (!imageMessage)
-                        ? LinkText(
-                      text: message,
-                      textStyle: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )
-                        : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      //                        crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        InkWell(
+                              ? Text(
+                                  message,
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  //                        crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    InkWell(
                             onTap: () {
                               Navigator.push(
                                   context,
@@ -441,12 +442,8 @@ class _ChatScreenState extends State<ChatScreen> {
                     padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
                     child: Text(
                       !newDay
-                          ? DateFormat('kk:mm').format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              time.millisecondsSinceEpoch))
-                          : DateFormat('kk:mm dd/M').format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              time.millisecondsSinceEpoch)),
+                          ? DateFormat('kk:mm').format(time)
+                          : DateFormat('kk:mm dd/M').format(time),
                       style: TextStyle(
                         fontSize: 12,
                       ),
@@ -468,20 +465,22 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
         ) : ShowPost(
-            isMe,
-            read,
-            imageUrl,
-            time.millisecondsSinceEpoch,
-            message,
-            ownerUsername,
-            postUid,
-            topic));
+            isVideo: isVideo,
+            isMe: isMe,
+            isSeen: read,
+            url: imageUrl,
+            message: message,
+            ownerUsername: ownerUsername,
+            postUid: postUid,
+            topic: topic,
+            time: time
+        ));
     return msg;
   }
 
   // ignore: non_constant_identifier_names
-  ShowPost(bool isMe, bool isSeen, String imageUrl, int time, String message,
-      String ownerUsername, String postUid, String topic) {
+  ShowPost(
+      {@required isVideo, bool isMe, bool isSeen, String url, String message, String ownerUsername, String postUid, String topic, var time}) {
     return Container(
       padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -495,8 +494,7 @@ class _ChatScreenState extends State<ChatScreen> {
           HapticFeedback.mediumImpact();
           setState(() {
             isSelected = !isSelected;
-            selectedText = imageUrl;
-            selectedTime = time;
+            selectedText = url;
             isSelectedOwner = isMe;
             isImage = true;
           });
@@ -540,10 +538,14 @@ class _ChatScreenState extends State<ChatScreen> {
                     Container(
                       decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(23)),
-                      child: Hero(
+                      child: isVideo ? Container(
+                          height: 300,
+                          child: Center(child: Text("Tap to play video",
+                            style: TextStyle(fontSize: 30),))) :
+                      Hero(
                         tag: time,
                         child: CachedNetworkImage(
-                          imageUrl: imageUrl,
+                          imageUrl: url,
                           fit: BoxFit.cover,
                           errorWidget: (context, msg, error) =>
                               Center(
@@ -572,11 +574,8 @@ class _ChatScreenState extends State<ChatScreen> {
                                     horizontal: 8.0),
                                 child: Text(
                                   !newDay
-                                      ? DateFormat('kk:mm').format(
-                                      DateTime.fromMillisecondsSinceEpoch(time))
-                                      : DateFormat('kk:mm dd/M').format(
-                                      DateTime.fromMillisecondsSinceEpoch(
-                                          time)),
+                                      ? DateFormat('kk:mm').format(time)
+                                      : DateFormat('kk:mm dd/M').format(time),
                                   style: TextStyle(
                                     fontSize: 12,
                                   ),
@@ -693,6 +692,7 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           IconButton(
+            tooltip: "Send",
             icon: Icon(Icons.send),
             iconSize: 25,
             color: Color(0xff51cec0),
