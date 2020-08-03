@@ -15,7 +15,6 @@ import 'package:random_string/random_string.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
 
 class PostContent extends StatefulWidget {
@@ -69,7 +68,6 @@ final postFormKey = new GlobalKey<FormState>();
 DatabaseMethods databaseMethods = new DatabaseMethods();
 
 ImagePicker picker = ImagePicker();
-final videoCompress = VideoCompress();
 
 class _PostContentState extends State<PostContent> {
   @override

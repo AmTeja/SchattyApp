@@ -34,6 +34,9 @@ class _FeedVideoPlayerState extends State<FeedVideoPlayer> {
         if (visibility.visibleFraction == 0 && this.mounted) {
           flickControlManager.pause();
         }
+        if (visibility.visibleFraction > 0.5 && this.mounted) {
+          flickControlManager.play();
+        }
       },
       child: Container(
         child: FlickVideoPlayer(

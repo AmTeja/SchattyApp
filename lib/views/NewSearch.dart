@@ -50,7 +50,7 @@ class _NewSearchState extends State<NewSearch> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    type = widget.topic ?? "User";
+    type = "User";
     print(type);
     searchString = null;
   }
@@ -436,9 +436,7 @@ class _NewSearchState extends State<NewSearch> {
       Map<String, dynamic> imageMap = {
         "message": caption,
         "sendBy": Constants.ownerName,
-        "time": DateTime
-            .now()
-            .millisecondsSinceEpoch,
+        "time": DateTime.now(),
         "sendTo": targetUID,
         "sentFrom": Constants.ownerUid,
         "url": postUrl,

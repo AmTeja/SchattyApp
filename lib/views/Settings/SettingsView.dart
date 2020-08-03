@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
-import 'package:schatty/temp/swipetest.dart';
+import 'package:schatty/views/Feed/PostUI.dart';
 
 import '../AdView.dart';
 
@@ -64,7 +64,7 @@ class _SettingsViewState extends State<SettingsView> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => SwipeTest(),
+                        builder: (context) => MakePost(),
                       ));
                 },
                 child: Container(
@@ -86,8 +86,6 @@ class _SettingsViewState extends State<SettingsView> {
                     decoration: BoxDecoration(
                       border: Border(
                           bottom: BorderSide(
-//                            color: Color.fromARGB(255, 141, 133, 133),
-//                            width: 0.1
                               )),
                     )),
               ),

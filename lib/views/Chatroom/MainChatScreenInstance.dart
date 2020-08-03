@@ -19,6 +19,7 @@ import 'package:schatty/provider/image_upload_provider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/Profile.dart';
+import 'package:schatty/widgets/FeedVideoPlayer.dart';
 import 'package:schatty/widgets/widget.dart';
 import 'package:time_machine/time_machine.dart';
 
@@ -76,7 +77,7 @@ class _ChatScreenState extends State<ChatScreen> {
     onScreen = true;
     timeSetup();
     setSeenBy();
-    getProfileUrl();
+    getProfileUrl(widget.userName);
     databaseMethods.getMessage(widget.chatRoomID, limit).then((val) {
       setState(() {
         chatMessageStream = val;
@@ -214,10 +215,10 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               imageUploadProvider.getViewState == ViewState.LOADING
                   ? Container(
-                alignment: Alignment.centerRight,
-                margin: EdgeInsets.only(right: 15, top: 10),
-                child: CircularProgressIndicator(),
-              )
+                      alignment: Alignment.centerRight,
+                      margin: EdgeInsets.only(right: 15, top: 10),
+                      child: CircularProgressIndicator(),
+                    )
                   : Container(),
               buildMessageComposer(),
             ],
@@ -239,20 +240,15 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  onRefresh() async
-  {
+  onRefresh() async {
     limit += 20;
     await setMessageStream();
-    setState(() {
-
-    });
+    setState(() {});
     refreshController.refreshCompleted();
   }
 
   onLoading() {
-    setState(() {
-
-    });
+    setState(() {});
     refreshController.loadComplete();
   }
 
@@ -272,16 +268,17 @@ class _ChatScreenState extends State<ChatScreen> {
         .toDate()
         .timeZoneOffset);
     bool imageMessage = false;
-    var timeInDM =
-    DateFormat('dd:M:y').format(
+    var timeInDM = DateFormat('dd:M:y').format(
         DateTime.fromMillisecondsSinceEpoch(time.millisecondsSinceEpoch));
     newDay = compareTime(timeInDM);
     if (!(imageUrl == null || imageUrl == "")) {
       imageMessage = true;
     }
     final Widget msg = SafeArea(
-        child: !isPost ? Container(
-          padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+        child: !isPost
+            ? Container(
+          padding:
+          EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
           margin: EdgeInsets.symmetric(vertical: 8),
           width: MediaQuery
               .of(context)
@@ -327,10 +324,16 @@ class _ChatScreenState extends State<ChatScreen> {
                   gradient: LinearGradient(
                       colors: isMe
                           ? (!imageMessage
-                          ? ([const Color(0xffff758c), const Color(0xffff7eb3)])
+                          ? ([
+                        const Color(0xffff758c),
+                        const Color(0xffff7eb3)
+                      ])
                           : [Color(0xffc8435f), Color(0xffc94d83)])
                           : (!imageMessage
-                          ? ([Color(0xff93a5cf), const Color(0xff93a5cf)])
+                          ? ([
+                        Color(0xff93a5cf),
+                        const Color(0xff93a5cf)
+                      ])
                           : [Color(0xff64769e), Color(0xff64769e)])),
                   borderRadius: isMe
                       ? BorderRadius.only(
@@ -348,39 +351,45 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: <Widget>[
                   Flexible(
                     child: (!imageMessage)
-                              ? Text(
-                                  message,
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  //                        crossAxisAlignment: CrossAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    InkWell(
+                        ? Text(
+                      message,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    )
+                        : Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      //                        crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
                             onTap: () {
                               Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
                                         viewImage(
-                                            imageUrl, context, message, time),
+                                            imageUrl,
+                                            context,
+                                            message,
+                                            time),
                                   ));
                             },
                             child: Stack(
                               children: [
                                 Container(
                                   decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(23)),
+                                      borderRadius:
+                                      BorderRadius.circular(
+                                          23)),
                                   child: Hero(
                                     tag: time,
                                     child: CachedNetworkImage(
                                       imageUrl: imageUrl,
-                                      errorWidget: (context, msg, error) =>
+                                      errorWidget:
+                                          (context, msg, error) =>
                                           Center(
                                             child: Text(
                                                 "Error loading $msg: $error"),
@@ -393,24 +402,30 @@ class _ChatScreenState extends State<ChatScreen> {
                                   right: 0,
                                   child: Row(
                                     children: [
-                                      Padding(padding: EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 4),
+                                      Padding(
+                                          padding:
+                                          EdgeInsets.symmetric(
+                                              horizontal: 4,
+                                              vertical: 4),
                                           child: read
                                               ? Icon(Icons.check)
                                               : SizedBox.shrink()),
                                       Container(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 4, vertical: 4),
+                                        padding:
+                                        EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 4),
                                         child: Text(
                                           !newDay
-                                              ? DateFormat('kk:mm').format(
-                                              DateTime
-                                                  .fromMillisecondsSinceEpoch(
-                                                  time.millisecondsSinceEpoch))
-                                              : DateFormat('kk:mm dd/M').format(
-                                              DateTime
-                                                  .fromMillisecondsSinceEpoch(
-                                                  time.millisecondsSinceEpoch)),
+                                              ? DateFormat('kk:mm')
+                                              .format(DateTime
+                                              .fromMillisecondsSinceEpoch(time
+                                              .millisecondsSinceEpoch))
+                                              : DateFormat(
+                                              'kk:mm dd/M')
+                                              .format(DateTime
+                                              .fromMillisecondsSinceEpoch(
+                                              time.millisecondsSinceEpoch)),
                                           style: TextStyle(
                                             fontSize: 12,
                                           ),
@@ -439,7 +454,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   !imageMessage
                       ? Container(
-                    padding: EdgeInsets.only(left: 10, top: 3, bottom: 0),
+                    padding: EdgeInsets.only(
+                        left: 10, top: 3, bottom: 0),
                     child: Text(
                       !newDay
                           ? DateFormat('kk:mm').format(time)
@@ -464,7 +480,8 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ),
           ),
-        ) : ShowPost(
+        )
+            : ShowPost(
             isVideo: isVideo,
             isMe: isMe,
             isSeen: read,
@@ -473,14 +490,20 @@ class _ChatScreenState extends State<ChatScreen> {
             ownerUsername: ownerUsername,
             postUid: postUid,
             topic: topic,
-            time: time
-        ));
+            time: time));
     return msg;
   }
 
   // ignore: non_constant_identifier_names
-  ShowPost(
-      {@required isVideo, bool isMe, bool isSeen, String url, String message, String ownerUsername, String postUid, String topic, var time}) {
+  ShowPost({@required isVideo,
+    bool isMe,
+    bool isSeen,
+    String url,
+    String message,
+    String ownerUsername,
+    String postUid,
+    String topic,
+    var time}) {
     return Container(
       padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
       margin: EdgeInsets.symmetric(vertical: 8),
@@ -526,74 +549,102 @@ class _ChatScreenState extends State<ChatScreen> {
                 topRight: Radius.circular(18),
                 bottomRight: Radius.circular(18)),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Flexible(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(23)),
-                      child: isVideo ? Container(
-                          height: 300,
-                          child: Center(child: Text("Tap to play video",
-                            style: TextStyle(fontSize: 30),))) :
-                      Hero(
-                        tag: time,
-                        child: CachedNetworkImage(
-                          imageUrl: url,
-                          fit: BoxFit.cover,
-                          errorWidget: (context, msg, error) =>
-                              Center(
-                                child: Text(
-                                    "Error loading $msg: $error"),
-                              ),
-                        ),
-                      ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(8.0),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(),
-                      height: 70,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          ownerUsername != null ? FittedBox(child: Text(
-                            "post by $ownerUsername",
-                            style: TextStyle(fontSize: 20,),)) : Text(""),
-                          Row(
-                            children: [
-                              isSeen ? Icon(Icons.check) : SizedBox.shrink(),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8.0),
-                                child: Text(
-                                  !newDay
-                                      ? DateFormat('kk:mm').format(time)
-                                      : DateFormat('kk:mm dd/M').format(time),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              )
+              Header(ownerUsername),
+              Body(false, message, url, isVideo),
             ],
           ),
         ),
       ),
     );
+  }
+
+  // ignore: non_constant_identifier_names
+  Widget Header(String ownerUsername) {
+    return Container(
+      padding: EdgeInsets.all(8.0),
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+      ),
+      alignment: Alignment.center,
+      height: 70,
+      child: ownerUsername != null
+          ? Text(ownerUsername, style: TextStyle(fontSize: 28),)
+          : Text(
+        "Username",
+      ),
+    );
+  }
+
+  // ignore: non_constant_identifier_names
+  Widget Body(bool nsfw, String caption, String url, bool isVideo) {
+    return Container(
+        child: nsfw ?? false
+            ? GestureDetector(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      viewImage(url, context,
+                          caption, caption),
+                ));
+          },
+          child: Container(
+            color: Colors.transparent,
+            height: 300,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "NSFW",
+                      style: TextStyle(
+                        fontSize: 40,
+                      ),
+                    ),
+                  ),
+                  Text(
+                    "May contain inappropriate content",
+                    style: TextStyle(
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text("Tap to view",
+                      style: TextStyle(
+                        fontSize: 16,
+                      )),
+                ],
+              ),
+            ),
+          ),
+        )
+            : GestureDetector(
+          onTap: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      viewImage(url, context,
+                          caption, caption),
+                ));
+          },
+          child: isVideo ?? false
+              ? FeedVideoPlayer(
+            url: url,
+            key: new Key(url),
+          )
+              : CachedNetworkImage(
+            imageUrl: url,
+            fit: BoxFit.fill,
+          ),
+        ));
   }
 
   Widget composeImage() {
@@ -823,8 +874,8 @@ class _ChatScreenState extends State<ChatScreen> {
       ref = Firestore.instance
           .collection('ChatRoom')
           .document(docs.documents[0].documentID)
-          .collection('chats').document(
-          documents.data.documents[index].documentID);
+          .collection('chats')
+          .document(documents.data.documents[index].documentID);
     });
 
     if (documents.data.documents[index].data["sendBy"] !=
@@ -834,8 +885,7 @@ class _ChatScreenState extends State<ChatScreen> {
     setSeenBy();
   }
 
-  setSeenBy() async
-  {
+  setSeenBy() async {
     await Firestore.instance
         .collection('ChatRoom')
         .where('chatRoomId', isEqualTo: widget.chatRoomID)
@@ -858,9 +908,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  getProfileUrl() async {
-    profileUrl = await databaseMethods
-        .getProfileUrlByName(widget.userName.toLowerCase());
+  getProfileUrl(username) async {
+    profileUrl = await databaseMethods.getProfileUrlByName(username);
     setState(() {});
   }
 
@@ -1011,7 +1060,6 @@ class _ChatScreenState extends State<ChatScreen> {
               .delete();
         });
       } else {
-
         await Firestore.instance
             .collection('ChatRoom')
             .document(widget.chatRoomID)

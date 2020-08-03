@@ -13,8 +13,8 @@ import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/MainChatsRoom.dart';
-import 'package:schatty/views/Feed/BuildContent.dart';
 import 'package:schatty/views/Feed/Post.dart';
+import 'package:schatty/views/Feed/PostUI.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -385,6 +385,7 @@ class _FeedPageState extends State<FeedPage>
         duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
   }
 
+  // ignore: non_constant_identifier_names
   Widget FeedBody(darkTheme) {
     return !error
         ? GestureDetector(
@@ -513,23 +514,74 @@ class _FeedPageState extends State<FeedPage>
                         var ref = snapshot.data.documents[index];
                         return snapshot.hasData
                             ? reportedPosts.indexOf(
-                            ref.data['postUid']) ==
-                            -1 &&
-                            reportedPosts.indexOf(
-                                ref.data['postUid']) !=
-                                null
-                            ? BuildPost(
-                          isVideo: snapshot.data.documents[index]
-                              .data["isVideo"] ?? false,
-                          time: snapshot
-                              .data
-                              .documents[index]
-                              .data['time'],
-                          url: snapshot
-                              .data
-                              .documents[index]
-                              .data["url"],
-                          username: snapshot
+                                                        ref.data['postUid']) ==
+                                                    -1 &&
+                                                reportedPosts.indexOf(
+                                                        ref.data['postUid']) !=
+                                                    null
+                                            ?
+//                        BuildPost(
+//                          isVideo: snapshot.data.documents[index]
+//                              .data["isVideo"] ?? false,
+//                          time: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data['time'],
+//                          url: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["url"],
+//                          username: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["username"],
+//                          topic: selectedTag,
+//                          caption: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["caption"],
+//                          postUid: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["postUid"] ??
+//                              "null",
+//                          likes: ref.data['likes'],
+//                          dislikes: ref.data['dislikes'],
+//                          nsfw: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["NSFW"] ??
+//                              false,
+//                          title: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["title"],
+//                          numLikes: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["numLikes"] ??
+//                              0,
+//                          numDislikes: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["numDislikes"] ??
+//                              0,
+//                        )
+                                            MakePost(
+                                                isVideo: snapshot
+                                                        .data
+                                                        .documents[index]
+                                                        .data["isVideo"] ??
+                                                    false,
+                                                time: snapshot
+                                                    .data
+                                                    .documents[index]
+                                                    .data['time'],
+                                                url: snapshot
+                                                    .data
+                                                    .documents[index]
+                                                    .data["url"],
+                                                username: snapshot
                               .data
                               .documents[index]
                               .data["username"],
