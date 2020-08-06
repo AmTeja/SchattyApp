@@ -19,10 +19,12 @@ class NewSearch extends StatefulWidget {
   String caption;
   String postUid;
   String topic;
+  String profileUrl;
 
   NewSearch({
     @required this.isPost,
     this.isVideo,
+    this.profileUrl,
     this.topic,
     this.postUid,
     this.ownerUsername,
@@ -255,6 +257,7 @@ class _NewSearchState extends State<NewSearch> {
                                                                   .ownerUsername,
                                                               widget.caption,
                                                               targetUsername,
+                                                              widget.profileUrl,
                                                               getChatRoomID(
                                                                   Constants
                                                                       .ownerName,
@@ -428,8 +431,8 @@ class _NewSearchState extends State<NewSearch> {
   }
 
   // ignore: non_constant_identifier_names
-  SharePost(String postUrl, String postOwner, String caption, String sentTo,
-      String chatRoomID, String postUid, String topic) async {
+  SharePost(String postUrl, String postOwner, String profileUrl, String caption,
+      String sentTo, String chatRoomID, String postUid, String topic) async {
     try {
       String targetUID = await databaseMethods.getUIDByUsername(sentTo);
       setState(() {});
@@ -445,6 +448,7 @@ class _NewSearchState extends State<NewSearch> {
         "ownerUsername": postOwner,
         "postUid": postUid,
         "topic": topic,
+        "profileUrl": profileUrl,
       };
       databaseMethods.updateLastMessage("Shared a post", chatRoomID, sentTo);
       databaseMethods.addMessage(chatRoomID, imageMap);

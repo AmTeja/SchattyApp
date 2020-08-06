@@ -296,6 +296,7 @@ class _MakePostState extends State<MakePost> {
                         MaterialPageRoute(
                           builder: (context) => NewSearch(
                             isVideo: widget.isVideo,
+                            profileUrl: profileUrl,
                             isPost: true,
                             postUid: widget.postUid,
                             caption: widget.caption,

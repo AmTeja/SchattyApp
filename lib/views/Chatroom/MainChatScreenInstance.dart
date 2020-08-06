@@ -195,6 +195,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   setSeen(snapshot, index);
                                   var docs = snapshot.data.documents[index];
                                   return buildMessage(
+                                    targetProfileUrl: docs.data['profileUrl'],
                                     message: docs.data['message'],
                                     imageUrl: docs.data['url'],
                                     isMe: docs.data["sendBy"] ==
@@ -263,6 +264,7 @@ class _ChatScreenState extends State<ChatScreen> {
     String ownerUsername,
     String postUid,
     String topic,
+    String targetProfileUrl,
   }) {
     var time = tempTime.toDate().add(tempTime
         .toDate()
@@ -482,6 +484,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         )
             : ShowPost(
+            profileUrl: targetProfileUrl,
             isVideo: isVideo,
             isMe: isMe,
             isSeen: read,
@@ -498,6 +501,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ShowPost({@required isVideo,
     bool isMe,
     bool isSeen,
+    String profileUrl,
     String url,
     String message,
     String ownerUsername,
@@ -554,7 +558,7 @@ class _ChatScreenState extends State<ChatScreen> {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Header(ownerUsername),
+              Header(ownerUsername, profileUrl),
               Body(false, message, url, isVideo),
             ],
           ),
@@ -564,21 +568,36 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   // ignore: non_constant_identifier_names
-  Widget Header(String ownerUsername) {
+  Widget Header(String ownerUsername, String targetUrl) {
     return Container(
       padding: EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-      ),
       alignment: Alignment.center,
-      height: 70,
-      child: ownerUsername != null
-          ? Text(ownerUsername, style: TextStyle(fontSize: 28),)
-          : Text(
-        "Username",
+//      height: 70,
+      child: ListTile(
+        leading: CircleAvatar(
+          child: ClipOval(
+            child: targetUrl != null
+                ? CachedNetworkImage(
+              width: 60,
+              height: 60,
+              imageUrl: targetUrl,
+              fit: BoxFit.cover,
+            )
+                : Image.asset(
+              "assets/images/username.png",
+              fit: BoxFit.fill,
+            ),
+          ),
+        ),
+        title: ownerUsername != null
+            ? Text(ownerUsername)
+            : Text(
+          "Username",
+        ),
       ),
     );
   }
+
 
   // ignore: non_constant_identifier_names
   Widget Body(bool nsfw, String caption, String url, bool isVideo) {
