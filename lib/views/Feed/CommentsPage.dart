@@ -13,11 +13,13 @@ import 'package:schatty/widgets/widget.dart';
 class CommentsPage extends StatefulWidget {
   final postUID;
   final tag;
+  final postOwnerUsername;
 
   const CommentsPage({
     Key key,
     @required this.postUID,
     @required this.tag,
+    @required this.postOwnerUsername,
   }) : super(key: key);
 
   @override
@@ -52,7 +54,9 @@ class _CommentsPageState extends State<CommentsPage> {
         title: Text("Schatty"),
         centerTitle: true,
         actions: [
-          isSelected && selectedUsername == Constants.ownerName.toLowerCase()
+          isSelected &&
+                  (selectedUsername == Constants.ownerName.toLowerCase() ||
+                      selectedUsername == widget.postOwnerUsername)
               ? IconButton(
                   icon: Icon(Icons.delete),
                   onPressed: () {

@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:path/path.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/MainChatScreenInstance.dart';
 import 'package:schatty/widgets/InAppNotification.dart';
 import 'package:schatty/widgets/widget.dart';
+import 'package:time_machine/time_machine.dart';
 
 import 'ChatTile.dart';
 
@@ -54,7 +56,7 @@ class _ChatRoomState extends State<ChatRoom>
   FirebaseAuth firebaseAuth = FirebaseAuth.instance;
 
   RefreshController _refreshController =
-  RefreshController(initialRefresh: false);
+      RefreshController(initialRefresh: false);
 
 //  final StorageReference storageRef = FirebaseStorage.instance.ref().child(fileName);
   BuildContext newContext;
@@ -70,6 +72,8 @@ class _ChatRoomState extends State<ChatRoom>
 
   var imageUrl;
 
+  Map<dynamic, dynamic> archivedUsers = {"amteja": false};
+
   String newMessageUsername;
   String url;
   String uid;
@@ -77,12 +81,20 @@ class _ChatRoomState extends State<ChatRoom>
   @override
   void initState() {
     super.initState();
+    timeSetup();
     setState(() {
       isChatRoom = true;
     });
-    uploadToken();
     configureFirebaseListeners();
     getUserInfo();
+  }
+
+  timeSetup() async {
+    try {
+      await TimeMachine.initialize({'rootBundle': rootBundle});
+    } catch (e) {
+      print("Error in timesetup: $e");
+    }
   }
 
   @override
@@ -134,7 +146,7 @@ class _ChatRoomState extends State<ChatRoom>
     return StreamBuilder(
       stream: chatRoomsStream,
       builder: (context, snapshot) {
-        return snapshot.hasData
+        return snapshot.hasData && snapshot.data.documents.length != 0
             ? SmartRefresher(
           enablePullDown: true,
           enablePullUp: false,
@@ -150,39 +162,53 @@ class _ChatRoomState extends State<ChatRoom>
               cacheExtent: 5,
               itemCount: snapshot.data.documents.length,
               itemBuilder: (context, index) {
-                final lastMessage = snapshot.data.documents[index]
-                    .data["lastMessage"];
+                final lastMessage =
+                snapshot.data.documents[index].data["lastMessage"];
                 if (lastMessage[0] != "" && lastMessage[1] != "") {
                   return ChatRoomTile(
-                    username: snapshot.data.documents[index]
-                        .data["chatRoomId"].toString()
+                    username: snapshot
+                        .data.documents[index].data["chatRoomId"]
+                        .toString()
                         .replaceAll("_", "")
                         .replaceAll(
                         Constants.ownerName.toLowerCase(), ""),
-                    chatRoomId: snapshot.data.documents[index]
-                        .data["chatRoomId"],
-                    urls: snapshot.data.documents[index]
-                        .data["photoUrls"],
-                    displayNames: snapshot.data.documents[index]
-                        .data["displayNames"],
-                    lastMessageDetails: snapshot.data.documents[index]
-                        .data["lastMessage"] ?? null,
-                    lastTime: snapshot.data.documents[index]
-                        .data["lastTime"],
-                    seenBy: (snapshot.data.documents[index]
-                        .data["seenBy"]) ?? null,
+                    chatRoomId:
+                    snapshot.data.documents[index].data["chatRoomId"],
+                    urls:
+                    snapshot.data.documents[index].data["photoUrls"],
+                    displayNames: snapshot
+                        .data.documents[index].data["displayNames"],
+                    lastMessageDetails: snapshot
+                        .data.documents[index].data["lastMessage"] ??
+                        null,
+                    lastTime:
+                    snapshot.data.documents[index].data["lastTime"],
+                    seenBy:
+                    (snapshot.data.documents[index].data["seenBy"]) ??
+                        null,
+                    archivedUsers: snapshot.data.documents[index]
+                        .data["archivedUsers"] ??
+                        null,
                   );
-                }
-                else {
+                } else {
                   return Container();
                 }
               }),
         )
-            : suchEmpty(context);
+            : SmartRefresher(
+            enablePullDown: true,
+            enablePullUp: false,
+            header: BezierCircleHeader(
+              circleColor:
+              darkTheme.darkTheme ? Colors.white : Color(0xFF7ED9F1),
+            ),
+            controller: _refreshController,
+            onRefresh: _onRefresh,
+            onLoading: _onLoading,
+            child: suchEmpty(context));
       },
     );
   }
-
 
   //Notification functions
   configureFirebaseListeners() {
@@ -207,7 +233,8 @@ class _ChatRoomState extends State<ChatRoom>
             onReply: () {
               OverlaySupportEntry.of(scaffoldContext).dismiss();
               toast('you checked this message');
-            },);
+            },
+          );
         }, duration: Duration(seconds: 2));
       },
       onLaunch: (Map<String, dynamic> message) async {
@@ -259,7 +286,6 @@ class _ChatRoomState extends State<ChatRoom>
     }
   }
 
-
   //Initial functions
   uploadToken() async {
     String token;
@@ -276,7 +302,7 @@ class _ChatRoomState extends State<ChatRoom>
   }
 
   getUserInfo() async {
-    print('Get info called');
+    print('Main Chats room: Get info called');
     Constants.ownerName = await Preferences.getUserNameSharedPreference();
     try {
       databaseMethods
@@ -289,8 +315,10 @@ class _ChatRoomState extends State<ChatRoom>
       await firebaseAuth.currentUser().then((docs) {
         uid = docs.uid;
       });
-      url = await Preferences.getUserImageURL() ?? await databaseMethods
-          .getProfileUrlByName(Constants.ownerName.toLowerCase());
+      uploadToken();
+      url = await Preferences.getUserImageURL() ??
+          await databaseMethods
+              .getProfileUrlByName(Constants.ownerName.toLowerCase());
       setState(() {
         isLoading = false;
       });

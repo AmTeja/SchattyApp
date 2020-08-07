@@ -31,7 +31,9 @@ class _TargetUserInfoState extends State<TargetUserInfo>
   bool dev = true;
 
   DatabaseMethods databaseMethods = new DatabaseMethods();
-  NewSearch newSearch = new NewSearch();
+  NewSearch newSearch = new NewSearch(
+    isPost: false,
+  );
 
   Stream postStream;
   Stream tagStream;
@@ -122,8 +124,10 @@ class _TargetUserInfoState extends State<TargetUserInfo>
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("Posts: $numPosts",
-                        style: TextStyle(fontSize: 20),),
+                      child: Text(
+                        "Posts: $numPosts",
+                        style: TextStyle(fontSize: 20),
+                      ),
                     ),
                   ],
                 ),
@@ -133,10 +137,7 @@ class _TargetUserInfoState extends State<TargetUserInfo>
           Container(
             margin: EdgeInsets.symmetric(vertical: 10),
             height: 40,
-            width: MediaQuery
-                .of(context)
-                .size
-                .width,
+            width: MediaQuery.of(context).size.width,
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [

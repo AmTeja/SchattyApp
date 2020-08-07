@@ -8,6 +8,7 @@
     <application
         android:name=".Application"
         android:icon="@mipmap/launcher_icon"
+        android:requestLegacyExternalStorage="true"
         android:label="Schatty">
         <activity
             android:name=".MainActivity"

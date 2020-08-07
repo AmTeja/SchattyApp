@@ -13,8 +13,8 @@ import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/MainChatsRoom.dart';
-import 'package:schatty/views/Feed/BuildContent.dart';
 import 'package:schatty/views/Feed/Post.dart';
+import 'package:schatty/views/Feed/PostUI.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -122,7 +122,9 @@ class _FeedPageState extends State<FeedPage>
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => NewSearch(),
+                              builder: (context) => NewSearch(
+                                isPost: false,
+                              ),
                             ));
                       } else {
                         Navigator.push(
@@ -147,7 +149,7 @@ class _FeedPageState extends State<FeedPage>
               pageSnapping: true,
               children: [
                 ChatRoom(),
-                newBody(darkTheme),
+                FeedBody(darkTheme),
 //                Container(
 //                  child: Center(
 //                    child: Text(
@@ -176,19 +178,23 @@ class _FeedPageState extends State<FeedPage>
       uid = docs.uid;
     });
     username = Constants.ownerName.toLowerCase();
-    url = await databaseMethods
-        .getProfileUrlByName(username);
-    await Firestore.instance.collection('users').document(uid).get().then((
-        docs) {
+    url = await databaseMethods.getProfileUrlByName(username);
+    await Firestore.instance
+        .collection('users')
+        .document(uid)
+        .get()
+        .then((docs) {
       reportedPosts = docs.data['reportedPosts'];
     });
     setState(() {});
   }
 
-  getReportedList() async
-  {
-    await Firestore.instance.collection('users').document(uid).get().then((
-        docs) {
+  getReportedList() async {
+    await Firestore.instance
+        .collection('users')
+        .document(uid)
+        .get()
+        .then((docs) {
       reportedPosts = docs.data['reportedPosts'];
     });
   }
@@ -335,7 +341,7 @@ class _FeedPageState extends State<FeedPage>
               showAboutDialog(
                 context: context,
                 applicationName: "Schatty",
-                applicationVersion: '1.0.4 (Beta)',
+                applicationVersion: '1.0.5 (Beta)',
                 applicationIcon: SchattyIcon(),
                 children: [
                   SizedBox(
@@ -379,7 +385,8 @@ class _FeedPageState extends State<FeedPage>
         duration: Duration(milliseconds: 500), curve: Curves.easeInOut);
   }
 
-  Widget newBody(darkTheme) {
+  // ignore: non_constant_identifier_names
+  Widget FeedBody(darkTheme) {
     return !error
         ? GestureDetector(
       onTap: () {
@@ -447,7 +454,11 @@ class _FeedPageState extends State<FeedPage>
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => NewSearch(),
+                                  builder: (context) =>
+                                      NewSearch(
+                                        isPost: false,
+                                                topic: selectedTag,
+                                              ),
                                 ));
                           },
                         )
@@ -502,14 +513,75 @@ class _FeedPageState extends State<FeedPage>
                       itemBuilder: (context, index) {
                         var ref = snapshot.data.documents[index];
                         return snapshot.hasData
-                            ? reportedPosts.indexOf(ref.data['postUid']) ==
-                            -1 && reportedPosts.indexOf(ref.data['postUid']) !=
-                            null ? BuildPost(
-                          time: snapshot.data.documents[index]
-                              .data['time'],
-                          url: snapshot.data.documents[index]
-                              .data["url"],
-                          username: snapshot
+                            ? reportedPosts.indexOf(
+                                                        ref.data['postUid']) ==
+                                                    -1 &&
+                                                reportedPosts.indexOf(
+                                                        ref.data['postUid']) !=
+                                                    null
+                                            ?
+//                        BuildPost(
+//                          isVideo: snapshot.data.documents[index]
+//                              .data["isVideo"] ?? false,
+//                          time: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data['time'],
+//                          url: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["url"],
+//                          username: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["username"],
+//                          topic: selectedTag,
+//                          caption: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["caption"],
+//                          postUid: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["postUid"] ??
+//                              "null",
+//                          likes: ref.data['likes'],
+//                          dislikes: ref.data['dislikes'],
+//                          nsfw: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["NSFW"] ??
+//                              false,
+//                          title: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["title"],
+//                          numLikes: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["numLikes"] ??
+//                              0,
+//                          numDislikes: snapshot
+//                              .data
+//                              .documents[index]
+//                              .data["numDislikes"] ??
+//                              0,
+//                        )
+                                            MakePost(
+                                                isVideo: snapshot
+                                                        .data
+                                                        .documents[index]
+                                                        .data["isVideo"] ??
+                                                    false,
+                                                time: snapshot
+                                                    .data
+                                                    .documents[index]
+                                                    .data['time'],
+                                                url: snapshot
+                                                    .data
+                                                    .documents[index]
+                                                    .data["url"],
+                                                username: snapshot
                               .data
                               .documents[index]
                               .data["username"],
@@ -525,17 +597,28 @@ class _FeedPageState extends State<FeedPage>
                               "null",
                           likes: ref.data['likes'],
                           dislikes: ref.data['dislikes'],
-                          nsfw: snapshot.data.documents[index]
+                          nsfw: snapshot
+                              .data
+                              .documents[index]
                               .data["NSFW"] ??
                               false,
-                          title: snapshot.data
-                              .documents[index].data["title"],
-                          numLikes: snapshot.data.documents[index]
-                              .data["numLikes"] ?? 0,
-                          numDislikes: snapshot.data.documents[index]
-                              .data["numDislikes"] ?? 0,
+                          title: snapshot
+                              .data
+                              .documents[index]
+                              .data["title"],
+                          numLikes: snapshot
+                              .data
+                              .documents[index]
+                              .data["numLikes"] ??
+                              0,
+                          numDislikes: snapshot
+                              .data
+                              .documents[index]
+                              .data["numDislikes"] ??
+                              0,
                         )
-                            : SizedBox.shrink() : Container(
+                            : SizedBox.shrink()
+                            : Container(
                           child: Center(
                             child: Text("No Posts"),
                           ),

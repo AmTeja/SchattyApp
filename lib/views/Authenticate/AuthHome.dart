@@ -9,8 +9,6 @@ import 'package:schatty/views/Authenticate/signin.dart';
 import 'package:schatty/views/Authenticate/signup.dart';
 import 'package:schatty/views/Feed/FeedPage.dart';
 
-import '../Chatroom/MainChatsRoom.dart';
-
 
 class AuthHome extends StatefulWidget {
   @override
@@ -227,20 +225,23 @@ class _AuthHomeState extends State<AuthHome> {
       Preferences.saveIsGoogleUser(true);
 
       if (user != null && authResult.additionalUserInfo.isNewUser) {
-        Map<String, String> userInfoMap = {
+        Map<String, dynamic> userInfoMap = {
           //Making MAP for firebase
           "username": username,
+          "displayName": username,
           "email": email,
           "photoURL": profilePicURL,
           "uid": uid,
           "usernameIndex": await makeIndex(username),
+          "numPosts": 0,
+          "reportedPosts": [""],
         };
 
         await databaseMethods.uploadUserInfo(userInfoMap, uid);
         Preferences.saveUserNameSharedPreference(username);
         Preferences.saveUserLoggedInSharedPreference(true);
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => ChatRoom()));
+            context, MaterialPageRoute(builder: (context) => FeedPage()));
       }
     else if(user !=null && !authResult.additionalUserInfo.isNewUser)
       {
@@ -259,11 +260,9 @@ class _AuthHomeState extends State<AuthHome> {
     try {
       print('Called');
       List<String> indexList = [];
-      for (int i = 0; i < username.length; i++) {
         for (int y = 0; y < username.length + 1; y++) {
           indexList.add(username.substring(0, y).toLowerCase());
         }
-      }
       return indexList;
     } catch (e) {
       print('Error making index: $e');

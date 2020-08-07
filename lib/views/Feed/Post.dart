@@ -2,7 +2,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flick_video_player/flick_video_player.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -13,7 +15,7 @@ import 'package:random_string/random_string.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
-import 'package:schatty/widgets/widget.dart';
+import 'package:video_player/video_player.dart';
 
 class PostContent extends StatefulWidget {
   final bool isDark;
@@ -39,18 +41,23 @@ bool isLoading = false;
 bool dev = true;
 bool nsfw = false;
 bool newTag = false;
+bool isVideo = false;
+bool compressVideo = false;
 
-File selectedImage;
+File selectedFile;
 
 String selectedTag;
 String postUrl;
 String ranString;
 String urlFromImage;
-String selectedImagePath;
+String selectedFilePath;
+String status = "Getting file";
 
 TextEditingController captionTEC = new TextEditingController();
 TextEditingController titleTEC = new TextEditingController();
 TextEditingController tagTEC = new TextEditingController();
+
+FlickManager flickManager;
 
 Stream tagStream;
 ScrollController tagController;
@@ -67,8 +74,9 @@ class _PostContentState extends State<PostContent> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    selectedImage = null;
+    selectedFile = null;
     setTagStream();
+    isVideo = false;
     tagController = new ScrollController();
   }
 
@@ -80,7 +88,36 @@ class _PostContentState extends State<PostContent> {
         return newBody();
       },
     )
-        : loadingScreen("Posting...");
+        : postingStatus();
+  }
+
+  Widget postingStatus() {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: Text(
+                  "$status",
+                  style: TextStyle(fontSize: 40),
+                ),
+              ),
+              SizedBox(
+                height: 20,
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                child: LinearProgressIndicator(
+                  backgroundColor: Colors.black,
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget newBody() {
@@ -109,7 +146,9 @@ class _PostContentState extends State<PostContent> {
           ),
           child: Center(
             child: ListView(
-              physics: NeverScrollableScrollPhysics(),
+              physics: selectedFile == null
+                  ? NeverScrollableScrollPhysics()
+                  : AlwaysScrollableScrollPhysics(),
               children: [
                 Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -121,47 +160,48 @@ class _PostContentState extends State<PostContent> {
                           .size
                           .height * 0.1,
                     ),
-                    selectedImage == null && urlFromImage == null ? Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.collections,
-                              color: Colors.white,
-                              size: 35,
-                            ),
-                            onPressed: () {
-                              getImage(ImageSource.gallery);
-                            },
-                          ),
-                        ),
-//                        Padding(
-//                          padding: const EdgeInsets.all(8.0),
-//                          child: IconButton(
-//                            icon: Icon(
-//                              Icons.videocam,
-//                              color: Colors.white,
-//                              size: 35,
-//                            ),
-//                            onPressed: () {
-//                              getVideo();
-//                            },
-//                          ),
-//                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.camera_alt,
-                              color: Colors.white,
-                              size: 35,
-                            ),
-                            onPressed: () {
-                              getImage(ImageSource.camera);
-                            },
+                    selectedFile == null && urlFromImage == null
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.collections,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                  onPressed: () {
+                                    getImage(ImageSource.gallery);
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.videocam,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                  onPressed: () {
+                                    getVideo();
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: IconButton(
+                                  icon: Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 35,
+                                  ),
+                                  onPressed: () {
+                                    getImage(ImageSource.camera);
+                                  },
                           ),
                         ),
                         Padding(
@@ -177,21 +217,25 @@ class _PostContentState extends State<PostContent> {
                             },
                           ),
                         ),
-                      ],
-                    ) : SizedBox(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8.0, vertical: 30.0),
-                      child: Container(
-                        child: selectedImage == null ? Text(
-                          "File: ",
-                          style: TextStyle(fontSize: 24, color: Colors.white),
-                        ) : Text(
-                          "File: $selectedImagePath",
-                          style: TextStyle(fontSize: 24, color: Colors.white),
-                        ),
-                      ),
+                            ],
+                    ) : Container(
+                      child: isVideo ? FlickVideoPlayer(
+                        flickManager: flickManager,
+                      ) : Image.file(selectedFile, fit: BoxFit.cover,),
                     ),
+//                    Padding(
+//                      padding: const EdgeInsets.symmetric(
+//                          horizontal: 8.0, vertical: 30.0),
+//                      child: Container(
+//                        child: selectedFile == null ? Text(
+//                          "File: ",
+//                          style: TextStyle(fontSize: 24, color: Colors.white),
+//                        ) : Text(
+//                          "File: $selectedFilePath",
+//                          style: TextStyle(fontSize: 24, color: Colors.white),
+//                        ),
+//                      ),
+//                    ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TitleField(),
@@ -362,9 +406,50 @@ class _PostContentState extends State<PostContent> {
 
   getVideo() async {
     try {
-      var tempVideo = await picker.getVideo(source: ImageSource.gallery);
-      if (tempVideo != null) {
-        selectedImage = File(tempVideo.path);
+//      PickedFile tempVideo;
+//      tempVideo = await picker.getVideo(source: ImageSource.gallery, maxDuration: Duration(minutes: 2));
+      var tempFile = await FilePicker.getFile(
+        type: FileType.video,
+      );
+//      if(tempFile)
+      if (tempFile != null) {
+        selectedFile = File(tempFile.path);
+        int sizeInByte = selectedFile.lengthSync();
+        double sizeInMb = sizeInByte / (1024 * 1024);
+        flickManager = FlickManager(
+            autoPlay: false,
+            videoPlayerController: VideoPlayerController.file(selectedFile));
+        print(selectedFile.path);
+        if (sizeInMb < 30) {
+          isVideo = true;
+          selectedFilePath =
+              selectedFile.path;
+          setState(() {
+
+          });
+        }
+        else {
+          showDialog(
+              context: context,
+              builder: (context) {
+                return AlertDialog(
+                  title: Text("File size alert"),
+                  content: Text(
+                      "The selected file is more than 30 Mb.\nPlease choose a file less than 30Mb."),
+                  actions: [
+                    FlatButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        selectedFile = null;
+                        isVideo = false;
+                      },
+                      child: Text("Ok"),
+                    ),
+                  ],
+                );
+              }
+          );
+        }
       }
     } catch (e) {
       print('Error getting video: $e');
@@ -377,7 +462,7 @@ class _PostContentState extends State<PostContent> {
       if (tempPic != null) {
         setState(() {
           cropImage(tempPic.path);
-          selectedImagePath =
+          selectedFilePath =
               tempPic.path.substring(tempPic.path.indexOf("image_picker"))
                   .replaceAllMapped("image_picker", (match) {
                 return "";
@@ -395,10 +480,10 @@ class _PostContentState extends State<PostContent> {
       if (path != null) {
         cropped = await ImageCropper.cropImage(
             sourcePath: path,
-            maxWidth: 700,
-            maxHeight: 700,
+            maxWidth: 1080,
+            maxHeight: 1920,
             compressFormat: ImageCompressFormat.jpg,
-            compressQuality: 90,
+            compressQuality: 100,
             androidUiSettings: AndroidUiSettings(
               toolbarTitle: "Crop Image",
               toolbarColor: Color(0xff99d8d0),
@@ -408,7 +493,7 @@ class _PostContentState extends State<PostContent> {
             ));
         setState(() {
           if (cropped != null) {
-            selectedImage = cropped;
+            selectedFile = cropped;
           }
         });
       }
@@ -527,13 +612,44 @@ class _PostContentState extends State<PostContent> {
     ranString = randomString(10);
   }
 
+
+  uploadVideo(String tag) async {
+    try {
+      final String fileName = 'PublicPosts/' + tag + '/$ranString.mp4';
+      getRandom();
+      int sizeInByte = selectedFile.lengthSync();
+      double sizeInMb = sizeInByte / (1024 * 1024);
+      if (sizeInMb <= 30) {
+        print("uploading");
+        status = "Uploading";
+        setState(() {
+
+        });
+        final StorageReference storageReference =
+        FirebaseStorage.instance.ref().child("$fileName");
+        StorageUploadTask task = storageReference.putFile(selectedFile);
+        StorageTaskSnapshot taskSnapshot = await task.onComplete;
+        var post = await taskSnapshot.ref.getDownloadURL();
+        setState(() {
+          postUrl = post.toString();
+        });
+      }
+    } catch (e) {
+      print("Error uploading video: $e");
+    }
+  }
+
   uploadImageToPublic(String tag) async {
     getRandom();
     print("uploading");
-    final String fileName = 'PublicPosts/' + tag + '/$ranString.jgp';
+    status = "Uploading";
+    setState(() {
+
+    });
+    final String fileName = 'PublicPosts/' + tag + '/$ranString.jpg';
     final StorageReference storageReference =
     FirebaseStorage.instance.ref().child(fileName);
-    StorageUploadTask task = storageReference.putFile(selectedImage);
+    StorageUploadTask task = storageReference.putFile(selectedFile);
     StorageTaskSnapshot taskSnapshot = await task.onComplete;
     var post = await taskSnapshot.ref.getDownloadURL();
     setState(() {
@@ -661,25 +777,35 @@ class _PostContentState extends State<PostContent> {
       if (postFormKey.currentState.validate()) {
         print('called');
         isLoading = true;
+        status = "Getting file";
         if (mounted) {
           setState(() {
 
           });
         }
-        if (selectedImage == null && selectedTag == null &&
+        if (selectedFile == null && selectedTag == null &&
             urlFromImage == null) {
           setState(() {
             isLoading = false;
-        });
-        showError();
-      } else {
-        print('Else called: $selectedPublic');
-        if (selectedPublic) {
-          if (urlFromImage == null) {
-            await uploadImageToPublic(selectedTag);
-          }
+          });
+          showError();
+        } else {
+          print('Else called: $selectedPublic');
+          if (selectedPublic) {
+            if (urlFromImage == null) {
+              if (isVideo) {
+                await uploadVideo(selectedTag);
+              }
+              else if (!isVideo) {
+                await uploadImageToPublic(selectedTag);
+              }
+            }
           print('Uploaded!');
           if (postUrl != null || urlFromImage != null) {
+            status = "Almost done";
+            setState(() {
+
+            });
             print("not null");
             Map<String, dynamic> postMap = {
               "url": postUrl ?? urlFromImage,
@@ -688,7 +814,6 @@ class _PostContentState extends State<PostContent> {
               "time": DateTime
                   .now()
                   .millisecondsSinceEpoch,
-              "profileUrl": widget.profileUrl,
               "likes": [""],
               "dislikes": [""],
               "postUid": ranString,
@@ -697,6 +822,7 @@ class _PostContentState extends State<PostContent> {
               "titleIndex": await makeIndex(),
               "numLikes": 0,
               "numDislikes": 0,
+              "isVideo": isVideo,
             };
             postToSelectedTag(postMap);
             updateUserPosts();
@@ -706,7 +832,7 @@ class _PostContentState extends State<PostContent> {
             urlFromImage = null;
             titleTEC.text = "";
             captionTEC.text = "";
-
+            isVideo = false;
             setState(() {});
             print("done");
             Navigator.pop(context);
@@ -716,6 +842,8 @@ class _PostContentState extends State<PostContent> {
       }
     } catch (e) {
       print("Error Posting: $e");
+      isLoading = false;
+      Fluttertoast.showToast(msg: "An error occurred: $e");
     }
   }
 }

@@ -57,7 +57,6 @@ class _SignUpState extends State<SignUp> {
               "username": userNameTEC.text.toLowerCase(),
               "displayName": userNameTEC.text,
               "email": emailTEC.text,
-              "searchKey": userNameTEC.text.substring(0, 1).toUpperCase(),
               "photoURL": profilePicURL,
               "uid": firebaseUser.uid,
               "usernameIndex": await makeIndex(),
@@ -100,11 +99,9 @@ class _SignUpState extends State<SignUp> {
     try {
       print('Called');
       List<String> indexList = [];
-      for (int i = 0; i < userNameTEC.text.length; i++) {
         for (int y = 0; y < userNameTEC.text.length + 1; y++) {
           indexList.add(userNameTEC.text.substring(0, y).toLowerCase());
         }
-      }
       return indexList;
     } catch (e) {
       print('Error making index: $e');

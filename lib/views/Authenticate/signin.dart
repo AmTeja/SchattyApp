@@ -65,6 +65,7 @@ class _SignInState extends State<SignIn> {
                   Preferences.saveUserEmailSharedPreference(email);
                   Preferences.saveIsGoogleUser(false);
                   Constants.ownerEmail = email;
+                  Constants.ownerUid = firebaseUser.uid;
                   print("Logged In true");
                   await databaseMethods
                       .getUserByUserEmail(email)
@@ -73,7 +74,7 @@ class _SignInState extends State<SignIn> {
                     Preferences.saveUserNameSharedPreference(
                         await snapshotUserInfo.documents[0].data["username"]);
                     Constants.ownerName =
-                    await snapshotUserInfo.documents[0].data["username"];
+                        await snapshotUserInfo.documents[0].data["username"];
                   });
                   setState(() {
                     isLoading = false;
