@@ -39,7 +39,6 @@ class ChatRoomTile extends StatelessWidget {
     bool targetSeen = true;
     bool archivedChat = false;
 
-
     if (lastMessageDetails != null) {
       lastMessage = lastMessageDetails[0] ?? null;
     }
@@ -71,130 +70,130 @@ class ChatRoomTile extends StatelessWidget {
 
     return (lastMessageDetails != null || lastMessage == "") && !archivedChat
         ? Slidable(
-      key: Key("slidable"),
-      actionPane: SlidableDrawerActionPane(),
-      actionExtentRatio: 0.25,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      ChatScreen(chatRoomId, username)));
-        },
-        child: Container(
-//        color: Colors.white,
-          height: 110,
-          alignment: Alignment.center,
-          child: ListTile(
-            trailing: Container(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  targetSeen != null && !targetSeen
-                      ? Container(
-                    width: 15,
-                    height: 15,
-                    alignment: Alignment.bottomCenter,
-                    decoration: BoxDecoration(
-                        color: Color.fromARGB(255, 126, 217, 241),
-                        borderRadius: BorderRadius.circular(23)),
-                  )
-                      : SizedBox(),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      !newDay
-                          ? DateFormat('kk:mm').format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              lastTime))
-                          : DateFormat('kk:mm dd/MM/yy').format(
-                          DateTime.fromMillisecondsSinceEpoch(
-                              lastTime)),
-                      style: TextStyle(
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            leading: InkWell(
+            key: Key("slidable"),
+            actionPane: SlidableDrawerActionPane(),
+            actionExtentRatio: 0.25,
+            child: InkWell(
               onTap: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => TargetUserInfo(username)));
+                        builder: (context) =>
+                            ChatScreen(chatRoomId, username)));
               },
-              child: CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.indigoAccent,
-                child: Container(
-                  child: targetUrl != null
-                      ? ClipOval(
-                    child: CachedNetworkImage(
-                      height: 75,
-                      width: 75,
-                      imageUrl: targetUrl,
-                      fit: BoxFit.cover,
+              child: Container(
+//        color: Colors.white,
+                height: 110,
+                alignment: Alignment.center,
+                child: ListTile(
+                  trailing: Container(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        targetSeen != null && !targetSeen
+                            ? Container(
+                                width: 15,
+                                height: 15,
+                                alignment: Alignment.bottomCenter,
+                                decoration: BoxDecoration(
+                                    color: Color.fromARGB(255, 126, 217, 241),
+                                    borderRadius: BorderRadius.circular(23)),
+                              )
+                            : SizedBox(),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            !newDay
+                                ? DateFormat('kk:mm').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                        lastTime))
+                                : DateFormat('kk:mm dd/MM/yy').format(
+                                    DateTime.fromMillisecondsSinceEpoch(
+                                        lastTime)),
+                            style: TextStyle(
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  )
-                      : Text(
-                    "${username.substring(0, 1).toUpperCase()}",
                   ),
+                  leading: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => TargetUserInfo(username)));
+                    },
+                    child: CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.indigoAccent,
+                      child: Container(
+                        child: targetUrl != null
+                            ? ClipOval(
+                                child: CachedNetworkImage(
+                                  height: 75,
+                                  width: 75,
+                                  imageUrl: targetUrl,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : Text(
+                                "${username.substring(0, 1).toUpperCase()}",
+                              ),
+                      ),
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                  title: targetDName == null
+                      ? Text(
+                          '$username',
+                          style: TextStyle(
+                            fontSize: 20,
+                          ),
+                        )
+                      : Text(
+                          '$targetDName',
+                          style: TextStyle(
+                            fontSize: 20,
+                          ),
+                        ),
+                  subtitle: lastMessage != null && lastMessage != ""
+                      ? Text("$lastSentBy: $lastMessage")
+                      : null,
                 ),
-                foregroundColor: Colors.white,
               ),
             ),
-            title: targetDName == null
-                ? Text(
-              '$username',
-              style: TextStyle(
-                fontSize: 20,
+            actions: <Widget>[
+              IconSlideAction(
+                caption: 'Archive',
+                color: Colors.black45,
+                icon: Icons.archive,
+                onTap: () {
+                  Archive();
+                },
               ),
-            )
-                : Text(
-              '$targetDName',
-              style: TextStyle(
-                fontSize: 20,
+              IconSlideAction(
+                caption: 'Info',
+                color: Color(0xff509ece),
+                icon: Icons.info,
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => TargetUserInfo(username)));
+                },
               ),
-            ),
-            subtitle: lastMessage != null && lastMessage != ""
-                ? Text("$lastSentBy: $lastMessage")
-                : null,
-          ),
-        ),
-      ),
-      secondaryActions: <Widget>[
-        IconSlideAction(
-          caption: 'Archive',
-          color: Colors.black45,
-          icon: Icons.archive,
-          onTap: () {
-            Archive();
-          },
-        ),
-        IconSlideAction(
-          caption: 'Info',
-          color: Color(0xff509ece),
-          icon: Icons.info,
-          onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => TargetUserInfo(username)));
-          },
-        ),
-      ],
-    )
+            ],
+          )
         : SizedBox.shrink();
   }
 
   // ignore: non_constant_identifier_names
   Archive() async {
-    var chatRef = Firestore.instance.collection('ChatRoom').document(
-        chatRoomId);
+    var chatRef =
+    Firestore.instance.collection('ChatRoom').document(chatRoomId);
     try {
       chatRef.updateData({'archivedUsers.${Constants.ownerName}': true});
     } catch (error) {

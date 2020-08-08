@@ -4,36 +4,34 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:provider/provider.dart';
 import 'package:schatty/helper/constants.dart';
-import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/Profile.dart';
 import 'package:schatty/views/Feed/CommentsPage.dart';
-import 'package:schatty/views/Feed/Post.dart';
 import 'package:schatty/views/NewSearch.dart';
 import 'package:schatty/widgets/FeedVideoPlayer.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class BuildPost extends StatefulWidget {
-  // ignore: non_constant_identifier_names
-  final url;
-  final username;
-  final topic;
-  final caption;
-  final postUid;
+  bool isDark;
+  String url;
+  String username;
+  String topic;
+  String caption;
+  String postUid;
   final likes;
   final dislikes;
   final time;
-  final nsfw;
-  final title;
-  final loop;
+  bool nsfw;
+  String title;
+  bool loop;
   final numLikes;
   final numDislikes;
-  final isVideo;
+  bool isVideo;
 
   // ignore: non_constant_identifier_names
-  const BuildPost({
+  BuildPost({
+    this.isDark,
     @required this.url,
     @required this.username,
     @required this.topic,
@@ -68,7 +66,14 @@ class _BuildPostState extends State<BuildPost> {
   var uid;
   var firestoreInstance = Firestore.instance;
 
+  String firstHalf;
+  String secondHalf;
+  bool readMore = false;
+  bool zoomOut = false;
+  bool viewDetails = true;
   bool isReported = false;
+
+  PageController pageController;
 
   @override
   void initState() {
@@ -85,265 +90,232 @@ class _BuildPostState extends State<BuildPost> {
         .collection('Posts')
         .document('Public')
         .collection(widget.topic);
-    return Consumer<DarkThemeProvider>(
-      builder: (BuildContext context, value, Widget child) {
-        return widget.url != "Advert"
-            ? !isReported
-                ? Container(
-                    decoration: BoxDecoration(color: Colors.transparent),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Header(),
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 30.0),
-                          decoration: BoxDecoration(
-                              color: Colors.transparent,
-                              borderRadius: BorderRadius.circular(23)),
-                          child: widget.nsfw
-                              ? GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => viewImage(
-                                              widget.url,
-                                              context,
-                                              widget.caption,
-                                              widget.caption),
-                                        ));
-                                  },
-                                  child: Container(
-                                    color: Colors.transparent,
-                                    height: 300,
-                                    child: Center(
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              "NSFW",
-                                              style: TextStyle(
-                                                fontSize: 40,
-                                              ),
-                                            ),
-                                          ),
-                                          Text(
-                                            "May contain inappropriate content",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          Text(
-                                              "Tap to view if you are above 18 years old",
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                              )),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : GestureDetector(
-                                  onTap: () {
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => viewImage(
-                                              widget.url,
-                                              context,
-                                              widget.caption,
-                                              widget.caption),
-                                        ));
-                                  },
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(23),
-                                    child: widget.isVideo
-                                        ? FeedVideoPlayer(
-                                            url: widget.url,
-                                            key: new Key(widget.url),
-                                          )
-                                        : CachedNetworkImage(
-                                            imageUrl: widget.url,
-                                            fit: BoxFit.fill,
-                                          ),
-                                  ),
-                                ),
-                        ),
-                        Footer(),
-                      ],
-                    ))
-                : SizedBox.shrink()
-            : SizedBox();
-      },
-    );
-  }
-
-  // ignore: non_constant_identifier_names
-  Widget Header() {
-    return GestureDetector(
-      onTap: () {
-        if (widget.loop == true || widget.loop == null) {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => TargetUserInfo(widget.username),
-              ));
-        } else {}
-      },
-      child: Container(
-        padding: EdgeInsets.all(8.0),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(),
-        height: 70,
-        child: ListTile(
-          leading: CircleAvatar(
-            child: ClipOval(
-              child: profileUrl != null
-                  ? CachedNetworkImage(
-                width: 60,
-                height: 60,
-                imageUrl: profileUrl,
-                fit: BoxFit.cover,
-              )
-                  : Image.asset(
-                "assets/images/username.png",
-                fit: BoxFit.fill,
-              ),
-            ),
-          ),
-          title: widget.username != null
-              ? Text(widget.username)
-              : Center(
-            child: CircularProgressIndicator(),
-          ),
-          subtitle: widget.title != null ? Text(widget.title) : Text(""),
-          trailing: widget.username != Constants.ownerName
-              ? PopupMenuButton(
-            onSelected: (val) => _selected(val, context),
-            icon: Icon(Icons.expand_more),
-            itemBuilder: (BuildContext build) {
-              return [
-                PopupMenuItem(
-                  height: 30,
-                  value: "Report",
-                  child: Text("Report"),
-                ),
-              ];
-            },
+    return isReported
+        ? Center(
+            child: Text("Thank you for reporting."),
           )
-              : PopupMenuButton(
-            onSelected: (val) => _selected((val), context),
-            icon: Icon(Icons.expand_more),
-            itemBuilder: (BuildContext build) {
-              return [
-                PopupMenuItem(
-                  height: 30,
-                  value: "Delete",
-                  child: Text("Delete"),
-                )
-              ];
+        : GestureDetector(
+            onTap: () {
+              setState(() {
+                viewDetails = !viewDetails;
+              });
             },
-          ),
-        ),
-      ),
-    );
+            child: Stack(
+              children: [
+                widget.isVideo ?? false
+                    ? GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            viewDetails = !viewDetails;
+                          });
+                        },
+                        child: Container(
+                          height: MediaQuery.of(context).size.height,
+                          alignment: Alignment.center,
+                          child: Container(
+                            height: 300,
+                            child: FeedVideoPlayer(
+                              url: widget.url,
+                              key: Key(widget.url),
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
+                        height: MediaQuery.of(context).size.height,
+                        child: CachedNetworkImage(
+                          height: double.infinity,
+                          width: double.infinity,
+                          progressIndicatorBuilder: (context, _, progress) =>
+                              Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                          imageUrl: widget.url,
+                          fit: zoomOut ? BoxFit.contain : BoxFit.cover,
+                          filterQuality: FilterQuality.high,
+                        )),
+                Positioned(
+                    bottom: 10,
+                    right: 0,
+                    left: 0,
+                    child: AnimatedOpacity(
+                      opacity: viewDetails ? 0.66 : 0.0,
+                      duration: Duration(milliseconds: 400),
+                      child: DetailCard(),
+                    )),
+              ],
+            ),
+          );
   }
 
-  // ignore: non_constant_identifier_names
-  Widget Footer() {
-    double splashRadius = 25.0;
+  Widget DetailCard() {
     return Container(
-      decoration: BoxDecoration(
-          border: Border(
-              bottom: BorderSide(
-                color: Colors.black,
-              ))),
-      child: Flex(
-        direction: Axis.vertical,
+      width: MediaQuery.of(context).size.width,
+      height: MediaQuery.of(context).size.height * 0.25,
+      color: !widget.isDark ? Colors.white : Colors.black,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-            child: widget.caption != null && widget.caption != ""
-                ? FittedBox(
-              child: Text(
-                "${widget.caption}",
-                style: TextStyle(
-                  fontSize: 16,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    TargetUserInfo(widget.username)));
+                      },
+                      child: UserAvatar(profileUrl, 25.0)),
+                ),
+                Container(
+                  child: Expanded(
+                    child: Text(
+                      widget.caption == "" || widget.caption == null
+                          ? widget.title ?? ""
+                          : widget.caption,
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+          viewDetails
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              _liked();
+                            },
+                            icon: isLiked
+                                ? Icon(Icons.star)
+                                : Icon(Icons.star_border),
+                            iconSize: 26,
+                          ),
+                          Text(
+                            "${widget.numLikes}",
+                            style: TextStyle(fontSize: 18),
+                          )
+                        ],
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => CommentsPage(
+                                            postUID: widget.caption,
+                                            postOwnerUsername: widget.username,
+                                            tag: widget.topic,
+                                          )));
+                            },
+                            icon: Icon(Icons.comment),
+                            iconSize: 26,
+                          ),
+//                    Text(
+//                      "1",
+//                      style: TextStyle(fontSize: 18),
+//                    )
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: IconButton(
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => NewSearch(
+                                        isVideo: widget.isVideo,
+                                        profileUrl: profileUrl,
+                                        isPost: true,
+                                        postUid: widget.postUid,
+                                        caption: widget.caption,
+                                        ownerUsername: widget.username,
+                                        topic: widget.topic,
+                                        postUrl: widget.url,
+                                      )));
+                        },
+                        icon: Icon(Icons.send_rounded),
+                        iconSize: 26,
+                      ),
+                    ),
+                    !widget.isVideo
+                        ? Container(
+                            padding: EdgeInsets.symmetric(horizontal: 8.0),
+                            child: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  zoomOut = !zoomOut;
+                                });
+                              },
+                              icon: zoomOut
+                                  ? Icon(Icons.zoom_in)
+                                  : Icon(Icons.zoom_out),
+                              iconSize: 26,
+                            ),
+                          )
+                        : Container(),
+                  ],
+                )
+              : Container(),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 20),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Color(0xFF707070),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  "${widget.topic}",
                 ),
               ),
-            )
-                : SizedBox.shrink(),
-          ),
-          ListTile(
-            leading: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    "${widget.numLikes - widget.numDislikes}",
-                    style: TextStyle(fontSize: 20),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.thumb_up),
-                    color:
-                    isLiked != null && isLiked ? Color(0xffFF8F8F) : null,
-                    splashRadius: splashRadius,
-                    onPressed: () => _liked(),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.thumb_down),
-                    color: isDisliked != null && isDisliked
-                        ? Color(0xffFF8F8F)
-                        : null,
-                    splashRadius: splashRadius,
-                    onPressed: () => _disliked(),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.comment),
-                    splashRadius: splashRadius,
-                    onPressed: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  CommentsPage(
-                                    postUID: widget.postUid,
-                                    tag: widget.topic,
-                                    postOwnerUsername: widget.username,
-                                  )));
-                    },
-                  )
-                ],
-              ),
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.share),
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          NewSearch(
-                            isVideo: isVideo,
-                        isPost: true,
-                        postUid: widget.postUid,
-                        caption: widget.caption,
-                        ownerUsername: widget.username,
-                        topic: widget.topic,
-                        postUrl: widget.url,
+              isReported
+                  ? Container()
+                  : Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: IconButton(
+                        onPressed: () {
+                          if (widget.username == Constants.ownerName) {
+                            deletePost();
+                          } else {
+                            reportPost();
+                          }
+                        },
+                        icon: widget.username == Constants.ownerName
+                            ? Icon(Icons.delete)
+                            : Icon(Icons.report),
+                        iconSize: 26,
                       ),
-                    ));
-              },
-            ),
+                    ),
+            ],
           ),
         ],
       ),
@@ -351,14 +323,12 @@ class _BuildPostState extends State<BuildPost> {
   }
 
   setLikeAndDislike() async {
-    if (await widget.likes.indexOf("${Constants.ownerName}") !=
-        -1) {
+    if (await widget.likes.indexOf("${Constants.ownerName}") != -1) {
       isLiked = true;
     } else {
       isLiked = false;
     }
-    if (await widget.dislikes.indexOf("${Constants.ownerName}") !=
-        -1) {
+    if (await widget.dislikes.indexOf("${Constants.ownerName}") != -1) {
       isDisliked = true;
     } else {
       isDisliked = false;
@@ -406,61 +376,75 @@ class _BuildPostState extends State<BuildPost> {
     }
   }
 
-  _selected(val, context) {
-    if (val == "Report") {
-      reportPost();
-    }
-    if (val == "Delete") {
-      deletePost();
-    }
-  }
-
   deletePost() async {
-    await selectedTagRef
-        .where('postUid', isEqualTo: widget.postUid)
-        .getDocuments()
-        .then((docs) async {
-      await selectedTagRef.document(docs.documents[0].documentID).delete();
-      AchievementView(
-        context,
-        title: "Deleted",
-        duration: Duration(
-          seconds: 1,
-        ),
-        subTitle: "The post has been deleted.",
-        icon: Icon(Icons.delete),
-        color: Color(0xff3B3B3B),
-      )
-        ..show();
-    }).catchError((onError) {
-      AchievementView(
-        context,
-        title: "Error",
-        duration: Duration(seconds: 1),
-        subTitle: onError,
-        icon: Icon(Icons.error),
-        color: Color(0xff3B3B3B),
-      )
-        ..show();
-    });
-    int posts;
-    await updateUserPosts();
-    await firestoreInstance
-        .collection('Posts')
-        .document('Public')
-        .collection('Tags')
-        .document(widget.topic)
-        .get()
-        .then((docs) async {
-      posts = await docs.data['posts'];
-      posts--;
-      firestoreInstance
-          .collection('Posts')
-          .document('Public')
-          .collection('Tags')
-          .document(widget.topic)
-          .updateData({'posts': posts});
-    });
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text("Do you want to delete this post?"),
+            actions: [
+              FlatButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: Text("No"),
+              ),
+              FlatButton(
+                onPressed: () async {
+                  Navigator.pop(context);
+                  await selectedTagRef
+                      .where('postUid', isEqualTo: widget.postUid)
+                      .getDocuments()
+                      .then((docs) async {
+                    await selectedTagRef
+                        .document(docs.documents[0].documentID)
+                        .delete();
+                    AchievementView(
+                      context,
+                      title: "Deleted",
+                      duration: Duration(
+                        seconds: 1,
+                      ),
+                      subTitle: "The post has been deleted.",
+                      icon: Icon(Icons.delete),
+                      color: Color(0xff3B3B3B),
+                    )
+                      ..show();
+                  }).catchError((onError) {
+                    AchievementView(
+                      context,
+                      title: "Error",
+                      duration: Duration(seconds: 1),
+                      subTitle: onError,
+                      icon: Icon(Icons.error),
+                      color: Color(0xff3B3B3B),
+                    )
+                      ..show();
+                  });
+                  int posts;
+                  await updateUserPosts();
+                  await firestoreInstance
+                      .collection('Posts')
+                      .document('Public')
+                      .collection('Tags')
+                      .document(widget.topic)
+                      .get()
+                      .then((docs) async {
+                    posts = await docs.data['posts'];
+                    posts--;
+                    firestoreInstance
+                        .collection('Posts')
+                        .document('Public')
+                        .collection('Tags')
+                        .document(widget.topic)
+                        .updateData({'posts': posts});
+                  });
+                },
+                child: Text("Yes"),
+              ),
+            ],
+          );
+        });
   }
 
   updateUserPosts() async {
@@ -480,9 +464,10 @@ class _BuildPostState extends State<BuildPost> {
     });
   }
 
-  var reportedPostsList;
+  List reportedPostsList;
 
   reportPost() async {
+    uid = await databaseMethods.getUIDByUsername(widget.username);
     try {
       Map<String, dynamic> reportPostMap = {
         'reportedBy': Constants.ownerName.toLowerCase(),
@@ -495,34 +480,28 @@ class _BuildPostState extends State<BuildPost> {
         setState(() {});
       }
 
-      await firestoreInstance
+      await Firestore.instance
           .collection('Reported')
           .document('Posts')
           .collection('ReportedPosts')
           .add(reportPostMap);
-      await firestoreInstance
+      print(uid);
+      await Firestore.instance
           .collection('users')
-          .document(Constants.ownerUid)
-          .get()
+          .where('uid', isEqualTo: uid)
+          .getDocuments()
           .then((docs) async {
-        reportedPostsList = await docs.data["reportedPosts"];
-        reportedPostsList.add(widget.postUid);
-        await firestoreInstance
+        print('Found user: $uid');
+        reportedPostsList = await docs.documents[0].data["reportedPosts"];
+        reportedPostsList.add("${widget.postUid}");
+        await Firestore.instance
             .collection('users')
-            .document(Constants.ownerUid)
-            .updateData({"reportedPosts": reportedPostsList});
+            .document(uid)
+            .updateData({'reportedPosts': reportedPostsList});
       });
-      AchievementView(
-        context,
-        title: "Reported",
-        duration: Duration(seconds: 1),
-        subTitle: "The post has been reported. Thank you!",
-        icon: Icon(Icons.report),
-        color: Color(0xff3B3B3B),
-      )
-        ..show();
     } catch (error) {
       isReported = false;
+      print("Error reporting post: $error");
       Fluttertoast.showToast(
           msg: "An error occurred", gravity: ToastGravity.CENTER);
       setState(() {});
@@ -536,17 +515,21 @@ class _BuildPostState extends State<BuildPost> {
 
   updateLike(bool newVal) async {
     try {
-      print('Called update Like');
-      await selectedTagRef
+      await Firestore.instance
+          .collection('Posts')
+          .document('Public')
+          .collection(widget.topic)
           .where('postUid', isEqualTo: widget.postUid)
           .getDocuments()
           .then((docs) async {
-        likesList = await docs.documents[0].data["likes"];
+        likesList = await docs.documents[0].data['likes'];
         likes = await docs.documents[0].data["numLikes"];
         if (newVal) {
+          print('true');
           likesList.add("${Constants.ownerName.toLowerCase()}");
           likes = likes + 1;
         } else {
+          print('false');
           likesList.removeAt(
               likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
           likes = likes - 1;
@@ -574,7 +557,6 @@ class _BuildPostState extends State<BuildPost> {
       dislikes = await docs.documents[0].data["numDislikes"];
 
       if (newVal && isDisliked) {
-        print('true and true');
         dislikesList.add("${Constants.ownerName.toLowerCase()}");
         dislikes++;
       } else {
@@ -582,7 +564,6 @@ class _BuildPostState extends State<BuildPost> {
           dislikesList.removeAt(
               dislikesList.indexOf("${Constants.ownerName.toLowerCase()}"));
           dislikes--;
-          print('false ');
         } else {}
       }
       Map<String, dynamic> dislikeListMap = {

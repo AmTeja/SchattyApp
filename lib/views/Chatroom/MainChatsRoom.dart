@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -18,7 +19,11 @@ import 'package:schatty/helper/preferencefunctions.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/AuthenticationManagement.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
+import 'package:schatty/views/Authenticate/AuthHome.dart';
 import 'package:schatty/views/Chatroom/MainChatScreenInstance.dart';
+import 'package:schatty/views/NewSearch.dart';
+import 'package:schatty/views/Settings/SettingsView.dart';
+import 'package:schatty/views/Settings/editProfile.dart';
 import 'package:schatty/widgets/InAppNotification.dart';
 import 'package:schatty/widgets/widget.dart';
 import 'package:time_machine/time_machine.dart';
@@ -78,9 +83,12 @@ class _ChatRoomState extends State<ChatRoom>
   String url;
   String uid;
 
+  PageController pageController;
+
   @override
   void initState() {
     super.initState();
+    pageController = Constants.pageController;
     timeSetup();
     setState(() {
       isChatRoom = true;
@@ -104,10 +112,26 @@ class _ChatRoomState extends State<ChatRoom>
     newContext = context;
     return !isLoading
         ? Scaffold(
-            body: Container(
-              child: chatRoomList(darkTheme),
-            ),
-          )
+      appBar: AppBar(
+        title: Text("Schatty"),
+        centerTitle: true,
+        actions: [
+          IconButton(icon: Icon(Icons.search), onPressed: () {
+            Navigator.push(context, MaterialPageRoute(
+                builder: (context) => NewSearch(isPost: false,)));
+          }),
+          IconButton(icon: Icon(Icons.arrow_forward_ios), onPressed: () {
+            pageController.animateToPage(
+                1, duration: Duration(milliseconds: 500),
+                curve: Curves.easeInOut);
+          })
+        ],
+      ),
+      drawer: Theme(data: Theme.of(context), child: mainDrawer(context)),
+      body: Container(
+        child: chatRoomList(darkTheme),
+      ),
+    )
         : Scaffold(
             backgroundColor: Colors.black, body: loadingScreen("Hold on"));
   }
@@ -340,5 +364,160 @@ class _ChatRoomState extends State<ChatRoom>
     await Future.delayed(Duration(seconds: 1));
     setState(() {});
     _refreshController.loadComplete();
+  }
+
+  logOut(BuildContext context) async {
+    FirebaseUser user = await FirebaseAuth.instance.currentUser();
+    await databaseMethods.updateToken("", user.uid);
+    Preferences.saveUserLoggedInSharedPreference(false);
+    Preferences.saveUserNameSharedPreference(null);
+    Preferences.saveUserEmailSharedPreference(null);
+    Preferences.saveUserImageURL(null);
+    if (await Preferences.getIsGoogleUser()) {
+      authMethods.signOutGoogle();
+      print('Is Google');
+    } else {
+      authMethods.signOut();
+      print('Is not google');
+    }
+    Preferences.saveIsGoogleUser(null);
+    Navigator.pushReplacement(
+        context, MaterialPageRoute(builder: (context) => AuthHome()));
+  }
+
+  Widget mainDrawer(BuildContext context) {
+    return Drawer(
+      elevation: 4,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            child: Column(
+              children: <Widget>[
+                CircleAvatar(
+                  radius: 50,
+                  child: ClipOval(
+                    child: SizedBox(
+                      width: 100,
+                      height: 100,
+                      child: url != null
+                          ? CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,
+                      )
+                          : Image.asset(
+                        "assets/images/username.png",
+                        fit: BoxFit.fill,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 40,
+                ),
+                Expanded(
+                  child: Container(
+                    alignment: Alignment.center,
+                    child: Constants.ownerName != null
+                        ? FittedBox(
+                      child: Text(
+                        Constants.ownerName,
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                          fontSize: 22,
+                        ),
+                      ),
+                    )
+                        : Text("Error"),
+                  ),
+                )
+              ],
+            ),
+          ),
+          ListTile(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          EditProfile(Constants.ownerName, uid)));
+            },
+            title: Text("Edit profile",
+                style: TextStyle(
+                  fontSize: 20,
+                )),
+            trailing: Icon(Icons.edit),
+          ),
+//          ListTile(
+//            onTap: () {
+//              Navigator.pop(context);
+//              Navigator.pushReplacement(
+//                  context, MaterialPageRoute(builder: (context) => ChatRoom()));
+//            },
+//            title: Text(
+//              'Refresh',
+//              style: TextStyle(
+//                fontSize: 20,
+//              ),
+//            ),
+//            trailing: Icon(Icons.refresh),
+//          ),
+          ListTile(
+            onTap: () {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SettingsView(),
+                  ));
+            },
+            title: Text(
+              'Settings',
+              style: TextStyle(
+                fontSize: 20,
+              ),
+            ),
+            trailing: Icon(Icons.settings),
+          ),
+          ListTile(
+            //Logout Tile
+              onTap: () {
+                logOut(context);
+              },
+              title: Text(
+                'Logout',
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+              trailing: Icon(Icons.exit_to_app)),
+          ListTile(
+            //About Tile
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: "Schatty",
+                applicationVersion: '1.0.6 (Beta)',
+                applicationIcon: SchattyIcon(),
+                children: [
+                  SizedBox(
+                    height: 40,
+                  ),
+                  Text("Developed by: Krishna Teja J"),
+                  SizedBox(
+                    height: 10,
+                  ),
+                  Text("Designed by: D Sai Sandeep")
+                ],
+              );
+            },
+            title: Text(
+              'About',
+              style: TextStyle(fontSize: 20),
+            ),
+            trailing: Icon(Icons.info),
+          ),
+        ],
+      ),
+    );
   }
 }

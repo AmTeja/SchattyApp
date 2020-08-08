@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -146,7 +147,7 @@ class _PostContentState extends State<PostContent> {
           ),
           child: Center(
             child: ListView(
-              physics: selectedFile == null
+              physics: selectedFile == null && urlFromImage == null
                   ? NeverScrollableScrollPhysics()
                   : AlwaysScrollableScrollPhysics(),
               children: [
@@ -221,7 +222,9 @@ class _PostContentState extends State<PostContent> {
                     ) : Container(
                       child: isVideo ? FlickVideoPlayer(
                         flickManager: flickManager,
-                      ) : Image.file(selectedFile, fit: BoxFit.cover,),
+                      ) : urlFromImage == null ? Image.file(
+                        selectedFile, fit: BoxFit.cover,) : CachedNetworkImage(
+                        imageUrl: urlFromImage, fit: BoxFit.contain,),
                     ),
 //                    Padding(
 //                      padding: const EdgeInsets.symmetric(
@@ -536,36 +539,36 @@ class _PostContentState extends State<PostContent> {
                       ) : Container(child: Center(child: Text("No tags"),),);
                     },
                   ),
-                  Form(
-                      key: tagFormKey,
-                      child: TextFormField(
-                        validator: TagValidator.validate,
-                        style: TextStyle(fontSize: 18),
-                        onTap: () {
-                          print('Tapped on field');
-                          tagController.animateTo(
-                              tagController.position.maxScrollExtent,
-                              duration: Duration(milliseconds: 1000),
-                              curve: Curves.easeInOut);
-                        },
-                        decoration: InputDecoration(
-                            hintText: "New tag",
-                            suffixIcon: IconButton(
-                              icon: Icon(Icons.create),
-                              color: Color(0xFF7ED9F1),
-                              onPressed: () {
-                                createNewTag();
-                              },
-                            ),
-                            focusColor: Color(0xFF7ED9F1),
-                            border: OutlineInputBorder(
-                              borderSide:
-                              BorderSide(color: Colors.black),
-                              borderRadius: BorderRadius.circular(40),
-                            )
-                        ),
-                        controller: tagTEC,
-                      ))
+//                  Form(
+//                      key: tagFormKey,
+//                      child: TextFormField(
+//                        validator: TagValidator.validate,
+//                        style: TextStyle(fontSize: 18),
+//                        onTap: () {
+//                          print('Tapped on field');
+//                          tagController.animateTo(
+//                              tagController.position.maxScrollExtent,
+//                              duration: Duration(milliseconds: 1000),
+//                              curve: Curves.easeInOut);
+//                        },
+//                        decoration: InputDecoration(
+//                            hintText: "New tag",
+//                            suffixIcon: IconButton(
+//                              icon: Icon(Icons.create),
+//                              color: Color(0xFF7ED9F1),
+//                              onPressed: () {
+//                                createNewTag();
+//                              },
+//                            ),
+//                            focusColor: Color(0xFF7ED9F1),
+//                            border: OutlineInputBorder(
+//                              borderSide:
+//                              BorderSide(color: Colors.black),
+//                              borderRadius: BorderRadius.circular(40),
+//                            )
+//                        ),
+//                        controller: tagTEC,
+//                      ))
                 ],
               ),
             ),
@@ -708,6 +711,7 @@ class _PostContentState extends State<PostContent> {
                   if (formKey.currentState.validate()) {
                     if (mounted) {
                       setState(() {
+                        getRandom();
                         urlFromImage = urlTEC.text;
                       });
                     }
@@ -819,7 +823,6 @@ class _PostContentState extends State<PostContent> {
               "postUid": ranString,
               "NSFW": nsfw ?? false,
               "title": titleTEC.text,
-              "titleIndex": await makeIndex(),
               "numLikes": 0,
               "numDislikes": 0,
               "isVideo": isVideo,

@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
-import 'package:schatty/views/Feed/PostUI.dart';
+import 'package:schatty/temp/swipetest.dart';
 
 import '../AdView.dart';
 
@@ -64,30 +64,30 @@ class _SettingsViewState extends State<SettingsView> {
                   Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => MakePost(),
+                        builder: (context) => SwipeTest(),
                       ));
                 },
-                child: Container(
-                    height: 100,
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            "Test",
-                            style: TextStyle(
-                              fontSize: 30.0,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border(
-                          bottom: BorderSide(
-                              )),
-                    )),
+//                child: Container(
+//                    height: 100,
+//                    padding: EdgeInsets.symmetric(horizontal: 30),
+//                    child: Row(
+//                      mainAxisSize: MainAxisSize.min,
+//                      children: [
+//                        Expanded(
+//                          child: Text(
+//                            "Test",
+//                            style: TextStyle(
+//                              fontSize: 30.0,
+//                            ),
+//                          ),
+//                        ),
+//                      ],
+//                    ),
+//                    decoration: BoxDecoration(
+//                      border: Border(
+//                          bottom: BorderSide(
+//                              )),
+//                    )),
               ),
             ],
           ),

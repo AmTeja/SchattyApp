@@ -266,9 +266,7 @@ class _ChatScreenState extends State<ChatScreen> {
     String topic,
     String targetProfileUrl,
   }) {
-    var time = tempTime.toDate().add(tempTime
-        .toDate()
-        .timeZoneOffset);
+    var time = tempTime.toDate().add(tempTime.toDate().timeZoneOffset);
     bool imageMessage = false;
     var timeInDM = DateFormat('dd:M:y').format(
         DateTime.fromMillisecondsSinceEpoch(time.millisecondsSinceEpoch));
@@ -279,242 +277,233 @@ class _ChatScreenState extends State<ChatScreen> {
     final Widget msg = SafeArea(
         child: !isPost
             ? Container(
-          padding:
-          EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
-          margin: EdgeInsets.symmetric(vertical: 8),
-          width: MediaQuery
-              .of(context)
-              .size
-              .width * 0.8,
-          alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-          child: GestureDetector(
-            onLongPress: () {
-              HapticFeedback.mediumImpact();
-              if (!imageMessage) {
-                setState(() {
-                  isSelected = !isSelected;
-                  selectedText = message;
-                  selectedTime = time
-                      .subtract(time.timeZoneOffset)
-                      .millisecondsSinceEpoch;
-                  isSelectedOwner = isMe;
-                  isImage = false;
-                });
-              } else {
-                setState(() {
-                  isSelected = !isSelected;
-                  selectedText = imageUrl;
-                  selectedTime = time
-                      .subtract(time.timeZoneOffset)
-                      .millisecondsSinceEpoch;
-                  isSelectedOwner = isMe;
-                  isImage = true;
-                });
-              }
-            },
-            child: Container(
-              padding: !imageMessage
-                  ? EdgeInsets.symmetric(horizontal: 24, vertical: 16)
-                  : EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery
-                    .of(context)
-                    .size
-                    .width * 0.8,
-              ),
-              decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                      colors: isMe
-                          ? (!imageMessage
-                          ? ([
-                        const Color(0xffff758c),
-                        const Color(0xffff7eb3)
-                      ])
-                          : [Color(0xffc8435f), Color(0xffc94d83)])
-                          : (!imageMessage
-                          ? ([
-                        Color(0xff93a5cf),
-                        const Color(0xff93a5cf)
-                      ])
-                          : [Color(0xff64769e), Color(0xff64769e)])),
-                  borderRadius: isMe
-                      ? BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(18),
-                      bottomLeft: Radius.circular(18))
-                      : BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(18),
-                      bottomRight: Radius.circular(18))),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  Flexible(
-                    child: (!imageMessage)
-                        ? Text(
-                      message,
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    )
-                        : Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      //                        crossAxisAlignment: CrossAxisAlignment.center,
+                padding:
+                    EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+                margin: EdgeInsets.symmetric(vertical: 8),
+                width: MediaQuery.of(context).size.width * 0.8,
+                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                child: GestureDetector(
+                  onLongPress: () {
+                    HapticFeedback.mediumImpact();
+                    if (!imageMessage) {
+                      setState(() {
+                        isSelected = !isSelected;
+                        selectedText = message;
+                        selectedTime = time
+                            .subtract(time.timeZoneOffset)
+                            .millisecondsSinceEpoch;
+                        isSelectedOwner = isMe;
+                        isImage = false;
+                      });
+                    } else {
+                      setState(() {
+                        isSelected = !isSelected;
+                        selectedText = imageUrl;
+                        selectedTime = time
+                            .subtract(time.timeZoneOffset)
+                            .millisecondsSinceEpoch;
+                        isSelectedOwner = isMe;
+                        isImage = true;
+                      });
+                    }
+                  },
+                  child: Container(
+                    padding: !imageMessage
+                        ? EdgeInsets.symmetric(horizontal: 24, vertical: 16)
+                        : EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.8,
+                    ),
+                    decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            colors: isMe
+                                ? (!imageMessage
+                                    ? ([
+                                        const Color(0xffff758c),
+                                        const Color(0xffff7eb3)
+                                      ])
+                                    : [Color(0xffc8435f), Color(0xffc94d83)])
+                                : (!imageMessage
+                                    ? ([
+                                        Color(0xff93a5cf),
+                                        const Color(0xff93a5cf)
+                                      ])
+                                    : [Color(0xff64769e), Color(0xff64769e)])),
+                        borderRadius: isMe
+                            ? BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                                topRight: Radius.circular(18),
+                                bottomLeft: Radius.circular(18))
+                            : BorderRadius.only(
+                                topLeft: Radius.circular(18),
+                                topRight: Radius.circular(18),
+                                bottomRight: Radius.circular(18))),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       mainAxisSize: MainAxisSize.min,
-                      children: [
-                        InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        viewImage(
-                                            imageUrl,
-                                            context,
-                                            message,
-                                            time),
-                                  ));
-                            },
-                            child: Stack(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius:
-                                      BorderRadius.circular(
-                                          23)),
-                                  child: Hero(
-                                    tag: time,
-                                    child: CachedNetworkImage(
-                                      imageUrl: imageUrl,
-                                      errorWidget:
-                                          (context, msg, error) =>
-                                          Center(
-                                            child: Text(
-                                                "Error loading $msg: $error"),
-                                          ),
-                                    ),
-                                  ),
-                                ),
-                                Positioned(
-                                  bottom: 0,
-                                  right: 0,
-                                  child: Row(
-                                    children: [
-                                      Padding(
-                                          padding:
-                                          EdgeInsets.symmetric(
-                                              horizontal: 4,
-                                              vertical: 4),
-                                          child: read
-                                              ? Icon(Icons.check)
-                                              : SizedBox.shrink()),
-                                      Container(
-                                        padding:
-                                        EdgeInsets.symmetric(
-                                            horizontal: 4,
-                                            vertical: 4),
-                                        child: Text(
-                                          !newDay
-                                              ? DateFormat('kk:mm')
-                                              .format(DateTime
-                                              .fromMillisecondsSinceEpoch(time
-                                              .millisecondsSinceEpoch))
-                                              : DateFormat(
-                                              'kk:mm dd/M')
-                                              .format(DateTime
-                                              .fromMillisecondsSinceEpoch(
-                                              time.millisecondsSinceEpoch)),
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      )
-                                    ],
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: <Widget>[
+                        Flexible(
+                          child: (!imageMessage)
+                              ? Text(
+                                  message,
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 )
-                              ],
-                            )),
-                        message != ""
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  //                        crossAxisAlignment: CrossAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) => viewImage(
+                                                    imageUrl,
+                                                    context,
+                                                    message,
+                                                    time),
+                                              ));
+                                        },
+                                        child: Stack(
+                                          children: [
+                                            Container(
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          23)),
+                                              child: Hero(
+                                                tag: time,
+                                                child: CachedNetworkImage(
+                                                  imageUrl: imageUrl,
+                                                  errorWidget:
+                                                      (context, msg, error) =>
+                                                          Center(
+                                                    child: Text(
+                                                        "Error loading $msg: $error"),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Positioned(
+                                              bottom: 0,
+                                              right: 0,
+                                              child: Row(
+                                                children: [
+                                                  Padding(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                              horizontal: 4,
+                                                              vertical: 4),
+                                                      child: read
+                                                          ? Icon(Icons.check)
+                                                          : SizedBox.shrink()),
+                                                  Container(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 4,
+                                                            vertical: 4),
+                                                    child: Text(
+                                                      !newDay
+                                                          ? DateFormat('kk:mm')
+                                                              .format(DateTime
+                                                                  .fromMillisecondsSinceEpoch(time
+                                                                      .millisecondsSinceEpoch))
+                                                          : DateFormat(
+                                                                  'kk:mm dd/M')
+                                                              .format(DateTime
+                                                                  .fromMillisecondsSinceEpoch(
+                                                                      time.millisecondsSinceEpoch)),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  )
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        )),
+                                    message != ""
+                                        ? Container(
+                                            padding: EdgeInsets.only(top: 10),
+                                            child: Text(
+                                              message,
+                                              style: TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          )
+                                        : Container(),
+                                  ],
+                                ),
+                        ),
+                        !imageMessage
                             ? Container(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text(
-                            message,
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        )
+                                padding: EdgeInsets.only(
+                                    left: 10, top: 3, bottom: 0),
+                                child: Text(
+                                  !newDay
+                                      ? DateFormat('kk:mm').format(time)
+                                      : DateFormat('kk:mm dd/M').format(time),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              )
+                            : Container(),
+                        !imageMessage && read && isMe
+                            ? Container(
+                                padding: EdgeInsets.symmetric(horizontal: 5),
+                                child: Icon(
+                                  Icons.check,
+//                    color: Color(0xff51cec0),
+                                  size: 15,
+                                ),
+                              )
                             : Container(),
                       ],
                     ),
                   ),
-                  !imageMessage
-                      ? Container(
-                    padding: EdgeInsets.only(
-                        left: 10, top: 3, bottom: 0),
-                    child: Text(
-                      !newDay
-                          ? DateFormat('kk:mm').format(time)
-                          : DateFormat('kk:mm dd/M').format(time),
-                      style: TextStyle(
-                        fontSize: 12,
-                      ),
-                    ),
-                  )
-                      : Container(),
-                  !imageMessage && read && isMe
-                      ? Container(
-                    padding: EdgeInsets.symmetric(horizontal: 5),
-                    child: Icon(
-                      Icons.check,
-//                    color: Color(0xff51cec0),
-                      size: 15,
-                    ),
-                  )
-                      : Container(),
-                ],
-              ),
-            ),
-          ),
-        )
+                ),
+              )
             : ShowPost(
-            profileUrl: targetProfileUrl,
-            isVideo: isVideo,
-            isMe: isMe,
-            isSeen: read,
-            url: imageUrl,
-            message: message,
-            ownerUsername: ownerUsername,
-            postUid: postUid,
-            topic: topic,
-            time: time));
+                profileUrl: targetProfileUrl,
+                isVideo: isVideo,
+                isMe: isMe,
+                isSeen: read,
+                url: imageUrl,
+                message: message,
+                ownerUsername: ownerUsername,
+                postUid: postUid,
+                topic: topic,
+                time: time));
     return msg;
   }
 
   // ignore: non_constant_identifier_names
-  ShowPost({@required isVideo,
-    bool isMe,
-    bool isSeen,
-    String profileUrl,
-    String url,
-    String message,
-    String ownerUsername,
-    String postUid,
-    String topic,
-    var time}) {
+  ShowPost(
+      {@required isVideo,
+      bool isMe,
+      bool isSeen,
+      String profileUrl,
+      String url,
+      String message,
+      String ownerUsername,
+      String postUid,
+      String topic,
+      var time}) {
     return Container(
       padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
       margin: EdgeInsets.symmetric(vertical: 8),
-      width: MediaQuery
-          .of(context)
-          .size
-          .width * 0.8,
+      width: MediaQuery.of(context).size.width * 0.8,
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
         onLongPress: () {
@@ -598,7 +587,6 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-
   // ignore: non_constant_identifier_names
   Widget Body(bool nsfw, String caption, String url, bool isVideo) {
     return Container(
@@ -609,8 +597,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      viewImage(url, context,
-                          caption, caption),
+                      viewImage(url, context, caption, caption),
                 ));
           },
           child: Container(
@@ -650,8 +637,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
-                      viewImage(url, context,
-                          caption, caption),
+                      viewImage(url, context, caption, caption),
                 ));
           },
           child: isVideo ?? false
@@ -669,7 +655,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget composeImage() {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(),
+
       body: Center(
         child: Column(
           children: [

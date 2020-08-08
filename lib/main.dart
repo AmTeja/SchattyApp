@@ -77,7 +77,7 @@ class _MyAppState extends State<MyApp> {
           create: (_) {
             return themeChangeProvider;
           },
-        )
+        ),
       ],
       child: Consumer<DarkThemeProvider>(
         builder: (BuildContext context, value, Widget child) {
