@@ -13,21 +13,21 @@ import 'package:schatty/widgets/FeedVideoPlayer.dart';
 import 'package:schatty/widgets/widget.dart';
 
 class BuildPost extends StatefulWidget {
-  bool isDark;
-  String url;
-  String username;
-  String topic;
-  String caption;
-  String postUid;
+  final isDark;
+  final url;
+  final username;
+  final topic;
+  final caption;
+  final postUid;
   final likes;
   final dislikes;
   final time;
-  bool nsfw;
-  String title;
-  bool loop;
+  final nsfw;
+  final title;
+  final loop;
   final numLikes;
   final numDislikes;
-  bool isVideo;
+  final isVideo;
 
   // ignore: non_constant_identifier_names
   BuildPost({
@@ -141,14 +141,14 @@ class _BuildPostState extends State<BuildPost> {
                     child: AnimatedOpacity(
                       opacity: viewDetails ? 0.66 : 0.0,
                       duration: Duration(milliseconds: 400),
-                      child: DetailCard(),
+                      child: detailCard(),
                     )),
               ],
             ),
           );
   }
 
-  Widget DetailCard() {
+  Widget detailCard() {
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height * 0.25,

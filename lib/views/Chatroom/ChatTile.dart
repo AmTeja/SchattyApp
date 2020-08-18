@@ -70,7 +70,7 @@ class ChatRoomTile extends StatelessWidget {
 
     return (lastMessageDetails != null || lastMessage == "") && !archivedChat
         ? Slidable(
-            key: Key("slidable"),
+            key: Key(username),
             actionPane: SlidableDrawerActionPane(),
             actionExtentRatio: 0.25,
             child: InkWell(

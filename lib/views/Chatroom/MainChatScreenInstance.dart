@@ -275,19 +275,17 @@ class _ChatScreenState extends State<ChatScreen> {
       imageMessage = true;
     }
     final Widget msg = SafeArea(
-        child: !isPost
-            ? Container(
-                padding:
-                    EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
-                margin: EdgeInsets.symmetric(vertical: 8),
-                width: MediaQuery.of(context).size.width * 0.8,
-                alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                child: GestureDetector(
-                  onLongPress: () {
-                    HapticFeedback.mediumImpact();
-                    if (!imageMessage) {
-                      setState(() {
-                        isSelected = !isSelected;
+        child: Container(
+      padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+      margin: EdgeInsets.symmetric(vertical: 8),
+      width: MediaQuery.of(context).size.width * 0.8,
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: GestureDetector(
+        onLongPress: () {
+          HapticFeedback.mediumImpact();
+          if (!imageMessage) {
+            setState(() {
+              isSelected = !isSelected;
                         selectedText = message;
                         selectedTime = time
                             .subtract(time.timeZoneOffset)
@@ -345,16 +343,20 @@ class _ChatScreenState extends State<ChatScreen> {
                       children: <Widget>[
                         Flexible(
                           child: (!imageMessage)
+                              ? !isPost
                               ? Text(
-                                  message,
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                )
+                            message,
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ) : Text(isMe
+                              ? "You shared a post by $ownerUsername"
+                              : "${widget
+                              .userName} share a post by $ownerUsername")
                               : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisAlignment: MainAxisAlignment.center,
                                   //                        crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -467,24 +469,13 @@ class _ChatScreenState extends State<ChatScreen> {
 //                    color: Color(0xff51cec0),
                                   size: 15,
                                 ),
-                              )
+                        )
                             : Container(),
                       ],
                     ),
                   ),
-                ),
-              )
-            : ShowPost(
-                profileUrl: targetProfileUrl,
-                isVideo: isVideo,
-                isMe: isMe,
-                isSeen: read,
-                url: imageUrl,
-                message: message,
-                ownerUsername: ownerUsername,
-                postUid: postUid,
-                topic: topic,
-                time: time));
+          ),
+        ));
     return msg;
   }
 
@@ -500,58 +491,71 @@ class _ChatScreenState extends State<ChatScreen> {
       String postUid,
       String topic,
       var time}) {
+//    return Container(
+//      padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+//      margin: EdgeInsets.symmetric(vertical: 8),
+//      width: MediaQuery.of(context).size.width * 0.8,
+//      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+//      child: GestureDetector(
+//        onLongPress: () {
+//          HapticFeedback.mediumImpact();
+//          setState(() {
+//            isSelected = !isSelected;
+//            selectedText = url;
+//            isSelectedOwner = isMe;
+//            isImage = true;
+//          });
+//        },
+//        onTap: () {
+//          viewPostInChat(postUid, topic, context);
+//        },
+//        child: Container(
+//          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+//          constraints: BoxConstraints(
+//            maxWidth: MediaQuery
+//                .of(context)
+//                .size
+//                .width * 0.8,
+//          ),
+//          decoration: BoxDecoration(
+//            gradient: LinearGradient(
+//              colors: isMe
+//                  ? [Color(0xffc8435f), Color(0xffc94d83)]
+//                  : [Color(0xff64769e), Color(0xff64769e)],
+//            ),
+//            borderRadius: isMe
+//                ? BorderRadius.only(
+//                topLeft: Radius.circular(18),
+//                topRight: Radius.circular(18),
+//                bottomLeft: Radius.circular(18))
+//                : BorderRadius.only(
+//                topLeft: Radius.circular(18),
+//                topRight: Radius.circular(18),
+//                bottomRight: Radius.circular(18)),
+//          ),
+//          child: Column(
+//            crossAxisAlignment: CrossAxisAlignment.center,
+//            mainAxisSize: MainAxisSize.min,
+//            mainAxisAlignment: MainAxisAlignment.center,
+//            children: [
+//              Header(ownerUsername, profileUrl),
+//              Body(false, message, url, isVideo),
+//            ],
+//          ),
+//        ),
+//      ),
+//    );
     return Container(
-      padding: EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
+      padding:
+      EdgeInsets.only(left: isMe ? 0 : 18, right: isMe ? 18 : 0),
       margin: EdgeInsets.symmetric(vertical: 8),
-      width: MediaQuery.of(context).size.width * 0.8,
+      width: MediaQuery
+          .of(context)
+          .size
+          .width * 0.8,
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: GestureDetector(
-        onLongPress: () {
-          HapticFeedback.mediumImpact();
-          setState(() {
-            isSelected = !isSelected;
-            selectedText = url;
-            isSelectedOwner = isMe;
-            isImage = true;
-          });
-        },
-        onTap: () {
-          viewPostInChat(postUid, topic, context);
-        },
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery
-                .of(context)
-                .size
-                .width * 0.8,
-          ),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isMe
-                  ? [Color(0xffc8435f), Color(0xffc94d83)]
-                  : [Color(0xff64769e), Color(0xff64769e)],
-            ),
-            borderRadius: isMe
-                ? BorderRadius.only(
-                topLeft: Radius.circular(18),
-                topRight: Radius.circular(18),
-                bottomLeft: Radius.circular(18))
-                : BorderRadius.only(
-                topLeft: Radius.circular(18),
-                topRight: Radius.circular(18),
-                bottomRight: Radius.circular(18)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Header(ownerUsername, profileUrl),
-              Body(false, message, url, isVideo),
-            ],
-          ),
-        ),
+      child: Container(
+
       ),
     );
   }

@@ -74,44 +74,77 @@ class _CommentsPageState extends State<CommentsPage> {
               : SizedBox(),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showCommentBox(context);
-        },
-        child: Icon(
-          Icons.add,
-          size: 35,
-        ),
-      ),
-      body: Container(
-        child: StreamBuilder(
-          stream: commentSnap,
-          builder: (context, snapshot) {
-            if (snapshot.hasError) return Text("Error: ${snapshot.hasError}");
-            if (!snapshot.hasData)
-              return Center(
-                  child: Text(
-                "Be the first to comment!",
-                style: TextStyle(fontSize: 40),
-              ));
-            return snapshot.data.documents.length != 0
-                ? ListView.builder(
-                    itemCount: snapshot.data.documents.length,
-                    itemBuilder: (context, index) {
-                      return CommentTile(
-                        context,
-                        snapshot.data.documents[index].data['photoURL'],
-                        snapshot.data.documents[index].data['username'],
-                        snapshot.data.documents[index].data['commentId'],
-                        snapshot.data.documents[index].data['comment'],
-                      );
-                    })
-                : Center(
-                    child: Text(
+//      floatingActionButton: FloatingActionButton(
+//        onPressed: () {
+//          showCommentBox(context);
+//        },
+//        child: Icon(
+//          Icons.add,
+//          size: 35,
+//        ),
+//      ),
+      body: SafeArea(
+        bottom: true,
+        child: Stack(
+          children: [
+            StreamBuilder(
+              stream: commentSnap,
+              builder: (context, snapshot) {
+                if (snapshot.hasError)
+                  return Text("Error: ${snapshot.hasError}");
+                if (!snapshot.hasData) {
+                  return Center(
+                      child: Text(
                     "Be the first to comment!",
                     style: TextStyle(fontSize: 40),
                   ));
-          },
+                }
+                return snapshot.data.documents.length != 0
+                    ? Expanded(
+                        child: ListView.builder(
+                            itemCount: snapshot.data.documents.length,
+                            itemBuilder: (context, index) {
+                              return CommentTile(
+                                context,
+                                snapshot.data.documents[index].data['photoURL'],
+                                snapshot.data.documents[index].data['username'],
+                                snapshot
+                                    .data.documents[index].data['commentId'],
+                                snapshot.data.documents[index].data['comment'],
+                              );
+                            }),
+                      )
+                    : Center(
+                        child: Text(
+                        "Be the first to comment!",
+                        style: TextStyle(fontSize: 40),
+                      ));
+              },
+            ),
+            Positioned(
+              bottom: 1,
+              left: 1,
+              right: 1,
+              child: Container(
+                color: Colors.transparent,
+                height: 80,
+                child: Form(
+                  child: TextFormField(
+                    autofocus: true,
+                    style: TextStyle(fontSize: 20),
+                    decoration: InputDecoration(
+                        contentPadding: EdgeInsets.all(16),
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(23))),
+                    textCapitalization: TextCapitalization.sentences,
+                    controller: commentTEC,
+                    maxLines: 3,
+                    maxLength: 150,
+                  ),
+                ),
+              ),
+            )
+          ],
         ),
       ),
     );

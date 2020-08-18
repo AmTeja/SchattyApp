@@ -124,6 +124,7 @@ class _PostContentState extends State<PostContent> {
   Widget newBody() {
     return Scaffold(
       appBar: AppBar(
+        title: Text("Add a post"),
         backgroundColor: !widget.isDark ? Color(0xFF7ED9F1) : Colors.black,
       ),
       body: GestureDetector(

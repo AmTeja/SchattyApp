@@ -219,16 +219,44 @@ class _FeedPageState extends State<FeedPage>
             )),
         Positioned(
             right: 10,
-            top: MediaQuery
-                .of(context)
-                .padding
-                .top + 3,
-            child: IconButton(
-              icon: Icon(Icons.more_vert),
-              onPressed: () {
-                showTags();
-              },
-              iconSize: 25,
+            top: MediaQuery.of(context).padding.top + 3,
+            child: Row(
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,
+                  ),
+                  child: DropdownButton<String>(
+                    value: sortingMethod,
+                    onChanged: (val) {
+                      _sort(val);
+                    },
+                    items: [
+                      DropdownMenuItem(
+                        value: "New",
+                        child: Text(
+                          "New",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: "Likes",
+                        child: Text(
+                          "Likes",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(Icons.more_vert),
+                  onPressed: () {
+                    showTags();
+                  },
+                  iconSize: 25,
+                ),
+              ],
             ))
       ],
     );
@@ -489,7 +517,9 @@ class _FeedPageState extends State<FeedPage>
       descendingOrder = true;
     }
     setTagStream(selectedTag, descendingOrder);
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void onPageChanged(int page) async {

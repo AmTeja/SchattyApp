@@ -340,7 +340,7 @@ class _ChatRoomState extends State<ChatRoom>
         uid = docs.uid;
       });
       uploadToken();
-      url = await Preferences.getUserImageURL() ??
+      Constants.ownerProfileUrl = await Preferences.getUserImageURL() ??
           await databaseMethods
               .getProfileUrlByName(Constants.ownerName.toLowerCase());
       setState(() {
@@ -400,15 +400,15 @@ class _ChatRoomState extends State<ChatRoom>
                     child: SizedBox(
                       width: 100,
                       height: 100,
-                      child: url != null
+                      child: Constants.ownerProfileUrl != null
                           ? CachedNetworkImage(
-                        imageUrl: url,
-                        fit: BoxFit.cover,
-                      )
+                              imageUrl: Constants.ownerProfileUrl,
+                              fit: BoxFit.cover,
+                            )
                           : Image.asset(
-                        "assets/images/username.png",
-                        fit: BoxFit.fill,
-                      ),
+                              "assets/images/username.png",
+                              fit: BoxFit.fill,
+                            ),
                     ),
                   ),
                 ),
