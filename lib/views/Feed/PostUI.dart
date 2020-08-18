@@ -8,6 +8,7 @@ import 'package:schatty/helper/constants.dart';
 import 'package:schatty/provider/DarkThemeProvider.dart';
 import 'package:schatty/services/DatabaseManagement.dart';
 import 'package:schatty/views/Chatroom/Profile.dart';
+import 'package:schatty/views/Feed/CommentsPage.dart';
 import 'package:schatty/widgets/FeedVideoPlayer.dart';
 import 'package:schatty/widgets/widget.dart';
 
@@ -33,7 +34,7 @@ class MakePost extends StatefulWidget {
   const MakePost(
       {Key key,
       this.postDocs,
-      this.url,
+      @required this.url,
       this.username,
       this.topic,
       this.caption,
@@ -84,11 +85,10 @@ class _MakePostState extends State<MakePost> {
     //Get users profile picture url
     getUserProfileUrl();
     //Setting tag ref
-    selectedTagRef = firestoreInstance
+    selectedTagRef = Firestore.instance
         .collection('Posts')
         .document('Public')
         .collection(widget.topic);
-
     return Consumer<DarkThemeProvider>(
       //Consumer for dark theme
       builder: (BuildContext context, value, Widget child) {
@@ -143,16 +143,73 @@ class _MakePostState extends State<MakePost> {
                     )
                   : Image.asset(
                       "assets/images/username.png",
-                      fit: BoxFit.fill,
-                    ),
+                fit: BoxFit.fill,
+              ),
             ),
           ),
           title: widget.username != null
               ? Text(widget.username)
               : Text(
-                  "Username",
-                ),
+            "Username",
+          ),
           subtitle: widget.title != null ? Text("${widget.title}") : null,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 4),
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                    color: Color(0xFF6CC0F8),
+                    borderRadius: BorderRadius.circular(23)),
+                child: IconButton(
+                  icon: Icon(Icons.send),
+                  color: Colors.white,
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              NewSearch(
+                                isVideo: widget.isVideo,
+                                profileUrl: profileUrl,
+                                isPost: true,
+                                postUid: widget.postUid,
+                                caption: widget.caption,
+                                ownerUsername: widget.username,
+                                topic: widget.topic,
+                                postUrl: widget.url,
+                              ),
+                        ));
+                  },
+                ),
+              ),
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 4),
+                height: 40,
+                width: 40,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    color: Color(0xFFF86C6C),
+                    borderRadius: BorderRadius.circular(23)),
+                child: IconButton(
+                  icon: widget.username != Constants.ownerName
+                      ? Icon(Icons.report)
+                      : Icon(Icons.delete),
+                  color: Colors.white,
+                  iconSize: 25,
+                  onPressed: () {
+                    if (widget.username == Constants.ownerName) {
+                      deletePost();
+                    } else {
+                      reportPost();
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -280,56 +337,16 @@ class _MakePostState extends State<MakePost> {
                   },
                 ),
               ),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 4),
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                    color: Color(0xFF6CC0F8),
-                    borderRadius: BorderRadius.circular(23)),
-                child: IconButton(
-                  icon: Icon(Icons.send),
-                  color: Colors.white,
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => NewSearch(
-                            isVideo: widget.isVideo,
-                            profileUrl: profileUrl,
-                            isPost: true,
-                            postUid: widget.postUid,
-                            caption: widget.caption,
-                            ownerUsername: widget.username,
-                            topic: widget.topic,
-                            postUrl: widget.url,
-                          ),
-                        ));
-                  },
-                ),
-              ),
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 4),
-                height: 40,
-                width: 40,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    color: Color(0xFFF86C6C),
-                    borderRadius: BorderRadius.circular(23)),
-                child: IconButton(
-                  icon: widget.username != Constants.ownerName
-                      ? Icon(Icons.report)
-                      : Icon(Icons.delete),
-                  color: Colors.white,
-                  iconSize: 25,
-                  onPressed: () {
-                    if (widget.username == Constants.ownerName) {
-                      deletePost();
-                    } else {
-                      reportPost();
-                    }
-                  },
-                ),
+              IconButton(
+                icon: Icon(Icons.comment),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(
+                    builder: (context) =>
+                        CommentsPage(postUID: widget.postUid,
+                            tag: widget.topic,
+                            postOwnerUsername: widget.username),
+                  ));
+                },
               ),
             ],
           )),
@@ -538,16 +555,24 @@ class _MakePostState extends State<MakePost> {
 
   updateLike(bool newVal) async {
     try {
-      await selectedTagRef
+      print("called");
+      print(widget.postUid);
+      print(widget.url);
+      await Firestore.instance
+          .collection('Posts')
+          .document('Public')
+          .collection(widget.topic)
           .where('postUid', isEqualTo: widget.postUid)
           .getDocuments()
           .then((docs) async {
         likesList = await docs.documents[0].data["likes"];
         likes = await docs.documents[0].data["numLikes"];
         if (newVal) {
+          print('true');
           likesList.add("${Constants.ownerName.toLowerCase()}");
           likes = likes + 1;
         } else {
+          print('false');
           likesList.removeAt(
               likesList.indexOf("${Constants.ownerName.toLowerCase()}"));
           likes = likes - 1;

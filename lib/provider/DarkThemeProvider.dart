@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:schatty/helper/preferencefunctions.dart';
 
 class DarkThemeProvider with ChangeNotifier {
-  bool _darkTheme = false;
+  bool _darkTheme = true;
 
   bool get darkTheme {
     return _darkTheme;
