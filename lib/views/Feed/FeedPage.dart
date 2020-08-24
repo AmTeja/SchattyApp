@@ -207,19 +207,39 @@ class _FeedPageState extends State<FeedPage>
                 IconButton(
                   icon: Icon(Icons.add_box_outlined),
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(
-                        builder: (context) =>
-                            PostContent(isDark: isDark,
-                              profileUrl: url,
-                              username: username,)));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => PostContent(
+                                  isDark: isDark,
+                                  profileUrl: url,
+                                  username: username,
+                                )));
                   },
                   iconSize: 25,
                 ),
+                GestureDetector(
+                  onTap: () {
+                    showTags();
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      "$selectedTag",
+                      style: TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                )
               ],
             )),
         Positioned(
-            right: 10,
-            top: MediaQuery.of(context).padding.top + 3,
+            right: 30,
+            top: MediaQuery
+                .of(context)
+                .padding
+                .top + 3,
             child: Row(
               children: [
                 Container(
@@ -236,26 +256,23 @@ class _FeedPageState extends State<FeedPage>
                         value: "New",
                         child: Text(
                           "New",
-                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                       DropdownMenuItem(
                         value: "Likes",
                         child: Text(
                           "Likes",
-                          style: TextStyle(color: Colors.white),
                         ),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.more_vert),
-                  onPressed: () {
-                    showTags();
-                  },
-                  iconSize: 25,
-                ),
+//                IconButton(
+//                  icon: Icon(Icons.more_vert),
+//                  onPressed: () {
+//                  },
+//                  iconSize: 25,
+//                ),
               ],
             ))
       ],

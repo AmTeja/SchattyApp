@@ -77,8 +77,6 @@ class _ChatRoomState extends State<ChatRoom>
 
   var imageUrl;
 
-  Map<dynamic, dynamic> archivedUsers = {"amteja": false};
-
   String newMessageUsername;
   String url;
   String uid;
@@ -133,7 +131,7 @@ class _ChatRoomState extends State<ChatRoom>
       ),
     )
         : Scaffold(
-            backgroundColor: Colors.black, body: loadingScreen("Hold on"));
+        backgroundColor: Colors.black, body: loadingScreen("Hold on"));
   }
 
   Widget suchEmpty(BuildContext context) {
@@ -402,13 +400,13 @@ class _ChatRoomState extends State<ChatRoom>
                       height: 100,
                       child: Constants.ownerProfileUrl != null
                           ? CachedNetworkImage(
-                              imageUrl: Constants.ownerProfileUrl,
-                              fit: BoxFit.cover,
-                            )
+                        imageUrl: Constants.ownerProfileUrl,
+                        fit: BoxFit.cover,
+                      )
                           : Image.asset(
-                              "assets/images/username.png",
-                              fit: BoxFit.fill,
-                            ),
+                        "assets/images/username.png",
+                        fit: BoxFit.fill,
+                      ),
                     ),
                   ),
                 ),

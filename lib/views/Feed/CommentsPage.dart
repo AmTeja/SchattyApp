@@ -58,19 +58,19 @@ class _CommentsPageState extends State<CommentsPage> {
                   (selectedUsername == Constants.ownerName.toLowerCase() ||
                       selectedUsername == widget.postOwnerUsername)
               ? IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    deleteComment(context);
-                  },
-                )
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              deleteComment(context);
+            },
+          )
               : SizedBox(),
           isSelected && selectedUsername != Constants.ownerName.toLowerCase()
               ? IconButton(
-                  icon: Icon(Icons.report),
-                  onPressed: () {
-                    reportComment();
-                  },
-                )
+            icon: Icon(Icons.report),
+            onPressed: () {
+              reportComment();
+            },
+          )
               : SizedBox(),
         ],
       ),
@@ -95,51 +95,58 @@ class _CommentsPageState extends State<CommentsPage> {
                 if (!snapshot.hasData) {
                   return Center(
                       child: Text(
-                    "Be the first to comment!",
-                    style: TextStyle(fontSize: 40),
-                  ));
-                }
-                return snapshot.data.documents.length != 0
-                    ? Expanded(
-                        child: ListView.builder(
-                            itemCount: snapshot.data.documents.length,
-                            itemBuilder: (context, index) {
-                              return CommentTile(
-                                context,
-                                snapshot.data.documents[index].data['photoURL'],
-                                snapshot.data.documents[index].data['username'],
-                                snapshot
-                                    .data.documents[index].data['commentId'],
-                                snapshot.data.documents[index].data['comment'],
-                              );
-                            }),
-                      )
-                    : Center(
-                        child: Text(
                         "Be the first to comment!",
                         style: TextStyle(fontSize: 40),
                       ));
+                }
+                return snapshot.data.documents.length != 0
+                    ? ListView.builder(
+                    itemCount: snapshot.data.documents.length,
+                    itemBuilder: (context, index) {
+                      return CommentTile(
+                        context,
+                        snapshot.data.documents[index].data['photoURL'],
+                        snapshot.data.documents[index].data['username'],
+                        snapshot
+                            .data.documents[index].data['commentId'],
+                        snapshot.data.documents[index].data['comment'],
+                      );
+                    })
+                    : Center(
+                    child: Text(
+                      "Be the first to comment!",
+                      style: TextStyle(fontSize: 40),
+                    ));
               },
             ),
             Positioned(
               bottom: 1,
               left: 1,
               right: 1,
-              child: Container(
-                color: Colors.transparent,
-                height: 80,
-                child: Form(
-                  child: TextFormField(
-                    autofocus: true,
-                    style: TextStyle(fontSize: 20),
-                    decoration: InputDecoration(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  child: Form(
+                    child: TextFormField(
+                      autofocus: false,
+                      style: TextStyle(fontSize: 20),
+                      decoration: InputDecoration(
                         contentPadding: EdgeInsets.all(16),
-                        border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(23))),
-                    textCapitalization: TextCapitalization.sentences,
-                    controller: commentTEC,
-                    maxLines: 3,
-                    maxLength: 150,
+                        fillColor: Colors.blueGrey,
+                        filled: true,
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: () {
+                            addComment(commentTEC.text, Constants.ownerName);
+                            commentTEC.text = "";
+                          },
+                        ),
+                      ),
+                      textCapitalization: TextCapitalization.sentences,
+                      controller: commentTEC,
+                      maxLines: 3,
+                      maxLength: 150,
+                    ),
                   ),
                 ),
               ),
@@ -160,8 +167,14 @@ class _CommentsPageState extends State<CommentsPage> {
           return AlertDialog(
             title: Text("Comment"),
             content: Container(
-              width: MediaQuery.of(context).size.width * 0.70,
-              height: MediaQuery.of(context).size.height * 0.1,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width * 0.70,
+              height: MediaQuery
+                  .of(context)
+                  .size
+                  .height * 0.1,
               child: TextFormField(
                 autofocus: true,
                 style: TextStyle(fontSize: 20),
@@ -190,7 +203,7 @@ class _CommentsPageState extends State<CommentsPage> {
                   Navigator.pop(context);
                 },
                 child:
-                    Container(alignment: Alignment.center, child: Text("Add")),
+                Container(alignment: Alignment.center, child: Text("Add")),
               )
             ],
           );
@@ -225,11 +238,14 @@ class _CommentsPageState extends State<CommentsPage> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Container(
-          width: MediaQuery.of(context).size.width,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width,
           alignment: Alignment.center,
           color: isSelected &&
-                  selectedUsername == username &&
-                  selectedComment == commentContent
+              selectedUsername == username &&
+              selectedComment == commentContent
               ? Color.fromARGB(153, 126, 217, 241)
               : null,
           child: Row(
@@ -237,10 +253,11 @@ class _CommentsPageState extends State<CommentsPage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => TargetUserInfo(username))),
+                  onTap: () =>
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => TargetUserInfo(username))),
                   child: UserAvatar(url, 20),
                 ),
               ),
@@ -314,7 +331,8 @@ class _CommentsPageState extends State<CommentsPage> {
         },
         icon: Icon(Icons.report),
         color: Color(0xff3B3B3B),
-      )..show();
+      )
+        ..show();
     });
     Fluttertoast.showToast(msg: "Reported", gravity: ToastGravity.CENTER);
   }
@@ -331,8 +349,11 @@ class _CommentsPageState extends State<CommentsPage> {
         'username': username,
         'photoURL': await databaseMethods.getProfileUrlByName(username),
         'commentId': ranString,
-        'time': DateTime.now().millisecondsSinceEpoch,
+        'time': DateTime
+            .now()
+            .millisecondsSinceEpoch,
       };
+      print('${widget.postUID}');
       await Firestore.instance
           .collection('Posts')
           .document('Public')
@@ -397,7 +418,8 @@ class _CommentsPageState extends State<CommentsPage> {
                 duration: Duration(seconds: 1),
                 icon: Icon(Icons.delete),
                 color: Color(0xff3B3B3B),
-              )..show();
+              )
+                ..show();
               isSelected = false;
               selectedUsername = null;
               selectedComment = null;

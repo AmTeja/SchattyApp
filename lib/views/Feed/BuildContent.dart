@@ -227,7 +227,7 @@ class _BuildPostState extends State<BuildPost> {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) => CommentsPage(
-                                            postUID: widget.caption,
+                                            postUID: widget.postUid,
                                             postOwnerUsername: widget.username,
                                             tag: widget.topic,
                                           )));

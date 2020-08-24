@@ -164,7 +164,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (newcontext) => TargetUserInfo(widget.userName),
+                      builder: (newContext) => TargetUserInfo(widget.userName),
                     ));
               },
             )

@@ -64,6 +64,7 @@ dependencies:
   file_picker: ^1.13.0+1
   photo_view: ^0.9.2
   tiktoklikescroller: ^0.1.1
+  flutter_email_sender: ^3.0.1
 
 dev_dependencies:
   flutter_test:
@@ -100,6 +101,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - assets/images/username.png
     - assets/images/
     - assets/icon/
     - google_fonts/
